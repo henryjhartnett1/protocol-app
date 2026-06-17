@@ -380,13 +380,8 @@ const AREAS = {
     currentBarW: 42, potentialBarW: 80,
     currentBarColor: '#ef4444', potentialBarColor: '#a3e635',
     progressNote: 'You can improve your skin quality significantly in 3 months.',
-    imgBg: 'linear-gradient(135deg,#3d2b1f,#5c3a24)',
-    imgContent: `<svg width="80" height="90" viewBox="0 0 80 90" fill="none" opacity="0.45">
-      <ellipse cx="40" cy="46" rx="28" ry="34" fill="#c4956a"/>
-      <circle cx="28" cy="35" r="3.5" fill="#a0522d"/><circle cx="44" cy="25" r="3" fill="#a0522d"/>
-      <circle cx="52" cy="42" r="4" fill="#a0522d"/><circle cx="33" cy="52" r="2.5" fill="#a0522d"/>
-      <circle cx="46" cy="58" r="2" fill="#a0522d"/><circle cx="24" cy="48" r="2" fill="#cd853f"/>
-    </svg>`,
+    imgBg: 'transparent',
+    imgContent: `<img src="/skin.png" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;">`,
     daily: [
       { id:'skin-d1', icon:'🧴', name:'Gentle Cleanser (AM)', desc:'Cleanses dirt and oil without stripping your skin barrier.', gain:0.1, time:'1 min', added:false },
       { id:'skin-d2', icon:'💧', name:'Moisturizer (AM & PM)', desc:'Keeps your skin hydrated and supports skin barrier repair.', gain:0.1, time:'1 min', added:false },
@@ -402,7 +397,6 @@ const AREAS = {
       { id:'skin-w3', icon:'🧖', name:'Clay Mask (1x per week)', desc:'Detoxifies pores and reduces excess oil and breakouts.', gain:0.05, time:'10 min', added:false },
     ],
     monthly: [
-      { id:'skin-m1', icon:'📷', name:'Progress Photos', desc:'Track your progress and stay motivated.', gain:null, time:'5 min', added:false },
       { id:'skin-m2', icon:'📋', name:'Review Routine', desc:"Evaluate what's working and adjust your routine.", gain:0.05, time:'10 min', added:false },
     ],
   },
@@ -414,14 +408,8 @@ const AREAS = {
     currentBarW: 58, potentialBarW: 83,
     currentBarColor: '#f59e0b', potentialBarColor: '#a3e635',
     progressNote: 'Consistent sleep and targeted treatment can dramatically improve dark circles.',
-    imgBg: 'linear-gradient(135deg,#1a2744,#2a3f6b)',
-    imgContent: `<svg width="90" height="50" viewBox="0 0 90 50" fill="none" opacity="0.45">
-      <ellipse cx="45" cy="25" rx="38" ry="20" stroke="#60a5fa" stroke-width="1.5" fill="none"/>
-      <ellipse cx="45" cy="25" rx="14" ry="14" fill="#1e40af"/>
-      <circle cx="45" cy="25" r="7" fill="#1e3a8a"/>
-      <ellipse cx="45" cy="38" rx="32" ry="6" fill="#1d4ed8" opacity="0.25"/>
-      <path d="M7 25 Q25 8 45 8 Q65 8 83 25" stroke="#93c5fd" stroke-width="1.5" fill="none" opacity="0.5"/>
-    </svg>`,
+    imgBg: 'transparent',
+    imgContent: `<img src="/eye.png" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;">`,
     daily: [
       { id:'eye-d1', icon:'😴', name:'8–9 Hours Sleep', desc:'The single biggest factor for dark circles and puffiness.', gain:0.15, time:'All night', added:false },
       { id:'eye-d2', icon:'💧', name:'Hydration (3L Water)', desc:'Reduces puffiness by improving lymphatic drainage.', gain:0.05, time:'All day', added:false },
@@ -431,7 +419,6 @@ const AREAS = {
     dailyTip: 'Cold compress first thing in the morning shrinks puffiness fast.',
     weekly: [
       { id:'eye-w1', icon:'✨', name:'Eye Mask Treatment', desc:'Hydrogel patches with caffeine and hyaluronic acid.', gain:0.1, time:'10 min', added:false },
-      { id:'eye-w2', icon:'📷', name:'Progress Photos', desc:'Track improvement over time with consistent lighting.', gain:null, time:'5 min', added:false },
     ],
     monthly: [
       { id:'eye-m1', icon:'📋', name:'Routine Review', desc:"Assess product effectiveness and adjust if needed.", gain:0.05, time:'10 min', added:false },
@@ -445,11 +432,8 @@ const AREAS = {
     currentBarW: 70, potentialBarW: 84,
     currentBarColor: '#a3e635', potentialBarColor: '#a3e635',
     progressNote: 'Regular grooming and product use can refine your brows significantly.',
-    imgBg: 'linear-gradient(135deg,#2b2418,#4a3c28)',
-    imgContent: `<svg width="100" height="40" viewBox="0 0 120 44" fill="none" opacity="0.5">
-      <path d="M8 34 Q18 10 40 12 Q58 13 64 22" stroke="#8b7355" stroke-width="8" stroke-linecap="round" fill="none"/>
-      <path d="M76 22 Q82 10 100 12 Q114 13 118 22" stroke="#8b7355" stroke-width="8" stroke-linecap="round" fill="none"/>
-    </svg>`,
+    imgBg: 'transparent',
+    imgContent: `<img src="/eyebrow.png" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;">`,
     daily: [
       { id:'brow-d1', icon:'🪮', name:'Brow Brush & Set', desc:'Brush upward and set with clear brow gel for neat look.', gain:0.1, time:'1 min', added:false },
       { id:'brow-d2', icon:'🛢', name:'Conditioning Serum', desc:'Castor oil or brow serum promotes hair growth overnight.', gain:0.1, time:'1 min', added:false },
@@ -458,7 +442,6 @@ const AREAS = {
     weekly: [
       { id:'brow-w1', icon:'✂️', name:'Precision Trimming', desc:'Trim any hairs extending above natural arch line.', gain:0.1, time:'5 min', added:false },
       { id:'brow-w2', icon:'🧵', name:'Threading or Waxing', desc:'Clean up the underside for sharp definition.', gain:0.1, time:'15 min', added:false },
-      { id:'brow-w3', icon:'📷', name:'Progress Photo', desc:'Track brow fullness improvements week to week.', gain:null, time:'3 min', added:false },
     ],
     monthly: [
       { id:'brow-m1', icon:'👤', name:'Barber / Brow Specialist', desc:'Professional shaping sets the perfect template.', gain:0.1, time:'20 min', added:false },
@@ -472,26 +455,14 @@ const AREAS = {
     currentBarW: 65, potentialBarW: 78,
     currentBarColor: '#f59e0b', potentialBarColor: '#a3e635',
     progressNote: 'Better haircare and consistent styling will improve your score within weeks.',
-    imgBg: 'linear-gradient(135deg,#1f1a12,#3d3020)',
-    imgContent: `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" opacity="0.4">
-      <path d="M10 45 Q8 20 40 15 Q72 20 70 45 Q72 25 60 20 Q50 16 40 16 Q30 16 20 20 Q8 25 10 45Z" fill="#5c4a2a"/>
-      <path d="M15 50 Q12 35 25 25 Q35 18 50 20 Q65 22 68 35 Q70 50 65 58" stroke="#4a3820" stroke-width="4" fill="none" stroke-linecap="round"/>
-      <path d="M20 52 Q18 38 30 30 Q40 22 55 26" stroke="#6b5530" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/>
-    </svg>`,
-    daily: [
-      { id:'hair-d1', icon:'🚿', name:'Proper Wash Technique', desc:'Shampoo scalp only, condition mid-length to ends.', gain:0.05, time:'5 min', added:false },
-      { id:'hair-d2', icon:'💦', name:'Leave-In Conditioner', desc:'Apply to damp hair for moisture and frizz control.', gain:0.05, time:'1 min', added:false },
-      { id:'hair-d3', icon:'🧴', name:'Styling Product', desc:'Matte clay or pomade for natural hold and definition.', gain:0.1, time:'2 min', added:false },
-    ],
-    dailyTip: 'Air-dry 80% then blow-dry for shape. Never fully air-dry if you want volume.',
+    imgBg: 'transparent',
+    imgContent: `<img src="/hair.png" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;">`,
+    daily: [],
+    dailyTip: null,
     weekly: [
-      { id:'hair-w1', icon:'✨', name:'Deep Conditioning Mask', desc:'Weekly treatment restores moisture and shine.', gain:0.05, time:'15 min', added:false },
-      { id:'hair-w2', icon:'💈', name:'Scalp Massage (5 min)', desc:'Boosts circulation and promotes healthier growth.', gain:0.05, time:'5 min', added:false },
+      { id:'hair-w-cut', icon:'✂️', name:'Get Haircut', desc:'Maintain the hairstyle matched to your face shape.', gain:2.0, time:'30 min', added:false },
     ],
-    monthly: [
-      { id:'hair-m1', icon:'✂️', name:'Haircut / Tidy Up', desc:'Clean shape every 3–4 weeks maintains the style.', gain:0.1, time:'30 min', added:false },
-      { id:'hair-m2', icon:'📷', name:'Progress Photo', desc:'Track hair density and style improvements.', gain:null, time:'3 min', added:false },
-    ],
+    monthly: [],
   },
   jawline: {
     title: 'Jawline',
@@ -516,9 +487,7 @@ const AREAS = {
     weekly: [
       { id:'jaw-w1', icon:'🦷', name:'Chewing Gum (Mastic)', desc:'Exercises jaw muscles and improves definition over time.', gain:0.1, time:'20 min', added:false },
     ],
-    monthly: [
-      { id:'jaw-m1', icon:'📷', name:'Progress Photo', desc:'Track jawline definition changes monthly.', gain:null, time:'5 min', added:false },
-    ],
+    monthly: [],
   },
   nose: {
     title: 'Nose',
@@ -574,7 +543,7 @@ const TASK_VALUES = {
   // ── EYES ──
   'eye-d-whitening': 0.10, 'eye-d-lash':      0.25, 'eye-d-ice':       0.10,
   'eye-d-sleep':     0.25, 'eye-d-hydration': 0.10,
-  'eye-w-photos':    0,    'eye-w-brow':      0,    'eye-w-puffiness': 0,
+  'eye-w-brow':      0,    'eye-w-puffiness': 0,
   'eye-f-contacts':  1.00, 'eye-f-concealer': 0.50, 'eye-f-mascara':   0.25, 'eye-f-waterline': 0.25,
   'eye-a-contrast':  0.75, 'eye-a-undereye':  0.75, 'eye-a-framing':   0,    'eye-a-brightness': 0,
   // ── BROWS ──
@@ -586,9 +555,7 @@ const TASK_VALUES = {
   'brow-a-design':   0,    'brow-a-lamination':0.75, 'brow-a-mapping': 1.50,
   'brow-a-styling':   0,    'brow-a-tail':    0,
   // ── HAIR ──
-  'hair-d1':  0.50, 'hair-d2':  0.25, 'hair-d3':  0.10,
-  'hair-w1':  0.25, 'hair-w2':  0.10, 'hair-w-cut': 2.00,
-  'hair-m1':  0.25, 'hair-m2':  0,
+  'hair-w-cut': 2.00,
 };
 
 // Canonical section membership — which task IDs belong to which section.
@@ -606,9 +573,7 @@ const SECTION_TASK_IDS = {
           'brow-f-pencil','brow-f-gel','brow-f-fiber','brow-f-tint',
           'brow-a-design','brow-a-lamination','brow-a-mapping',
           'brow-a-styling','brow-a-tail'],
-  hair:  ['hair-d1','hair-d2','hair-d3',
-          'hair-w1','hair-w2','hair-w-cut',
-          'hair-m1','hair-m2'],
+  hair:  ['hair-w-cut'],
 };
 
 // Total potential for a section = sum of all its task values.
@@ -1348,15 +1313,6 @@ function renderEyes() {
       <div class="prod-list">${roadmap.instant.map(instantCard).join('')}</div>
     </div>
 
-    <div class="prod-section">
-      <div class="prod-section-header" style="background:rgba(99,102,241,0.07);border-bottom-color:rgba(99,102,241,0.2);">
-        <div class="prod-section-left">
-          <span class="prod-section-icon">⚡</span>
-          <span class="prod-section-title" style="color:#818cf8;">ADVANCED UPGRADES</span>
-        </div>
-      </div>
-      <div class="prod-list">${roadmap.advanced.map(advancedCard).join('')}</div>
-    </div>
   `;
 }
 
@@ -1493,12 +1449,6 @@ function renderBrows() {
       <div class="prod-list">${roadmap.instant.map(instantCard).join('')}</div>
     </div>
 
-    <div class="prod-section">
-      <div class="prod-section-header" style="background:rgba(99,102,241,0.07);border-bottom-color:rgba(99,102,241,0.2);">
-        <div class="prod-section-left"><span class="prod-section-icon">⚡</span><span class="prod-section-title" style="color:#818cf8;">ADVANCED UPGRADES</span></div>
-      </div>
-      <div class="prod-list">${roadmap.advanced.map(advancedCard).join('')}</div>
-    </div>
   `;
 }
 
@@ -2306,45 +2256,78 @@ const EYE_STRENGTH_TEMPLATES = {
   canthalTilt: {
     title: 'Positive Canthal Tilt',
     whyValuable: 'Your outer eye corners sit higher than your inner eye corners, creating a naturally lifted eye appearance. This gives your gaze more structure and makes the eye area feel sharper and more attractive.',
-    howAmplify: 'Because your eye angle is already strong, the goal is to draw more attention toward it. Darker framing, higher contrast, brighter surrounding skin, and more noticeable lashes would make this natural angle stand out even more.',
+    howAmplify: 'Because your eye angle is already strong, the goal is to draw more attention toward it. We focus on improving framing, coloring, puffiness, and strikingness around the eyes to make this natural angle stand out even more.',
     idealEyeArea: 'Your ideal eye area would be sharp, lifted, and highly noticeable, with strong contrast and clean framing that emphasizes your naturally attractive eye angle.',
   },
   eyeShape: {
     title: 'Strong Eye Shape',
     whyValuable: 'Your eyes naturally have attractive proportions and shape. This gives your eye area a strong foundation because the base structure already works well with the rest of your face.',
-    howAmplify: 'The goal is to make the natural shape more noticeable. Stronger framing, increased contrast, brighter under-eyes, and more visual definition would pull attention directly toward the shape of your eyes.',
+    howAmplify: 'The goal is to make the natural shape more noticeable. We focus on improving framing, coloring, puffiness, and strikingness around the eyes to pull attention directly toward the shape of your eyes.',
     idealEyeArea: 'Your ideal eye area would make your natural eye shape one of the most noticeable features on your face, creating a cleaner, sharper, more intentional gaze.',
   },
   eyeExposure: {
     title: 'Strong Eye Exposure',
     whyValuable: 'Your eyes are naturally visible and easy to notice. This creates a more open, attention-grabbing eye area and gives us a strong base to build on.',
-    howAmplify: 'Because your eyes already have strong visibility, improvements around them become more powerful. Darker lashes would frame them better, higher contrast would make them pop more, and a brighter under-eye area would make the eyes look healthier and more awake.',
+    howAmplify: 'Because your eyes already have strong visibility, the goal is to make that exposure more noticeable. We focus on improving framing, coloring, puffiness, and strikingness around the eyes to make them look even more open and awake.',
     idealEyeArea: 'Your ideal eye area would be bright, open, and striking, with well-framed eyes that naturally become one of the first features people notice.',
   },
   upperEyelidExposure: {
     title: 'Strong Upper Eyelid Structure',
     whyValuable: 'Your upper eyelid area gives your eyes a more compact and structured appearance. This helps create a stronger, more focused gaze.',
-    howAmplify: 'The goal is to increase attention toward this structure without making the eyes look heavy. Better contrast, stronger lashes, cleaner skin around the eyes, and sharper framing would make the compact eye structure look even more defined.',
+    howAmplify: 'The goal is to make this structure more noticeable without making the eyes look heavy. We focus on improving framing, coloring, puffiness, and strikingness around the eyes to keep the compact structure looking sharp and defined.',
     idealEyeArea: 'Your ideal eye area would look sharp, structured, and intense, with strong framing that emphasizes the natural compactness of your eyes.',
   },
   eyeDepth: {
     title: 'Strong Eye Depth',
     whyValuable: 'Your eyes have strong depth relative to the surrounding facial structure. This creates natural shadows and gives your eye area more dimension and intensity.',
-    howAmplify: 'The goal is to make that depth more noticeable. Stronger eye framing, cleaner under-eyes, higher contrast, and better surrounding skin clarity would make the depth of your eyes stand out more.',
+    howAmplify: 'The goal is to make that depth more noticeable. We focus on improving framing, coloring, puffiness, and strikingness around the eyes to make the depth stand out more.',
     idealEyeArea: 'Your ideal eye area would look dimensional, sharp, and intense, with deeper-looking eyes that create a stronger overall facial impression.',
   },
   eyeSpacing: {
     title: 'Balanced Eye Spacing',
     whyValuable: 'Your eyes are positioned in a balanced way relative to the rest of your face. This creates facial harmony and makes the eye area feel naturally proportional.',
-    howAmplify: 'Since your spacing already supports facial harmony, the goal is to increase visual impact without disrupting balance. Stronger lashes, cleaner contrast, brighter under-eyes, and better framing would make the eyes stand out while keeping the face proportional.',
+    howAmplify: 'Since your spacing already supports facial harmony, the goal is to increase visual impact without disrupting that balance. We focus on improving framing, coloring, puffiness, and strikingness around the eyes while keeping the face proportional.',
     idealEyeArea: 'Your ideal eye area would feel balanced, harmonious, and visually striking, with the eyes becoming more noticeable while still fitting naturally with your face.',
   },
   eyeSymmetry: {
     title: 'Strong Eye Symmetry',
     whyValuable: 'Your eyes are balanced from side to side, which improves facial harmony. Symmetry makes the eye area feel cleaner, more natural, and more attractive.',
-    howAmplify: 'The goal is to make the symmetry more noticeable. Improving contrast, framing, brightness, and skin clarity around the eyes would help both eyes appear cleaner and more evenly emphasized.',
+    howAmplify: 'The goal is to make the symmetry more noticeable. We focus on improving framing, coloring, puffiness, and strikingness around the eyes to help both eyes appear cleaner and more evenly emphasized.',
     idealEyeArea: 'Your ideal eye area would look clean, balanced, and polished, with symmetry becoming one of the defining strengths of your face.',
   },
+};
+
+// ── EYE STRENGTH HIGHLIGHT OVERLAYS (illustrative, drawn over the zoomed eye crop) ──
+const EYE_HIGHLIGHT_SVG = {
+  canthalTilt: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="58" x2="80" y2="46" stroke="#a3e635" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="3,3"/>
+      <circle cx="20" cy="58" r="3" fill="#a3e635"/>
+      <circle cx="80" cy="46" r="3.5" fill="#a3e635"><animate attributeName="opacity" values="1;.4;1" dur="1.6s" repeatCount="indefinite"/></circle>
+    </svg>`,
+  eyeShape: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="48" cy="52" rx="34" ry="16" fill="none" stroke="#a3e635" stroke-width="1.6"/>
+    </svg>`,
+  eyeExposure: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 52 Q48 30 82 52" fill="none" stroke="#a3e635" stroke-width="1.6" stroke-dasharray="3,3"/>
+      <path d="M14 52 Q48 70 82 52" fill="none" stroke="#a3e635" stroke-width="1.6" stroke-dasharray="3,3" opacity=".6"/>
+    </svg>`,
+  upperEyelidExposure: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="16" y1="34" x2="80" y2="34" stroke="#a3e635" stroke-width="1.6" stroke-dasharray="3,3"/>
+      <line x1="48" y1="28" x2="48" y2="34" stroke="#a3e635" stroke-width="1.4"/>
+      <circle cx="48" cy="28" r="3" fill="#a3e635"/>
+    </svg>`,
+  eyeDepth: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="48" cy="52" rx="38" ry="19" fill="none" stroke="#a3e635" stroke-width="1" opacity=".5"/>
+      <ellipse cx="48" cy="52" rx="24" ry="11" fill="none" stroke="#a3e635" stroke-width="1.6"/>
+    </svg>`,
+  eyeSpacing: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="84" y1="52" x2="98" y2="52" stroke="#a3e635" stroke-width="1.6" stroke-dasharray="3,3"/>
+      <circle cx="84" cy="52" r="3" fill="#a3e635"/>
+    </svg>`,
+  eyeSymmetry: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="14" y1="52" x2="82" y2="52" stroke="#a3e635" stroke-width="1" stroke-dasharray="3,3" opacity=".7"/>
+      <circle cx="14" cy="52" r="3" fill="#a3e635"/><circle cx="82" cy="52" r="3" fill="#a3e635"/>
+    </svg>`,
 };
 
 // ── EYE INSIGHT MAIN ──
@@ -2413,53 +2396,33 @@ function showEyeInsight() {
     async function run() {
       await wait(350);
 
-      // ── SECTION 1: BIGGEST STRENGTH ──
+      // ── SECTION 0/1: FOUNDATION CARD — biggest strength ──
       const s1 = document.createElement('div');
-      s1.className = 'bi-limiter';
-      s1.style.borderLeftColor = '#a3e635';
-      s1.style.borderColor = '#a3e63520';
-      s1.style.borderLeftWidth = '3px';
+      s1.className = 'bi-found-card';
       s1.innerHTML = `
-        <div class="bi-limiter-tag" style="color:#a3e635;">BIGGEST STRENGTH</div>
-        <div class="bi-limiter-name" style="color:#fff;font-size:28px;">${template.title}</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
-          <div style="font-size:32px;font-weight:900;color:${strengthRank.color};line-height:1;">${strengthScore > 0 ? strengthScore.toFixed(1) : '—'}</div>
-          <div style="font-size:13px;color:#4b5563;">/ 10</div>
-          <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${strengthRank.color};margin-left:4px;">${strengthRank.label}</div>
+        <div class="bi-found-tag">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
+          FOUNDATION
+        </div>
+        <div class="bi-found-sub">Your Greatest Strength</div>
+        <div class="bi-found-title">${template.title}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="font-size:22px;font-weight:900;color:${strengthRank.color};line-height:1;">${strengthScore > 0 ? strengthScore.toFixed(1) : '—'}</div>
+          <div style="font-size:12px;color:#4b5563;">/ 10</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${strengthRank.color};margin-left:2px;">${strengthRank.label}</div>
+        </div>
+        <div class="bi-found-text">${template.whyValuable}</div>
+        <div class="bi-found-tip">
+          <div class="bi-found-tip-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+          </div>
+          <div>
+            <div class="bi-found-tip-title">This is your foundation.</div>
+            <div class="bi-found-tip-text">We'll build every enhancement around your natural advantage.</div>
+          </div>
         </div>`;
       content.appendChild(s1);
       await reveal(s1, 40);
-      await wait(300);
-
-      // ── SECTION 2: WHY THIS IS VALUABLE ──
-      const s2 = document.createElement('div');
-      s2.className = 'bi-narrative';
-      s2.innerHTML = `
-        <div class="bi-narrative-label" style="color:#a3e635;">WHY THIS IS VALUABLE</div>
-        <div class="bi-narrative-text">${template.whyValuable}</div>`;
-      content.appendChild(s2);
-      await reveal(s2, 60);
-      await wait(300);
-
-      // ── SECTION 3: HOW WE WOULD AMPLIFY THIS ──
-      const s3 = document.createElement('div');
-      s3.className = 'bi-narrative';
-      s3.innerHTML = `
-        <div class="bi-narrative-label" style="color:#60a5fa;">HOW WE WOULD AMPLIFY THIS</div>
-        <div class="bi-narrative-text">${template.howAmplify}</div>`;
-      content.appendChild(s3);
-      await reveal(s3, 60);
-      await wait(300);
-
-      // ── SECTION 4: YOUR IDEAL EYE AREA ──
-      const s4 = document.createElement('div');
-      s4.className = 'bi-narrative';
-      s4.style.borderColor = '#a3e63520';
-      s4.innerHTML = `
-        <div class="bi-narrative-label" style="color:#a3e635;">YOUR IDEAL EYE AREA</div>
-        <div class="bi-narrative-text" style="color:#d1d5db;">${template.idealEyeArea}</div>`;
-      content.appendChild(s4);
-      await reveal(s4, 60);
       await wait(300);
 
       // ── SECTION 5: SCORE PROGRESSION ──
@@ -2491,9 +2454,173 @@ function showEyeInsight() {
       scrollDown();
     }
 
+    async function runAmplify() {
+      // fade out current content
+      content.classList.add('ei-fade-out');
+      ctaWrap.classList.remove('on');
+      await wait(350);
+      content.classList.remove('ei-fade-out');
+      content.innerHTML = '';
+      await wait(250);
+
+      // ── AMPLIFY CARD — how we build on the strength ──
+      const a1 = document.createElement('div');
+      a1.className = 'bi-found-card';
+      a1.innerHTML = `
+        <div class="bi-found-tag" style="color:#60a5fa;background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.25);">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          AMPLIFY
+        </div>
+        <div class="bi-found-sub">How We Enhance It</div>
+        <div class="bi-found-title" style="color:#60a5fa;">${template.title}</div>
+        <div class="bi-found-text">${template.howAmplify}</div>`;
+      content.appendChild(a1);
+      await reveal(a1, 40);
+      await wait(300);
+
+      // ── IDEAL EYE AREA CARD ──
+      const a2 = document.createElement('div');
+      a2.className = 'bi-found-card';
+      a2.innerHTML = `
+        <div class="bi-found-tag">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
+          YOUR GOAL
+        </div>
+        <div class="bi-found-sub">Your Ideal Eye Area</div>
+        <div class="bi-found-text">${template.idealEyeArea}</div>
+        <div class="bi-found-tip">
+          <div class="bi-found-tip-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+          </div>
+          <div>
+            <div class="bi-found-tip-title">Built on what already works.</div>
+            <div class="bi-found-tip-text">This look isn't a different face — it's your ${template.title.toLowerCase()}, fully realized.</div>
+          </div>
+        </div>`;
+      content.appendChild(a2);
+      await reveal(a2, 60);
+      await wait(300);
+
+      ctaBtn.textContent = 'NEXT →';
+      ctaWrap.classList.add('on');
+      scrollDown();
+    }
+
+    async function runDetails() {
+      // fade out current content
+      content.classList.add('ei-fade-out');
+      ctaWrap.classList.remove('on');
+      await wait(350);
+      content.classList.remove('ei-fade-out');
+      content.innerHTML = '';
+      await wait(250);
+
+      const sections = [
+        {
+          key: 'framing', tag: 'FOUNDATION', tagColor: '#60a5fa',
+          iconBg: 'rgba(96,165,250,.12)', iconColor: '#60a5fa',
+          icon: '<path d="M7 3H4v3M17 3h3v3M4 17v3h3M20 17v3h-3"/>',
+          title: 'Framing',
+          desc: 'Double eyelid tape improves eye symmetry by creating a clean, consistent eyelid crease on both sides.',
+          full: 'Double eyelid tape improves eye symmetry by creating a clean, consistent eyelid crease on both sides. Fully maxing out your eyebrows would also drastically improve the framing of your eyes — strong, well-shaped brows are one of the biggest levers for how the entire eye area reads.',
+          impact: 'STRONG', impactColor: '#60a5fa', dots: 4, foundation: true,
+        },
+        {
+          key: 'coloring', tag: 'ENHANCEMENT', tagColor: '#a3e635',
+          iconBg: 'rgba(163,230,53,.12)', iconColor: '#a3e635',
+          icon: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+          title: 'Coloring',
+          desc: 'Whitening eye drops brighten the sclera and make your eyes look healthier and more awake.',
+          full: 'Whitening eye drops are the main thing here — they brighten the sclera and make your eyes look healthier and more awake almost instantly. Colored contacts can also give your eyes the perfect extra glow. Briefly: consistent sleep is very important for maintaining healthy eye coloring.',
+          impact: 'GOOD', impactColor: '#a3e635', dots: 3,
+        },
+        {
+          key: 'puffiness', tag: 'ENHANCEMENT', tagColor: '#f59e0b',
+          iconBg: 'rgba(245,158,11,.12)', iconColor: '#f59e0b',
+          icon: '<path d="M2 12c2-5 6-7 10-7s8 2 10 7c-2 5-6 7-10 7s-8-2-10-7z"/><circle cx="12" cy="12" r="3"/>',
+          title: 'Puffiness',
+          desc: 'An under-eye caffeine serum combined with icing your face every morning is the most effective way to reduce puffiness.',
+          full: 'An under-eye caffeine serum, combined with icing your face every morning, is the most effective way to reduce puffiness. Briefly: keeping sodium intake under 2000mg per day also helps minimize water retention around the eyes.',
+          impact: 'AVERAGE', impactColor: '#f59e0b', dots: 2,
+        },
+        {
+          key: 'strikingness', tag: 'ENHANCEMENT', tagColor: '#a78bfa',
+          iconBg: 'rgba(167,139,250,.12)', iconColor: '#a78bfa',
+          icon: '<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/>',
+          title: 'Strikingness',
+          desc: 'An eyelash growth serum is one of the most impactful changes you can make — it builds real, lasting lash density.',
+          full: 'An eyelash growth serum is one of the most impactful changes you can make here — it builds real, lasting lash density instead of faking it. Watch out for frauds like waterline pens and mascara — they don\'t change anything underneath and wash out by the end of the day.',
+          impact: 'AVERAGE', impactColor: '#a78bfa', dots: 2,
+        },
+      ];
+
+      const dotsHtml = (n, color) => Array.from({length:5}, (_,i) =>
+        `<div class="bi-rm-dot" style="${i < n ? `background:${color};` : ''}"></div>`).join('');
+
+      const wrap = document.createElement('div');
+      wrap.className = 'bi-rm-wrap';
+      wrap.innerHTML = `
+        <div class="bi-rm-hint">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+          We've analyzed your eyes across key areas to build your roadmap.
+        </div>
+        ${sections.map(sec => `
+          <div class="bi-rm-card${sec.foundation ? ' foundation' : ''}" data-key="${sec.key}">
+            <div class="bi-rm-icon" style="background:${sec.iconBg};color:${sec.iconColor};">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${sec.icon}</svg>
+            </div>
+            <div>
+              <div class="bi-rm-tag" style="color:${sec.tagColor};">${sec.tag}</div>
+              <div class="bi-rm-title">${sec.title}</div>
+              <div class="bi-rm-desc">${sec.desc}</div>
+            </div>
+            <div class="bi-rm-right">
+              <div class="bi-rm-impact">
+                <div class="bi-rm-impact-badge" style="color:${sec.impactColor};background:${sec.iconBg};">${sec.impact}</div>
+                <div class="bi-rm-impact-label">Impact</div>
+                <div class="bi-rm-dots">${dotsHtml(sec.dots, sec.impactColor)}</div>
+              </div>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${sec.impactColor}" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </div>
+          </div>`).join('')}
+        <div class="bi-rm-tip">
+          <div class="bi-rm-tip-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+          </div>
+          <div>
+            <div class="bi-rm-tip-title">Your roadmap is personalized for you.</div>
+            <div class="bi-rm-tip-text">We'll guide you step by step to maximize your eye potential and build your best version.</div>
+            <button class="bi-rm-view-btn" id="ei-view-roadmap-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4l-6 2v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>
+              View Full Roadmap
+            </button>
+          </div>
+        </div>`;
+      content.appendChild(wrap);
+      await reveal(wrap, 40);
+      document.getElementById('ei-view-roadmap-btn').onclick = () => { window.location.href = '/roadmap'; };
+
+      ctaBtn.textContent = 'NEXT: FRAMING →';
+      ctaWrap.classList.add('on');
+      scrollDown();
+    }
+
     run();
 
-    document.getElementById('ei-cta-btn').onclick = () => {
+    let eiStep = 0;
+    const ctaBtn = document.getElementById('ei-cta-btn');
+    ctaBtn.textContent = 'NEXT →';
+    ctaBtn.onclick = () => {
+      if (eiStep === 0) {
+        eiStep = 1;
+        runAmplify();
+        return;
+      }
+      if (eiStep === 1) {
+        eiStep = 2;
+        runDetails();
+        return;
+      }
       page.style.transition = 'opacity .4s';
       page.style.opacity = '0';
       setTimeout(() => { page.style.display = 'none'; }, 420);
@@ -3030,37 +3157,37 @@ function closeBrowDetail() {
 const BROW_STRENGTH_TEMPLATES = {
   eyebrowFraming: {
     title: 'Strong Eye Framing',
-    whyMatters: 'Your eyebrows naturally frame your eyes well. Strong framing helps direct attention toward the eye area and creates a more structured appearance. This is one of the most important eyebrow traits because it influences how noticeable the entire eye region becomes.',
+    whyMatters: 'Your eyebrows naturally frame your eyes well. Darkening, shaping, and filling in sparse areas will maximize your framing.',
     howAmplify: 'We would increase the definition, contrast, and visual presence of the eyebrows so they frame the eyes even more effectively. Because the framing is already strong, every enhancement becomes more noticeable.',
     idealBrows: 'Your ideal eyebrows would create extremely strong eye framing, making the eyes one of the most attention-grabbing areas of the face.',
   },
   eyebrowShape: {
     title: 'Strong Brow Shape',
-    whyMatters: 'Your eyebrows naturally follow a shape that complements your facial structure. This creates a more intentional appearance and contributes significantly to facial harmony.',
+    whyMatters: 'Your eyebrows naturally follow a shape that complements your facial structure. Darkening, shaping, and filling in sparse areas will maximize your shape.',
     howAmplify: 'The goal is to increase the visual impact of the shape itself. More definition, stronger contrast, and cleaner edges would make the natural structure stand out even more.',
     idealBrows: 'Your ideal eyebrows would preserve the shape while making it sharper, cleaner, and more noticeable.',
   },
   eyebrowPosition: {
     title: 'Strong Brow Position',
-    whyMatters: 'Your eyebrows sit in a position that complements the eye area. This helps create stronger eye framing and contributes to overall facial aesthetics.',
+    whyMatters: 'Your eyebrows sit in a position that complements the eye area. Darkening, shaping, and filling in sparse areas will maximize your position.',
     howAmplify: 'We would focus on increasing contrast and definition around the eyebrows to make their positioning even more impactful.',
     idealBrows: 'Your ideal eyebrows would create a highly structured upper face that naturally draws attention toward the eyes.',
   },
   eyebrowThickness: {
     title: 'Natural Brow Thickness',
-    whyMatters: 'Your eyebrows already possess strong natural thickness. This creates a more masculine and visually noticeable appearance.',
+    whyMatters: 'Your eyebrows already possess strong natural thickness. Darkening, shaping, and filling in sparse areas will maximize your thickness.',
     howAmplify: 'The goal is not more thickness. The goal is making that thickness look intentional and well-framed. Increasing definition and contrast would make the thickness work harder for your appearance.',
     idealBrows: 'Your ideal eyebrows would maintain their natural thickness while appearing sharper and more structured.',
   },
   eyebrowDensity: {
     title: 'Natural Brow Density',
-    whyMatters: 'Your eyebrows have strong density throughout the brow. This creates visual presence and helps frame the eyes naturally.',
+    whyMatters: 'Your eyebrows have strong density throughout the brow. Darkening, shaping, and filling in sparse areas will maximize your density.',
     howAmplify: 'We would focus on enhancing the definition and visibility of that density so it contributes even more to facial structure.',
     idealBrows: 'Your ideal eyebrows would appear dense, clean, and highly noticeable without looking unnatural.',
   },
   eyebrowLength: {
     title: 'Strong Brow Length',
-    whyMatters: 'Your eyebrow length helps create complete eye framing from inner to outer eye. This improves facial balance and contributes to stronger upper-face harmony.',
+    whyMatters: 'Your eyebrow length helps create complete eye framing from inner to outer eye. Darkening, shaping, and filling in sparse areas will maximize your length.',
     howAmplify: 'The goal is to maximize the visual impact of that framing by increasing definition and contrast.',
     idealBrows: 'Your ideal eyebrows would create full, uninterrupted framing around the eyes while maintaining natural balance.',
   },
@@ -3081,15 +3208,11 @@ function showBrowInsight() {
 
     const fmt = n => (typeof n === 'number') ? n.toFixed(1) : (n || '—');
     const overall   = parseFloat(bd.eyebrowScore ?? bd.overallScore ?? 7.0);
-    // Hard-coded potential formula
+    // Hard-coded potential formula — cap potential at 8.5, gain capped at 3.0
     (function calcBrowPot() {
-      let g = 2.0;
-      if (parseFloat(bd.eyebrowDensity   ?? 10) < 7) g += 0.5;
-      if (parseFloat(bd.eyebrowThickness ?? 10) < 7) g += 0.5;
-      if (parseFloat(bd.eyebrowShape     ?? 10) < 7) g += 0.5;
-      if (parseFloat(bd.eyebrowLength    ?? 10) < 7) g += 0.3;
-      bd._gain = Math.round(Math.min(g, 4.0) * 10) / 10;
-      bd._pot  = Math.round(Math.min(10.0, overall + bd._gain) * 10) / 10;
+      const g = Math.max(0, Math.min(3.0, 8.5 - overall));
+      bd._gain = Math.round(g * 10) / 10;
+      bd._pot  = Math.round(Math.min(8.5, overall + bd._gain) * 10) / 10;
     })();
     const potential = bd._pot;
     const gain      = bd._gain;
@@ -3124,53 +3247,33 @@ function showBrowInsight() {
     async function run() {
       await wait(350);
 
-      // ── SECTION 1: BIGGEST STRENGTH ──
+      // ── SECTION 0/1: FOUNDATION CARD — biggest strength ──
       const s1 = document.createElement('div');
-      s1.className = 'bi-limiter';
-      s1.style.borderLeftColor = '#a3e635';
-      s1.style.borderColor = '#a3e63520';
-      s1.style.borderLeftWidth = '3px';
+      s1.className = 'bi-found-card';
       s1.innerHTML = `
-        <div class="bi-limiter-tag" style="color:#a3e635;">BIGGEST STRENGTH</div>
-        <div class="bi-limiter-name" style="color:#fff;font-size:28px;">${template.title}</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
-          <div style="font-size:32px;font-weight:900;color:${strengthRank.color};line-height:1;">${strengthScore > 0 ? strengthScore.toFixed(1) : '—'}</div>
-          <div style="font-size:13px;color:#4b5563;">/ 10</div>
-          <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${strengthRank.color};margin-left:4px;">${strengthRank.label}</div>
+        <div class="bi-found-tag">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
+          FOUNDATION
+        </div>
+        <div class="bi-found-sub">Your Greatest Strength</div>
+        <div class="bi-found-title">${template.title}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="font-size:22px;font-weight:900;color:${strengthRank.color};line-height:1;">${strengthScore > 0 ? strengthScore.toFixed(1) : '—'}</div>
+          <div style="font-size:12px;color:#4b5563;">/ 10</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${strengthRank.color};margin-left:2px;">${strengthRank.label}</div>
+        </div>
+        <div class="bi-found-text">${template.whyMatters}</div>
+        <div class="bi-found-tip">
+          <div class="bi-found-tip-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+          </div>
+          <div>
+            <div class="bi-found-tip-title">This is your foundation.</div>
+            <div class="bi-found-tip-text">We'll build every enhancement around your natural advantage.</div>
+          </div>
         </div>`;
       content.appendChild(s1);
       await reveal(s1, 40);
-      await wait(300);
-
-      // ── SECTION 2: WHY THIS MATTERS ──
-      const s2 = document.createElement('div');
-      s2.className = 'bi-narrative';
-      s2.innerHTML = `
-        <div class="bi-narrative-label" style="color:#a3e635;">WHY THIS MATTERS</div>
-        <div class="bi-narrative-text">${template.whyMatters}</div>`;
-      content.appendChild(s2);
-      await reveal(s2, 60);
-      await wait(300);
-
-      // ── SECTION 3: HOW WE WOULD AMPLIFY IT ──
-      const s3 = document.createElement('div');
-      s3.className = 'bi-narrative';
-      s3.innerHTML = `
-        <div class="bi-narrative-label" style="color:#60a5fa;">HOW WE WOULD AMPLIFY IT</div>
-        <div class="bi-narrative-text">${template.howAmplify}</div>`;
-      content.appendChild(s3);
-      await reveal(s3, 60);
-      await wait(300);
-
-      // ── SECTION 4: YOUR IDEAL EYEBROWS ──
-      const s4 = document.createElement('div');
-      s4.className = 'bi-narrative';
-      s4.style.borderColor = '#a3e63520';
-      s4.innerHTML = `
-        <div class="bi-narrative-label" style="color:#a3e635;">YOUR IDEAL EYEBROWS</div>
-        <div class="bi-narrative-text" style="color:#d1d5db;">${template.idealBrows}</div>`;
-      content.appendChild(s4);
-      await reveal(s4, 60);
       await wait(300);
 
       // ── SECTION 5: SCORE PROGRESSION ──
@@ -3202,9 +3305,168 @@ function showBrowInsight() {
       scrollDown();
     }
 
+    async function runAmplify() {
+      // fade out current content
+      content.classList.add('ei-fade-out');
+      ctaWrap.classList.remove('on');
+      await wait(350);
+      content.classList.remove('ei-fade-out');
+      content.innerHTML = '';
+      await wait(250);
+
+      // ── AMPLIFY CARD — how we build on the strength ──
+      const a1 = document.createElement('div');
+      a1.className = 'bi-found-card';
+      a1.innerHTML = `
+        <div class="bi-found-tag" style="color:#60a5fa;background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.25);">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          AMPLIFY
+        </div>
+        <div class="bi-found-sub">How We Enhance It</div>
+        <div class="bi-found-title" style="color:#60a5fa;">${template.title}</div>
+        <div class="bi-found-text">${template.howAmplify}</div>`;
+      content.appendChild(a1);
+      await reveal(a1, 40);
+      await wait(300);
+
+      // ── IDEAL EYEBROWS CARD ──
+      const a2 = document.createElement('div');
+      a2.className = 'bi-found-card';
+      a2.innerHTML = `
+        <div class="bi-found-tag">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
+          YOUR GOAL
+        </div>
+        <div class="bi-found-sub">Your Ideal Eyebrows</div>
+        <div class="bi-found-text">${template.idealBrows}</div>
+        <div class="bi-found-tip">
+          <div class="bi-found-tip-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+          </div>
+          <div>
+            <div class="bi-found-tip-title">Built on what already works.</div>
+            <div class="bi-found-tip-text">This look isn't a different face — it's your ${template.title.toLowerCase()}, fully realized.</div>
+          </div>
+        </div>`;
+      content.appendChild(a2);
+      await reveal(a2, 60);
+      await wait(300);
+
+      ctaBtn.textContent = 'NEXT →';
+      ctaWrap.classList.add('on');
+      scrollDown();
+    }
+
+    async function runDetails() {
+      // fade out current content
+      content.classList.add('ei-fade-out');
+      ctaWrap.classList.remove('on');
+      await wait(350);
+      content.classList.remove('ei-fade-out');
+      content.innerHTML = '';
+      await wait(250);
+
+      const sections = [
+        {
+          key: 'shape', tag: 'FOUNDATION', tagColor: '#60a5fa',
+          iconBg: 'rgba(96,165,250,.12)', iconColor: '#60a5fa',
+          icon: '<path d="M7 3H4v3M17 3h3v3M4 17v3h3M20 17v3h-3"/>',
+          title: 'Shape',
+          desc: 'Professional threading or waxing creates clean, defined edges that maximize masculine brow structure.',
+          full: 'Professional threading or waxing is the foundation here — it creates clean, defined edges that maximize masculine brow structure. A skilled brow specialist can map the ideal shape for your bone structure rather than guessing at home.',
+          impact: 'STRONG', impactColor: '#60a5fa', dots: 4, foundation: true,
+        },
+        {
+          key: 'density', tag: 'ENHANCEMENT', tagColor: '#a3e635',
+          iconBg: 'rgba(163,230,53,.12)', iconColor: '#a3e635',
+          icon: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+          title: 'Density',
+          desc: 'A brow growth serum is one of the most effective ways to fill in gaps and increase visual fullness.',
+          full: 'A brow growth serum is one of the most effective ways to fill in gaps and increase visual fullness over time. Microblading can also close stubborn gaps semi-permanently if serum alone isn\'t enough.',
+          impact: 'GOOD', impactColor: '#a3e635', dots: 3,
+        },
+        {
+          key: 'color', tag: 'ENHANCEMENT', tagColor: '#f59e0b',
+          iconBg: 'rgba(245,158,11,.12)', iconColor: '#f59e0b',
+          icon: '<path d="M2 12c2-5 6-7 10-7s8 2 10 7c-2 5-6 7-10 7s-8-2-10-7z"/><circle cx="12" cy="12" r="3"/>',
+          title: 'Color',
+          desc: 'Brow tinting increases contrast against your skin, making the brow read as more defined and intentional.',
+          full: 'Brow tinting increases contrast against your skin, making the brow read as more defined and intentional from a distance. Briefly: keeping brows brushed in one consistent direction also helps the color show evenly.',
+          impact: 'AVERAGE', impactColor: '#f59e0b', dots: 2,
+        },
+        {
+          key: 'grooming', tag: 'ENHANCEMENT', tagColor: '#a78bfa',
+          iconBg: 'rgba(167,139,250,.12)', iconColor: '#a78bfa',
+          icon: '<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/>',
+          title: 'Grooming',
+          desc: 'Regular trimming and stray-hair removal keeps the brow looking sharp, clean, and intentional.',
+          full: 'Regular trimming and stray-hair removal keeps the brow looking sharp, clean, and intentional. Watch out for over-plucking — it\'s one of the easiest ways to undo density gains from a growth serum.',
+          impact: 'AVERAGE', impactColor: '#a78bfa', dots: 2,
+        },
+      ];
+
+      const dotsHtml = (n, color) => Array.from({length:5}, (_,i) =>
+        `<div class="bi-rm-dot" style="${i < n ? `background:${color};` : ''}"></div>`).join('');
+
+      const wrap = document.createElement('div');
+      wrap.className = 'bi-rm-wrap';
+      wrap.innerHTML = `
+        <div class="bi-rm-hint">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+          We've analyzed your eyebrows across key areas to build your roadmap.
+        </div>
+        ${sections.map(sec => `
+          <div class="bi-rm-card${sec.foundation ? ' foundation' : ''}" data-key="${sec.key}">
+            <div class="bi-rm-icon" style="background:${sec.iconBg};color:${sec.iconColor};">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${sec.icon}</svg>
+            </div>
+            <div>
+              <div class="bi-rm-tag" style="color:${sec.tagColor};">${sec.tag}</div>
+              <div class="bi-rm-title">${sec.title}</div>
+              <div class="bi-rm-desc">${sec.desc}</div>
+            </div>
+            <div class="bi-rm-right">
+              <div class="bi-rm-impact">
+                <div class="bi-rm-impact-badge" style="color:${sec.impactColor};background:${sec.iconBg};">${sec.impact}</div>
+                <div class="bi-rm-impact-label">Impact</div>
+                <div class="bi-rm-dots">${dotsHtml(sec.dots, sec.impactColor)}</div>
+              </div>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${sec.impactColor}" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </div>
+          </div>`).join('')}
+        <div class="bi-rm-tip">
+          <div class="bi-rm-tip-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+          </div>
+          <div>
+            <div class="bi-rm-tip-title">Your roadmap is personalized for you.</div>
+            <div class="bi-rm-tip-text">We'll guide you step by step to maximize your eyebrow potential and build your best version.</div>
+          </div>
+        </div>`;
+      content.appendChild(wrap);
+      await reveal(wrap, 40);
+
+      ctaBtn.textContent = 'GENERATE MY PERSONALIZED EYEBROW PLAN →';
+      ctaWrap.classList.add('on');
+      scrollDown();
+    }
+
     run();
 
-    document.getElementById('bi-cta-btn').onclick = () => {
+    let biStep = 0;
+    const ctaBtn = document.getElementById('bi-cta-btn');
+    ctaBtn.textContent = 'NEXT →';
+    ctaBtn.onclick = () => {
+      if (biStep === 0) {
+        biStep = 1;
+        runAmplify();
+        return;
+      }
+      if (biStep === 1) {
+        biStep = 2;
+        runDetails();
+        return;
+      }
       page.style.transition = 'opacity .4s';
       page.style.opacity = '0';
       setTimeout(() => { page.style.display = 'none'; }, 420);
@@ -3723,35 +3985,28 @@ function init() {
     render();
     document.getElementById('mainContent').classList.add('eyes-revealed');
 
-    // Only play the face-analyzing/diagnostic scan animation the very first
-    // time the user opens "Improve Now" for a given area. After that, skip
-    // straight to the insight page.
-    const DIAG_SEEN_KEY = 'protocol_diag_seen_' + areaKey;
-    const seenDiagBefore = !!localStorage.getItem(DIAG_SEEN_KEY);
-    function markDiagSeen() { localStorage.setItem(DIAG_SEEN_KEY, '1'); }
+    // Play the face-analyzing/diagnostic scan animation AND show the
+    // analysis/insight page every time the user opens "Improve Now"
+    // for a given area.
 
     // Skin — score-based roadmap + diagnostic + insight overlay
     if (areaKey === 'skin') {
-      if (seenDiagBefore) { showSkinInsight(); }
-      else { runSkinDiagnostic().then(() => { markDiagSeen(); showSkinInsight(); }); }
+      runSkinDiagnostic().then(() => { showSkinInsight(); });
       return;
     }
     // Eyes
     if (areaKey === 'eyes') {
-      if (seenDiagBefore) { showEyeInsight(); }
-      else { runEyeDiagnostic().then(() => { markDiagSeen(); showEyeInsight(); }); }
+      runEyeDiagnostic().then(() => { showEyeInsight(); });
       return;
     }
     // Brows
     if (areaKey === 'brows') {
-      if (seenDiagBefore) { showBrowInsight(); }
-      else { runBrowDiagnostic().then(() => { markDiagSeen(); showBrowInsight(); }); }
+      runBrowDiagnostic().then(() => { showBrowInsight(); });
       return;
     }
     // Hair
     if (areaKey === 'hair') {
-      if (seenDiagBefore) { showHairInsight(); }
-      else { runHairDiagnostic().then(() => { markDiagSeen(); showHairInsight(); }); }
+      runHairDiagnostic().then(() => { showHairInsight(); });
       return;
     }
   }
@@ -4256,6 +4511,88 @@ function init() {
 .bi-limiter-name { font-size:22px;font-weight:900;color:#fff;margin-bottom:10px; }
 .bi-limiter-text { font-size:15px;color:#9ca3af;line-height:1.8; }
 
+/* Before / after photo compare — foundation card */
+.bi-found-card {
+  border:1px solid #1a1a1a;border-radius:16px;padding:18px;margin-bottom:1px;
+  opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s;
+}
+.bi-found-card.on { opacity:1;transform:none; }
+.bi-photo-pair { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;position:relative; }
+.bi-photo-box {
+  position:relative;aspect-ratio:1/1;border-radius:12px;overflow:hidden;
+  background:#0a0a0a;border:1px solid #1a1a1a;
+}
+.bi-photo-box img {
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  object-fit:cover;object-position:34% 42%;transform:scale(3.1);transform-origin:34% 42%;
+}
+.bi-photo-box svg { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1; }
+.bi-photo-tag {
+  position:absolute;top:0;left:0;right:0;text-align:center;font-size:9px;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;padding:8px 0;background:rgba(0,0,0,.6);color:#9ca3af;z-index:2;
+}
+.bi-photo-tag.after { background:var(--accent);color:#000; }
+.bi-photo-arrow {
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30px;height:30px;
+  border-radius:50%;background:#000;border:1px solid #262626;display:flex;align-items:center;
+  justify-content:center;z-index:3;color:var(--accent);
+}
+.bi-found-tag {
+  display:inline-flex;align-items:center;gap:6px;font-size:9px;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;color:var(--accent);background:rgba(163,230,53,.1);
+  border:1px solid rgba(163,230,53,.25);padding:5px 10px;border-radius:7px;margin-bottom:12px;
+}
+.bi-found-sub { font-size:13px;color:#9ca3af;margin-bottom:2px; }
+.bi-found-title { font-size:24px;font-weight:900;color:var(--accent);margin-bottom:10px;line-height:1.15; }
+.bi-found-text { font-size:14px;color:#9ca3af;line-height:1.75; }
+.bi-found-tip {
+  display:flex;gap:12px;align-items:flex-start;border:1px solid #1a1a1a;border-radius:14px;
+  padding:14px;margin-top:14px;
+}
+.bi-found-tip-icon {
+  width:34px;height:34px;border-radius:50%;border:1px solid rgba(163,230,53,.35);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);
+}
+.bi-found-tip-title { font-size:13px;font-weight:800;color:#fff;margin-bottom:2px; }
+.bi-found-tip-text { font-size:12px;color:#6b7280;line-height:1.6; }
+.ei-fade-out { opacity:0;transition:opacity .35s; }
+
+/* Roadmap overview list (Framing/Coloring/Puffiness/Strikingness) */
+.bi-rm-wrap { opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s; }
+.bi-rm-wrap.on { opacity:1;transform:none; }
+.bi-rm-hint { display:flex;align-items:center;gap:8px;font-size:12px;color:#6b7280;margin-bottom:16px; }
+.bi-rm-card {
+  display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:14px;
+  border:1px solid #1a1a1a;border-radius:14px;padding:16px;margin-bottom:12px;
+}
+.bi-rm-card.foundation { border-color:rgba(96,165,250,.45); }
+.bi-rm-icon {
+  width:48px;height:48px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+}
+.bi-rm-tag { font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px; }
+.bi-rm-title { font-size:17px;font-weight:800;color:#fff;margin-bottom:4px; }
+.bi-rm-desc { font-size:12px;color:#9ca3af;line-height:1.55; }
+.bi-rm-right { display:flex;align-items:center;gap:10px; }
+.bi-rm-impact { text-align:right; }
+.bi-rm-impact-badge { font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:6px;display:inline-block; }
+.bi-rm-impact-label { font-size:9px;color:#4b5563;margin-bottom:4px; }
+.bi-rm-dots { display:flex;gap:3px; }
+.bi-rm-dot { width:5px;height:5px;border-radius:50%;background:#262626; }
+.bi-rm-tip {
+  display:flex;align-items:flex-start;gap:12px;border:1px solid #1a1a1a;border-radius:14px;
+  padding:16px;margin:6px 0 16px;
+}
+.bi-rm-tip-icon {
+  width:34px;height:34px;border-radius:50%;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#60a5fa;
+}
+.bi-rm-tip-title { font-size:13px;font-weight:800;color:#fff;margin-bottom:3px; }
+.bi-rm-tip-text { font-size:12px;color:#6b7280;line-height:1.6;margin-bottom:10px; }
+.bi-rm-view-btn {
+  display:inline-flex;align-items:center;gap:7px;background:transparent;border:1px solid rgba(96,165,250,.4);
+  color:#60a5fa;font-size:12px;font-weight:700;padding:9px 14px;border-radius:9px;cursor:pointer;
+}
+
 /* Ideal score bar */
 .bi-score-bar-wrap {
   display:flex;flex-direction:column;gap:8px;margin-top:16px;
@@ -4558,7 +4895,7 @@ function init() {
     </div>
     <div id="ei-content" class="ei-content" style="gap:0;padding-top:0;"></div>
     <div class="ei-cta-wrap" id="ei-cta-wrap">
-      <button class="ei-cta-btn" id="ei-cta-btn">BUILD MY EYE ROADMAP →</button>
+      <button class="ei-cta-btn" id="ei-cta-btn">NEXT →</button>
     </div>
   </div>
 </div>

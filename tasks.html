@@ -265,21 +265,13 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span>Dashboard</span>
   </div>
-  <div class="nav-item" onclick="window.location.href='/glowai'">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-    <span>Analysis</span>
-  </div>
-  <div class="nav-item" onclick="window.location.href='/improve?area=skin'">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M3 3h18v18H3z" rx="2"/><path d="M8 12h8M12 8v8"/></svg>
-    <span>Roadmap</span>
-  </div>
   <div class="nav-item active">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     <span>Tasks</span>
   </div>
-  <div class="nav-item" onclick="">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    <span>Progress</span>
+  <div class="nav-item">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profile</span>
   </div>
 </div>
 
@@ -343,16 +335,8 @@ const TASK_META = {
   'brow-a-lamination':{icon:'✨',name:'Brow Lamination',      desc:'Complete your brow lamination session',       type:'weekly', day:6, tod:'day'},
   'brow-a-mapping':  {icon:'📐',name:'Brow Mapping',          desc:'Follow your brow mapping routine',            type:'weekly', day:0, tod:'day'},
 
-  // HAIR — daily
-  'hair-d1':         {icon:'🧴',name:'Hair Care Routine',     desc:'Follow your daily hair care routine',         type:'daily',  tod:'morning'},
-  'hair-d2':         {icon:'💧',name:'Condition Hair',        desc:'Keep hair hydrated and healthy',              type:'daily',  tod:'night'},
-  'hair-d3':         {icon:'🪮',name:'Style Hair',            desc:'Groom and style your hair properly',          type:'daily',  tod:'morning'},
   // HAIR — weekly
   'hair-w-cut':      {icon:'💈',name:'Haircut / Style',       desc:'Maintain your haircut and style',             type:'weekly', day:6, tod:'day'},
-  'hair-w1':         {icon:'🚿',name:'Deep Condition',        desc:'Weekly deep conditioning treatment',          type:'weekly', day:0, tod:'night'},
-  'hair-w2':         {icon:'✂️',name:'Hair Maintenance',      desc:'Weekly hair upkeep routine',                  type:'weekly', day:3, tod:'night'},
-  'hair-m1':         {icon:'💈',name:'Hair Treatment',        desc:'Complete your hair treatment session',        type:'weekly', day:0, tod:'night'},
-  'hair-m2':         {icon:'✂️',name:'Trim Split Ends',       desc:'Trim split ends for healthier hair',          type:'weekly', day:6, tod:'day'},
 };
 
 // ── STATE ──────────────────────────────────────────────────────────────────

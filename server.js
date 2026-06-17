@@ -186,8 +186,8 @@ function buildFaceReshapeTaskBody(fileId) {
       jaw: 50
     },
     global: {
-      skin_smooth_strength: 50,
-      skin_smooth_color_intensity: 50
+      skin_smooth_strength: 0,
+      skin_smooth_color_intensity: 0
     }
   };
 }
@@ -222,10 +222,10 @@ function buildMakeupVtoTaskBody(fileId) {
         category: 'foundation',
         palettes: [
           {
-            color: '#D6AA6A',
+            color: '#C99B5A',
             colorIntensity: 100,
             coverageIntensity: 50,
-            glowIntensity: 100
+            glowIntensity: 50
           }
         ]
       },
@@ -233,10 +233,10 @@ function buildMakeupVtoTaskBody(fileId) {
         category: 'concealer',
         palettes: [
           {
-            colorUnderEyeIntensity: 100,
-            coverageLevel: 100,
+            colorUnderEyeIntensity: 0,
+            coverageLevel: 0,
             color: '#D6AA6A',
-            colorIntensity: 100
+            colorIntensity: 0
           }
         ]
       }
