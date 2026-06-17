@@ -2353,12 +2353,38 @@ function rerunSim() {
 
       if (!found) { previewImg.style.objectPosition = '50% 35%'; return; }
 
+      // Sanity check: if the "subject" we found covers almost the entire
+      // frame, the corner-sampled background color was unreliable (common
+      // on mobile selfies shot close-up against a textured/cluttered
+      // background, where the corners aren't clean background at all) —
+      // bail out to the safe default rather than center on noise.
+      const subjW = maxX - minX, subjH = maxY - minY;
+      if (subjW > srcW * 0.97 && subjH > srcH * 0.97) {
+        previewImg.style.objectPosition = '50% 35%';
+        return;
+      }
+
       // Restrict to the top portion of the subject's bounding box (hair +
       // face, not shoulders/torso), then find the tight bounding box of
       // foreground pixels WITHIN that band and center on its midpoint.
       // Using the band's own bbox (rather than a skin-weighted centroid)
       // keeps hair and chin symmetric around the chosen center point.
-      const headBandBottom = minY + (maxY - minY) * 0.55;
+      //
+      // The right fraction depends on how the photo was framed, which
+      // differs a lot between desktop uploads (often zoomed-out headshots
+      // showing head + shoulders + torso) and mobile selfies (front camera
+      // held close, so the subject bbox is already mostly just the head).
+      // Using a fixed 0.55 on a tight mobile selfie cuts straight into the
+      // face. Scale the band by how tall the subject bbox is relative to
+      // its width: a close-up, roughly square/head-only bbox gets the
+      // (near-)full box treated as "head"; a tall, full-body-ish bbox gets
+      // the original tighter band.
+      const subjRatio = subjH / Math.max(1, subjW);
+      let bandFrac;
+      if (subjRatio < 1.3) bandFrac = 1.0;
+      else if (subjRatio < 1.8) bandFrac = 0.78;
+      else bandFrac = 0.55;
+      const headBandBottom = minY + subjH * bandFrac;
       let hMinX = srcW, hMaxX = 0, hMinY = srcH, hMaxY = 0, hFound = false;
 
       for (let y = minY; y <= headBandBottom; y += step) {
