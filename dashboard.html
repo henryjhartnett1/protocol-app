@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>POTENTIAL — Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0f0f0f;--bg1:#161616;--bg2:#1c1c1c;--bg3:#222;
+  --border:#2a2a2a;--border2:#333;
+  --accent:#a3e635;--accent-dim:rgba(163,230,53,0.15);--accent-glow:rgba(163,230,53,0.3);
+  --gold:#f59e0b;--gold-dim:rgba(245,158,11,0.15);
+  --purple:#4f46e5;--purple-dim:rgba(79,70,229,0.15);
+  --text:#f0f0f0;--muted:#6b7280;--muted2:#9ca3af;
+  --red:#ef4444;--blue:#3b82f6;--teal:#14b8a6;
+}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100%;overflow:hidden;}
+
+/* ── HEADER ── */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:56px;background:var(--bg);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 20px;
+}
+.header-logo{display:flex;align-items:center;gap:8px;}
+.header-logo-icon{width:26px;height:26px;background:var(--accent);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;}
+.header-logo-text{font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#fff;}
+.header-right{display:flex;align-items:center;gap:14px;}
+.streak-badge{display:flex;align-items:center;gap:6px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--gold);}
+.notif-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border2);background:var(--bg1);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--bg2);border:2px solid var(--border2);overflow:hidden;cursor:pointer;}
+
+/* ── LAYOUT ── */
+.layout{position:fixed;top:56px;left:0;right:0;bottom:56px;display:grid;grid-template-columns:1fr 280px;overflow:hidden;}
+.main{overflow-y:auto;padding:16px;}
+.sidebar{overflow-y:auto;border-left:1px solid var(--border);padding:16px;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:56px;background:var(--bg);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:100;}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 16px;flex:1;}
+.nav-item svg{opacity:0.4;}
+.nav-item span{font-size:10px;font-weight:600;letter-spacing:0.5px;color:var(--muted);text-transform:capitalize;}
+.nav-item.active svg{opacity:1;}
+.nav-item.active span{color:var(--accent);}
+.nav-item.active svg path,.nav-item.active svg rect,.nav-item.active svg circle,.nav-item.active svg polyline,.nav-item.active svg line{stroke:var(--accent);}
+
+/* ── CARDS ── */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.section-title{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--text);margin-bottom:12px;}
+.label-sm{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+
+/* ── TOP ROW ── */
+.top-row{display:grid;grid-template-columns:200px 1fr 1fr;gap:12px;margin-bottom:12px;}
+
+/* Profile card */
+.profile-card{background:var(--bg1);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.profile-photo{width:100%;aspect-ratio:1;background:var(--bg2);position:relative;overflow:hidden;}
+.profile-photo img{width:100%;height:100%;object-fit:cover;}
+.retake-btn{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:10px;font-weight:600;padding:5px 10px;border-radius:20px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;}
+.profile-info{padding:12px;}
+.current-level-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.level-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.level-hex{width:34px;height:34px;background:rgba(163,230,53,0.15);border:1px solid rgba(163,230,53,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.level-num{font-size:32px;font-weight:900;color:var(--accent);line-height:1;}
+.xp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.xp-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.xp-val{font-size:10px;font-weight:700;color:var(--accent);}
+.xp-track{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.xp-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .8s cubic-bezier(.4,0,0,1);}
+.xp-next{display:flex;justify-content:space-between;}
+.xp-next span{font-size:10px;color:var(--muted);}
+.xp-next strong{font-size:10px;color:var(--muted2);}
+
+/* Potential Score Card */
+.potential-score-card{background:linear-gradient(135deg,#1e1b4b 0%,#312e81 100%);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:16px;}
+.ps-label{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(165,180,252,0.8);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.ps-cta{margin-top:14px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:12px;font-weight:600;color:#e0e7ff;}
+
+/* ── OPPORTUNITIES ── */
+.opps-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.opps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.opp-card{background:var(--bg1);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color 0.2s;}
+.opp-card:hover{border-color:rgba(163,230,53,0.3);}
+.opp-img-wrap{position:relative;}
+.opp-rank{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#000;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;z-index:2;}
+.opp-icon-badge{position:absolute;bottom:8px;left:8px;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;z-index:2;}
+.opp-body{padding:10px;}
+.opp-cat{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.opp-gain-label{font-size:9px;color:var(--muted);margin-bottom:2px;}
+.opp-gain-val{font-size:16px;font-weight:900;color:var(--accent);margin-bottom:6px;}
+.opp-bar-track{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.opp-bar-fill{height:100%;background:var(--accent);border-radius:2px;}
+.opp-btn{width:100%;padding:7px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;font-size:10px;font-weight:700;color:var(--text);cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;}
+.opp-btn:hover{background:var(--accent);color:#000;border-color:var(--accent);}
+.view-all-btn{width:100%;margin-top:10px;padding:12px;background:var(--bg1);border:1px solid var(--border);border-radius:8px;font-size:11px;font-weight:700;color:var(--muted2);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all 0.15s;}
+.view-all-btn:hover{border-color:rgba(163,230,53,0.3);color:var(--text);}
+
+/* ── FACE AREAS ── */
+.face-areas-card{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.face-areas-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.face-areas-hint{font-size:10px;color:var(--muted);}
+.face-areas-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.face-area-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color 0.15s;}
+.face-area-row:hover{border-color:rgba(163,230,53,0.3);}
+.fa-icon{font-size:16px;flex-shrink:0;}
+.fa-label{font-size:11px;font-weight:700;color:var(--text);flex:1;}
+.fa-score-track{flex:1;display:flex;align-items:center;gap:8px;}
+.fa-bar{flex:1;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.fa-bar-fill{height:100%;background:var(--accent);border-radius:2px;}
+.fa-bar-fill.mid{background:var(--gold);}
+.fa-bar-fill.low{background:var(--red);}
+.fa-score{font-size:11px;font-weight:800;color:var(--muted2);white-space:nowrap;}
+
+/* ── SIDEBAR ── */
+.sidebar-section{margin-bottom:20px;}
+.sidebar-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.sidebar-period{font-size:10px;color:var(--muted);}
+.task-list{display:flex;flex-direction:column;gap:2px;}
+.task-item{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:background 0.15s;}
+.task-item:hover{background:var(--bg2);}
+.task-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
+.task-check.done{background:var(--accent);border-color:var(--accent);}
+.task-check svg{display:none;}
+.task-check.done svg{display:block;}
+.task-icon-wrap{width:28px;height:28px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.task-info{flex:1;}
+.task-name{font-size:12px;font-weight:700;color:var(--text);}
+.task-sub{font-size:10px;color:var(--muted);}
+.sidebar-view-btn{width:100%;margin-top:8px;padding:9px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:10px;font-weight:700;color:var(--muted2);cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;}
+.sidebar-view-btn:hover{border-color:rgba(163,230,53,0.3);color:var(--text);}
+
+/* ── ONBOARDING TASKS ── */
+.ob-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.ob-progress-label{font-size:10px;color:var(--muted);}
+.ob-progress-bar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:14px;}
+.ob-progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .6s ease;}
+.ob-task{
+  display:flex;align-items:center;gap:12px;
+  padding:12px;background:var(--bg1);border:1px solid var(--border);border-radius:10px;
+  cursor:pointer;margin-bottom:8px;transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.ob-task:hover{border-color:rgba(163,230,53,0.35);background:var(--bg2);}
+.ob-task.completing{animation:obComplete .5s ease forwards;}
+.ob-icon-wrap{width:36px;height:36px;border-radius:10px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:all .3s;}
+.ob-task:hover .ob-icon-wrap{border-color:rgba(163,230,53,0.3);}
+.ob-body{flex:1;}
+.ob-name{font-size:12px;font-weight:800;color:#fff;margin-bottom:2px;}
+.ob-sub{font-size:10px;color:var(--muted);}
+.ob-xp{font-size:10px;font-weight:800;color:var(--accent);background:rgba(163,230,53,0.1);border:1px solid rgba(163,230,53,0.25);border-radius:20px;padding:3px 8px;white-space:nowrap;}
+.ob-arrow{font-size:14px;color:var(--muted);flex-shrink:0;}
+@keyframes obComplete{
+  0%{opacity:1;transform:translateX(0);}
+  30%{transform:translateX(4px);}
+  100%{opacity:0;transform:translateX(20px);max-height:0;padding:0;margin:0;}
+}
+
+/* ── XP FLOATER ── */
+.xp-floater{
+  position:fixed;z-index:9999;
+  font-size:16px;font-weight:900;color:var(--accent);
+  pointer-events:none;white-space:nowrap;
+  text-shadow:0 0 12px rgba(163,230,53,0.8);
+  transition:transform .7s cubic-bezier(.2,0,.4,1), opacity .7s ease, left .7s cubic-bezier(.2,0,.4,1), top .7s cubic-bezier(.2,0,.4,1);
+}
+.xp-floater.fly{opacity:0;transform:scale(0.6);}
+
+/* ── LEVEL UP OVERLAY ── */
+#levelUpOverlay{
+  position:fixed;inset:0;z-index:800;
+  background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;
+}
+.lu-label{font-size:11px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:20px;opacity:0;animation:luFadeIn .4s .3s forwards;}
+.lu-level-row{display:flex;align-items:center;gap:24px;margin-bottom:28px;opacity:0;animation:luFadeIn .5s .5s forwards;}
+.lu-lvl-box{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.lu-lvl-num{font-size:64px;font-weight:900;line-height:1;}
+.lu-lvl-num.old{color:#374151;}
+.lu-lvl-num.new{color:var(--accent);text-shadow:0 0 30px rgba(163,230,53,0.5);}
+.lu-arrow{font-size:32px;color:#374151;margin-top:8px;}
+.lu-lvl-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.lu-xp-bar{width:280px;height:8px;background:#1a1a1a;border-radius:4px;overflow:hidden;margin-bottom:28px;opacity:0;animation:luFadeIn .4s .8s forwards;}
+.lu-xp-fill{height:100%;background:var(--accent);border-radius:4px;width:0%;animation:luXpFill 1s 1s cubic-bezier(.4,0,0,1) forwards;box-shadow:0 0 8px var(--accent);}
+@keyframes luXpFill{to{width:100%;}}
+.lu-ready-text{font-size:24px;font-weight:900;color:#fff;letter-spacing:-0.5px;margin-bottom:8px;opacity:0;animation:luFadeIn .5s 2s forwards;}
+.lu-ready-sub{font-size:13px;color:var(--muted);margin-bottom:36px;opacity:0;animation:luFadeIn .5s 2.2s forwards;}
+.lu-cta{padding:16px 40px;background:var(--accent);color:#000;border:none;border-radius:10px;font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer;opacity:0;animation:luFadeIn .5s 2.5s forwards;transition:all .15s;}
+.lu-cta:hover{background:#b8ff00;}
+@keyframes luFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* Confetti particles */
+.confetti-particle{
+  position:fixed;pointer-events:none;z-index:799;
+  width:6px;height:6px;border-radius:1px;
+  animation:confettiFall linear forwards;
+}
+@keyframes confettiFall{
+  0%{opacity:1;transform:translateY(0) rotate(0deg);}
+  100%{opacity:0;transform:translateY(100vh) rotate(720deg);}
+}
+
+/* Placeholder image colors */
+.ph-skin{background:linear-gradient(135deg,#3d2b1f,#5c3a24);}
+.ph-eye{background:linear-gradient(135deg,#1a2744,#2a3f6b);}
+.ph-brow{background:linear-gradient(135deg,#2b2418,#4a3c28);}
+.ph-hair{background:linear-gradient(135deg,#1f1a12,#3d3020);}
+.ph-face{background:linear-gradient(135deg,#1e2022,#2d3033);}
+
+/* ── MOBILE ── */
+@media (max-width: 760px){
+  header{padding:0 14px;}
+  .header-right{gap:8px;}
+  .streak-badge{padding:4px 9px;font-size:11px;}
+  .layout{display:block;position:fixed;top:56px;left:0;right:0;bottom:56px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .main{overflow-y:visible;padding:14px;}
+  .sidebar{overflow-y:visible;border-left:none;border-top:1px solid var(--border);padding:14px;}
+  .top-row{grid-template-columns:1fr;}
+  .opps-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .face-areas-grid{grid-template-columns:1fr;}
+}
+@media (max-width: 380px){
+  .streak-badge span{display:none;}
+  .opps-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-logo">
+    <div class="header-logo-icon">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4V10L7 13L1 10V4L7 1Z" fill="#000"/></svg>
+    </div>
+    <span class="header-logo-text">Potential</span>
+  </div>
+  <div class="header-right">
+    <div class="streak-badge" id="streakBadge">🔥 <span id="streakText">0 Day Streak</span></div>
+    <div class="notif-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="notif-dot"></div>
+    </div>
+    <div class="avatar">
+      <div style="width:100%;height:100%;background:linear-gradient(135deg,#374151,#4b5563);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#9ca3af;">H</div>
+    </div>
+  </div>
+</header>
+
+<!-- ── LAYOUT ── -->
+<div class="layout">
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOP ROW -->
+    <div class="top-row">
+
+      <!-- Profile Card -->
+      <div class="profile-card">
+        <div class="profile-photo ph-face" style="aspect-ratio:1;" id="profilePhotoWrap">
+          <div id="profilePhotoInner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#1a1f25 0%,#0d1117 100%);">
+            <svg width="90" height="110" viewBox="0 0 90 110" fill="none" opacity="0.25">
+              <ellipse cx="45" cy="44" rx="28" ry="34" fill="#9ca3af"/>
+              <path d="M12 90 Q15 72 25 65 Q35 58 45 58 Q55 58 65 65 Q75 72 78 90 Q60 102 30 102 Z" fill="#9ca3af"/>
+            </svg>
+          </div>
+          <button class="retake-btn" onclick="window.location.href='/'"
+            style="z-index:3;position:absolute;bottom:8px;left:50%;transform:translateX(-50%)">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M20.39 18.39A5 5 0 0 1 18 19H6a5 5 0 0 1-4.77-3.53L1 14H4a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3h3l-.23 1.11zM20 7h-3.09l-1.41-2H8.5L7.09 7H4a2 2 0 0 0-2 2v8"/><circle cx="12" cy="13" r="3"/></svg>
+            Retake Photo
+          </button>
+        </div>
+        <div class="profile-info">
+          <div class="current-level-label">Current Level</div>
+          <div class="level-row">
+            <div class="level-hex">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" fill="#a3e635"/></svg>
+            </div>
+            <div class="level-num" id="levelNum">1</div>
+          </div>
+          <div class="xp-row">
+            <span class="xp-label">Face XP</span>
+            <span class="xp-val" id="xpVal">0 / 100 XP</span>
+          </div>
+          <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%;"></div></div>
+          <div class="xp-next">
+            <span>Next Level <strong id="nextLevelNum">2</strong></span>
+            <strong id="xpToGo">100 XP to go</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats cards -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="card" style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;min-height:80px;">
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Today's Analysis</div>
+          <div id="dashOverallScore" style="font-size:28px;font-weight:900;color:var(--accent);">—</div>
+          <div style="font-size:10px;color:var(--muted);">Overall Face Score</div>
+        </div>
+        <div class="card" style="display:flex;gap:16px;align-items:center;">
+          <div style="text-align:center;flex:1;">
+            <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Ranking</div>
+            <div id="dashRanking" style="font-size:18px;font-weight:900;color:var(--text);">—</div>
+          </div>
+          <div style="width:1px;height:36px;background:var(--border);"></div>
+          <div style="text-align:center;flex:1;">
+            <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Momentum</div>
+            <div style="font-size:18px;font-weight:900;color:var(--gold);">↑ High</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Potential Score Card -->
+      <div class="potential-score-card">
+        <div class="ps-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(165,180,252,0.8)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Potential Score
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:0;margin-bottom:12px;">
+          <div><div style="font-size:10px;color:rgba(165,180,252,0.6);margin-bottom:2px;">Current</div><div id="dashPSCurrent" style="font-size:38px;font-weight:900;color:#e0e7ff;line-height:1;">—</div><div id="dashPSCurrentRank" style="font-size:10px;font-weight:800;letter-spacing:1px;margin-top:3px;"></div></div>
+          <div style="font-size:28px;color:rgba(165,180,252,0.3);margin:10px 14px 0;">→</div>
+          <div><div style="font-size:10px;color:rgba(165,180,252,0.6);margin-bottom:2px;">Potential</div><div id="dashPSPotential" style="font-size:38px;font-weight:900;color:#a5b4fc;line-height:1;">—</div><div id="dashPSPotentialRank" style="font-size:10px;font-weight:800;letter-spacing:1px;margin-top:3px;"></div></div>
+        </div>
+        <div style="font-size:10px;color:rgba(165,180,252,0.7);margin-bottom:4px;">You can improve by</div>
+        <div id="dashPSGain" style="font-size:24px;font-weight:900;color:var(--accent);letter-spacing:-1px;">—</div>
+        <div style="font-size:10px;color:rgba(165,180,252,0.6);margin-top:2px;">points in 3 months</div>
+        <div class="ps-cta">See Full Roadmap <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      </div>
+    </div>
+
+    <!-- TOP OPPORTUNITIES -->
+    <div class="card" style="margin-bottom:12px;">
+      <div class="opps-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="section-title" style="margin:0;">Top Opportunities</span>
+          <span style="font-size:10px;color:var(--muted);">(Biggest Gains)</span>
+        </div>
+        <span style="font-size:10px;color:var(--muted);">Based on 3 Month Potential</span>
+      </div>
+      <div class="opps-grid" id="oppsGrid">
+        <!-- populated by renderScanData() -->
+      </div>
+      <button class="view-all-btn">View Full Roadmap &amp; All Areas <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+    </div>
+
+    <!-- FACE AREAS -->
+    <div class="face-areas-card">
+      <div class="face-areas-header">
+        <span class="section-title" style="margin:0;">Your Face Areas</span>
+        <span class="face-areas-hint">Click any area to see details &amp; tips</span>
+      </div>
+      <div class="face-areas-grid" id="faceAreasGrid">
+        <!-- populated by renderScanData() -->
+      </div>
+    </div>
+
+    <div style="height:16px;"></div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div id="sidebarContent"></div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item active">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Dashboard</span>
+  </div>
+  <div class="nav-item">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+    <span>Roadmap</span>
+  </div>
+  <div class="nav-item">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span>Progress</span>
+  </div>
+  <div class="nav-item" onclick="window.location.href='/tasks'">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span>Tasks</span>
+  </div>
+  <div class="nav-item">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profile</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SKIN SETUP MODAL — first visit only
+     Appears 2s after dashboard loads,
+     centered over the live dashboard.
+     ══════════════════════════════════════════ -->
+
+<!-- Backdrop -->
+<div id="obBackdrop" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);opacity:0;transition:opacity .35s;"></div>
+
+<!-- Modal card -->
+<div id="obModal" style="
+  display:none;position:fixed;z-index:801;
+  top:50%;left:50%;transform:translate(-50%,-48%) scale(0.97);
+  width:min(500px,calc(100vw - 32px));
+  background:#111;border:1px solid #2a2a2a;border-radius:18px;overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,0.7);
+  opacity:0;transition:opacity .35s,transform .35s;
+">
+  <!-- Modal header -->
+  <div style="padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);"></div>
+      <span style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--accent);">SKIN SETUP</span>
+    </div>
+    <!-- progress dots -->
+    <div style="display:flex;gap:5px;" id="ob-dots-row">
+      <div class="ob-prog-dot active"></div>
+      <div class="ob-prog-dot"></div>
+    </div>
+  </div>
+
+  <!-- Step 1: Sleep time (free-text) -->
+  <div id="ob-wiz-1" class="ob-wiz-step ob-wiz-active" style="padding:24px 24px 20px;">
+    <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">What time do you usually fall asleep?</div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:16px;">This helps us time your skincare routine.</div>
+    <input id="ob-sleep-input" type="text" placeholder="e.g. 11:30 PM"
+      style="width:100%;padding:13px 16px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:10px;font-size:14px;font-weight:600;color:#fff;outline:none;transition:border-color .15s;"
+      onfocus="this.style.borderColor='rgba(163,230,53,0.5)'"
+      onblur="this.style.borderColor='#2a2a2a'"
+      onkeydown="if(event.key==='Enter')obWizNext()"/>
+  </div>
+
+  <!-- Step 2: 30 minutes -->
+  <div id="ob-wiz-2" class="ob-wiz-step" style="padding:24px 24px 20px;">
+    <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">Are you willing to spend 30 minutes per day for significantly better results?</div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:16px;">We'll keep it efficient either way.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <label class="wiz-radio-option"><input type="radio" name="ob-thirtymin" value="Yes"><span>Yes</span></label>
+      <label class="wiz-radio-option"><input type="radio" name="ob-thirtymin" value="No"><span>No</span></label>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="padding:14px 24px 20px;border-top:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-size:10px;color:#6b7280;" id="ob-step-label">Step 1 of 2</span>
+    <button id="ob-wiz-next" onclick="obWizNext()"
+      style="background:var(--accent);color:#000;border:none;padding:11px 24px;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s;">
+      Continue
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+</div>
+
+<style>
+/* Wizard step visibility */
+.ob-wiz-step{display:none;}
+.ob-wiz-step.ob-wiz-active{display:block;}
+.ob-prog-dot{width:6px;height:6px;border-radius:50%;background:#2a2a2a;transition:background .2s;}
+.ob-prog-dot.active{background:var(--accent);}
+
+/* Option styles */
+.wiz-goal-option{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0d0d0d;border:1px solid #242424;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#9ca3af;transition:all .15s;}
+.wiz-goal-option:has(input:checked){background:rgba(163,230,53,0.07);border-color:rgba(163,230,53,0.4);color:#fff;}
+.wiz-goal-option input{accent-color:var(--accent);width:14px;height:14px;}
+.wiz-radio-option{display:flex;align-items:center;gap:10px;padding:11px 14px;background:#0d0d0d;border:1px solid #242424;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#9ca3af;transition:all .15s;}
+.wiz-radio-option:has(input:checked){background:rgba(163,230,53,0.07);border-color:rgba(163,230,53,0.4);color:#fff;}
+.wiz-radio-option input{accent-color:var(--accent);width:14px;height:14px;}
+
+/* Shake on empty submit */
+@keyframes obShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+</style>
+
+<!-- LEVEL UP OVERLAY -->
+<div id="levelUpOverlay">
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;">
+    <div class="lu-label">LEVEL UP</div>
+    <div class="lu-level-row">
+      <div class="lu-lvl-box">
+        <div class="lu-lvl-num old">1</div>
+        <div class="lu-lvl-label">Previous</div>
+      </div>
+      <div class="lu-arrow">→</div>
+      <div class="lu-lvl-box">
+        <div class="lu-lvl-num new">2</div>
+        <div class="lu-lvl-label">New Level</div>
+      </div>
+    </div>
+    <div class="lu-xp-bar"><div class="lu-xp-fill"></div></div>
+    <div class="lu-ready-text">YOUR ROADMAP IS READY</div>
+    <div class="lu-ready-sub">All four improvement areas complete. Time to build.</div>
+    <button class="lu-cta" onclick="finishLevelUp()">Start Building →</button>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+const DEFAULT_STATE = {
+  level: 1, xp: 0, xpForLevel: 100,
+  streak: 0, completedAreas: [], onboardingDone: false,
+};
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('protocol_state');
+    return s ? { ...DEFAULT_STATE, ...JSON.parse(s) } : { ...DEFAULT_STATE };
+  } catch(e) { return { ...DEFAULT_STATE }; }
+}
+function saveState() { localStorage.setItem('protocol_state', JSON.stringify(state)); }
+let state = loadState();
+
+const ONBOARDING_TASKS = [
+  { id:'hair',  icon:'💈', name:'Improve Hair',       sub:'Build your hair roadmap',       area:'hair',  xp:25 },
+  { id:'eyes',  icon:'👁', name:'Improve Eyes',        sub:'Build your eye roadmap',         area:'eyes',  xp:25 },
+  { id:'brows', icon:'〜', name:'Improve Eyebrows',    sub:'Build your brow roadmap',        area:'brows', xp:25 },
+  { id:'skin',  icon:'🌿', name:'Improve Skin',        sub:'Build your skin roadmap',        area:'skin',  xp:25 },
+];
+
+const REAL_TASKS = {
+  daily: [
+    { icon:'💧', name:'Drink 3L Water',     sub:'Stay hydrated all day' },
+    { icon:'☀️', name:'Apply Sunscreen',     sub:'AM · SPF 50+' },
+    { icon:'✨', name:'Apply Lash Serum',    sub:'PM · 30 seconds' },
+    { icon:'😴', name:'Sleep 8 Hours',       sub:'No phone before bed' },
+  ],
+  weekly: [
+    { icon:'✨', name:'Exfoliation',          sub:'1–2x per week' },
+    { icon:'💊', name:'Purchase GHK-Cu',      sub:'Copper peptide serum' },
+  ],
+  monthly: [
+    { icon:'📊', name:'Re-analysis',          sub:'See your new score' },
+  ],
+};
+
+// ── NAVIGATION ──
+function goImprove(area) {
+  localStorage.setItem('protocol_current_area', area);
+  window.location.href = '/improve?area=' + area;
+}
+
+// ── RENDER ──
+function renderProfile() {
+  document.getElementById('levelNum').textContent    = state.level;
+  document.getElementById('nextLevelNum').textContent = state.level + 1;
+  const pct = Math.round((state.xp / state.xpForLevel) * 100);
+  document.getElementById('xpFill').style.width      = pct + '%';
+  document.getElementById('xpVal').textContent        = state.xp + ' / ' + state.xpForLevel + ' XP';
+  document.getElementById('xpToGo').textContent       = (state.xpForLevel - state.xp) + ' XP to go';
+  document.getElementById('streakText').textContent   = state.streak + ' Day Streak';
+}
+
+function renderSidebar() {
+  const container = document.getElementById('sidebarContent');
+  if (!state.onboardingDone) {
+    const remaining = ONBOARDING_TASKS.filter(t => !state.completedAreas.includes(t.id));
+    const done      = state.completedAreas.length;
+    const total     = ONBOARDING_TASKS.length;
+    const pct       = Math.round((done / total) * 100);
+    container.innerHTML = `
+      <div class="ob-header-row">
+        <span class="section-title" style="margin:0;">Setup Missions</span>
+        <span class="ob-progress-label">${done} / ${total}</span>
+      </div>
+      <div class="ob-progress-bar"><div class="ob-progress-fill" style="width:${pct}%;"></div></div>
+      <div id="obTaskList">
+        ${remaining.map(t => `
+          <div class="ob-task" id="ob-${t.id}" onclick="goImprove('${t.id}')">
+            <div class="ob-icon-wrap">${t.icon}</div>
+            <div class="ob-body">
+              <div class="ob-name">${t.name}</div>
+              <div class="ob-sub">${t.sub}</div>
+            </div>
+            <div class="ob-xp">+${t.xp} XP</div>
+            <div class="ob-arrow">›</div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:16px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;text-align:center;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">After completing all missions</div>
+        <div style="font-size:12px;font-weight:800;color:#fff;">Level 2 unlocks your full roadmap</div>
+      </div>`;
+  } else {
+    function taskHTML(tasks) {
+      return tasks.map(t => `
+        <div class="task-item">
+          <div class="task-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-icon-wrap">${t.icon}</div>
+          <div class="task-info"><div class="task-name">${t.name}</div><div class="task-sub">${t.sub}</div></div>
+        </div>`).join('');
+    }
+    container.innerHTML = `
+      <div class="sidebar-section">
+        <div class="sidebar-section-header"><span class="section-title" style="margin:0;">Daily Tasks</span><span class="sidebar-period">Today</span></div>
+        <div class="task-list">${taskHTML(REAL_TASKS.daily)}</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-header"><span class="section-title" style="margin:0;">Weekly Tasks</span><span class="sidebar-period">This Week</span></div>
+        <div class="task-list">${taskHTML(REAL_TASKS.weekly)}</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-header"><span class="section-title" style="margin:0;">Monthly Tasks</span><span class="sidebar-period">This Month</span></div>
+        <div class="task-list">${taskHTML(REAL_TASKS.monthly)}</div>
+      </div>`;
+    document.querySelectorAll('.task-check').forEach(el => {
+      el.addEventListener('click', e => {
+        e.stopPropagation();
+        el.classList.toggle('done');
+      });
+    });
+  }
+}
+
+// ── XP ANIMATION ──
+function animateXPGain(fromEl, xpAmount, callback) {
+  const fromRect    = fromEl.getBoundingClientRect();
+  const xpFillEl    = document.getElementById('xpFill');
+  const xpFillRect  = xpFillEl.getBoundingClientRect();
+
+  const floater = document.createElement('div');
+  floater.className = 'xp-floater';
+  floater.textContent = '+' + xpAmount + ' XP';
+  floater.style.left  = (fromRect.left + fromRect.width / 2 - 30) + 'px';
+  floater.style.top   = (fromRect.top - 10) + 'px';
+  document.body.appendChild(floater);
+
+  // Spawn a few small particles
+  for (let i = 0; i < 5; i++) {
+    const p = document.createElement('div');
+    p.className = 'xp-floater';
+    p.style.left    = (fromRect.left + fromRect.width / 2 + (Math.random() - 0.5) * 40) + 'px';
+    p.style.top     = (fromRect.top + (Math.random() - 0.5) * 20) + 'px';
+    p.style.width   = '5px'; p.style.height = '5px';
+    p.style.background = '#a3e635';
+    p.style.borderRadius = '50%';
+    p.textContent   = '';
+    p.style.transitionDelay = (i * 60) + 'ms';
+    document.body.appendChild(p);
+    setTimeout(() => {
+      p.style.left    = (xpFillRect.right - 6) + 'px';
+      p.style.top     = (xpFillRect.top - 2) + 'px';
+      p.classList.add('fly');
+    }, 30 + i * 60);
+    setTimeout(() => p.remove(), 900);
+  }
+
+  setTimeout(() => {
+    floater.style.left = (xpFillRect.right - 30) + 'px';
+    floater.style.top  = (xpFillRect.top - 24) + 'px';
+    floater.classList.add('fly');
+  }, 40);
+
+  setTimeout(() => {
+    floater.remove();
+    // Update XP
+    state.xp = Math.min(state.xp + xpAmount, state.xpForLevel);
+    saveState();
+    renderProfile();
+    if (callback) callback();
+  }, 720);
+}
+
+// ── COMPLETE ONBOARDING TASK ──
+function completeArea(areaId) {
+  if (state.completedAreas.includes(areaId)) return;
+
+  const taskEl = document.getElementById('ob-' + areaId);
+  if (!taskEl) return;
+
+  // Flash checkmark on the icon
+  const iconWrap = taskEl.querySelector('.ob-icon-wrap');
+  iconWrap.style.background = 'rgba(163,230,53,0.2)';
+  iconWrap.style.borderColor = 'var(--accent)';
+  iconWrap.textContent = '✓';
+
+  // Animate XP gain
+  setTimeout(() => {
+    animateXPGain(taskEl, 25, () => {
+      // Slide out the task
+      taskEl.style.transition = 'all .4s ease';
+      taskEl.style.opacity    = '0';
+      taskEl.style.maxHeight  = taskEl.offsetHeight + 'px';
+      setTimeout(() => {
+        taskEl.style.maxHeight = '0';
+        taskEl.style.padding   = '0';
+        taskEl.style.margin    = '0';
+        taskEl.style.border    = 'none';
+      }, 50);
+      setTimeout(() => {
+        taskEl.remove();
+        // Update state
+        state.completedAreas.push(areaId);
+        saveState();
+        updateObProgress();
+        // Check if all done
+        if (state.completedAreas.length === ONBOARDING_TASKS.length) {
+          setTimeout(triggerLevelUp, 600);
+        }
+      }, 450);
+    });
+  }, 300);
+}
+
+function updateObProgress() {
+  const done  = state.completedAreas.length;
+  const total = ONBOARDING_TASKS.length;
+  const pct   = Math.round((done / total) * 100);
+  const fillEl = document.querySelector('.ob-progress-fill');
+  const labelEl = document.querySelector('.ob-progress-label');
+  if (fillEl)  fillEl.style.width = pct + '%';
+  if (labelEl) labelEl.textContent = done + ' / ' + total;
+}
+
+// ── LEVEL UP ──
+function triggerLevelUp() {
+  const overlay = document.getElementById('levelUpOverlay');
+  overlay.style.display = 'flex';
+  spawnConfetti();
+}
+
+function spawnConfetti() {
+  const colors = ['#a3e635','#f59e0b','#3b82f6','#ec4899','#8b5cf6','#10b981'];
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-particle';
+    p.style.left       = Math.random() * 100 + 'vw';
+    p.style.top        = '-10px';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.width      = (4 + Math.random() * 6) + 'px';
+    p.style.height     = (4 + Math.random() * 10) + 'px';
+    p.style.animationDuration  = (2 + Math.random() * 3) + 's';
+    p.style.animationDelay     = (Math.random() * 1.5) + 's';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 6000);
+  }
+}
+
+function finishLevelUp() {
+  state.level         = 2;
+  state.xp            = 0;
+  state.xpForLevel    = 200;
+  state.onboardingDone = true;
+  saveState();
+  document.getElementById('levelUpOverlay').style.display = 'none';
+  renderProfile();
+  renderSidebar();
+}
+
+// ══════════════════════════════════════════
+// SKIN SETUP MODAL — first visit only
+// ══════════════════════════════════════════
+const OB_KEY = 'protocol_onboarding_done';
+let obWizCurrentStep = 1;
+const obWizAnswers   = {};
+
+function shakeEl(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.animation = 'none';
+  el.getBoundingClientRect();
+  el.style.animation = 'obShake .35s ease';
+  setTimeout(() => { el.style.animation = ''; }, 380);
+}
+
+function obWizNext() {
+  if (obWizCurrentStep === 1) {
+    const val = document.getElementById('ob-sleep-input').value.trim();
+    if (!val) { shakeEl('ob-wiz-1'); return; }
+    obWizAnswers.sleepTime = val;
+  } else if (obWizCurrentStep === 2) {
+    const sel = document.querySelector('input[name="ob-thirtymin"]:checked');
+    if (!sel) { shakeEl('ob-wiz-2'); return; }
+    obWizAnswers.thirtyMinutes = sel.value;
+    obSaveAndDismiss();
+    return;
+  }
+
+  document.getElementById('ob-wiz-' + obWizCurrentStep).classList.remove('ob-wiz-active');
+  obWizCurrentStep++;
+  document.getElementById('ob-wiz-' + obWizCurrentStep).classList.add('ob-wiz-active');
+  obSyncWizUI();
+}
+
+function obSyncWizUI() {
+  document.getElementById('ob-step-label').textContent = `Step ${obWizCurrentStep} of 2`;
+  const btn = document.getElementById('ob-wiz-next');
+  if (obWizCurrentStep === 2) {
+    btn.innerHTML = 'Finish <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+  } else {
+    btn.innerHTML = 'Continue <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+  }
+  document.querySelectorAll('#ob-dots-row .ob-prog-dot').forEach((d, i) => d.classList.toggle('active', i < obWizCurrentStep));
+}
+
+function obSaveAndDismiss() {
+  // Persist answers
+  localStorage.setItem(OB_KEY, '1');
+  localStorage.setItem('protocol_skin_answers', JSON.stringify(obWizAnswers));
+
+  // Dismiss modal
+  const modal    = document.getElementById('obModal');
+  const backdrop = document.getElementById('obBackdrop');
+  modal.style.opacity   = '0';
+  modal.style.transform = 'translate(-50%,-48%) scale(0.96)';
+  backdrop.style.opacity = '0';
+  setTimeout(() => {
+    modal.style.display    = 'none';
+    backdrop.style.display = 'none';
+  }, 360);
+}
+
+function openObModal() {
+  const modal    = document.getElementById('obModal');
+  const backdrop = document.getElementById('obBackdrop');
+  backdrop.style.display = 'block';
+  modal.style.display    = 'block';
+  // Trigger animation next frame
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      backdrop.style.opacity = '1';
+      modal.style.opacity    = '1';
+      modal.style.transform  = 'translate(-50%,-50%) scale(1)';
+    });
+  });
+}
+
+// ── SCAN DATA ──
+function renderScanData() {
+  // ── Use pre-computed scores saved by glowai.html's results page ──────────
+  // This guarantees dashboard always shows the exact same values as the scan results.
+  let cs = {};
+  try { cs = JSON.parse(localStorage.getItem('protocol_computed_scores') || '{}'); } catch(e){}
+
+  // Pull all values from computed snapshot; null if missing
+  const pv = k => (cs[k] != null ? parseFloat(cs[k]) : null);
+  let eyeC  = pv('eyeC'),  eyeP  = pv('eyeP'),  eyeG  = pv('eyeG');
+  let browC = pv('browC'), browP = pv('browP'), browG = pv('browG');
+  let skinC = pv('skinC'), skinP = pv('skinP'), skinG = pv('skinG');
+  let hairC = pv('hairC'), hairP = pv('hairP'), hairG = pv('hairG');
+  let overallC = pv('overallC'), overallP = pv('overallP'), overallG = pv('overallG');
+
+  // ── Fallback: recompute from raw localStorage if no computed snapshot ────
+  if (overallC == null) {
+    let ed={}, bd={}, sd={}, hd={};
+    try { ed = JSON.parse(localStorage.getItem('protocol_eye_results')  || '{}'); } catch(e){}
+    try { bd = JSON.parse(localStorage.getItem('protocol_brow_results') || '{}'); } catch(e){}
+    try { sd = JSON.parse(localStorage.getItem('protocol_skin_results') || '{}'); } catch(e){}
+    try { hd = JSON.parse(localStorage.getItem('protocol_hair_results') || '{}'); } catch(e){}
+    function avg(arr) {
+      const n = arr.map(parseFloat).filter(v => !isNaN(v));
+      return n.length ? Math.round(n.reduce((a,b)=>a+b,0)/n.length*10)/10 : null;
+    }
+    eyeC  = ed.eyeScore  != null ? parseFloat(ed.eyeScore)
+            : avg([ed.canthalTilt,ed.eyeShape,ed.eyeExposure,ed.upperEyelidExposure,ed.eyeDepth,ed.eyeSpacing,ed.eyeSymmetry]);
+    browC = bd.eyebrowScore != null ? parseFloat(bd.eyebrowScore)
+            : avg([bd.eyebrowFraming,bd.eyebrowShape,bd.eyebrowPosition,bd.eyebrowThickness,bd.eyebrowDensity,bd.eyebrowLength]);
+    function skinScore(s) {
+      const a=parseFloat(s.acneScore),t=parseFloat(s.textureScore),e=parseFloat(s.toneEvenness),n=parseFloat(s.tanScore),g=parseFloat(s.skinGlow);
+      if ([a,t,e,n,g].some(isNaN)) return null;
+      return Math.round((a*0.40+t*0.15+e*0.15+n*0.15+g*0.15)*10)/10;
+    }
+    skinC = sd.skinScore != null ? parseFloat(sd.skinScore) : skinScore(sd);
+    const _hairHasData = Object.keys(hd).length > 0;
+    hairC = hd.haircutFitScore != null ? parseFloat(hd.haircutFitScore)
+            : (hd.hairScore != null ? parseFloat(hd.hairScore) : (_hairHasData ? 5 : null));
+    eyeG  = ed.eyePotentialGain   != null ? parseFloat(ed.eyePotentialGain)   : null;
+    browG = bd.eyebrowPotentialGain!=null  ? parseFloat(bd.eyebrowPotentialGain):null;
+    skinG = sd.skinPotentialGain  != null ? parseFloat(sd.skinPotentialGain)  : null;
+    if (hairC != null) {
+      let g=0.5;
+      if(hairC<=2) g+=3.0; else if(hairC<=4) g+=2.0; else if(hairC<=6) g+=1.2; else if(hairC<=8) g+=0.6;
+      hairG = Math.round(g*10)/10;
+    }
+    function overallW(eye,brow,skin,hair) {
+      const parts=[[eye,0.35],[skin,0.30],[hair,0.20],[brow,0.15]].filter(([v])=>v!=null);
+      if (!parts.length) return null;
+      const tw=parts.reduce((s,[,w])=>s+w,0);
+      return Math.round(parts.reduce((s,[v,w])=>s+v*w,0)/tw*10)/10;
+    }
+    function overallGainW(eg,sg,hg,bg) {
+      const parts=[[eg,0.35],[sg,0.30],[hg,0.20],[bg,0.15]].filter(([v])=>v!=null);
+      if (!parts.length) return null;
+      const tw=parts.reduce((s,[,w])=>s+w,0);
+      return Math.round(parts.reduce((s,[v,w])=>s+v*w,0)/tw*10)/10;
+    }
+    overallC = overallW(eyeC, browC, skinC, hairC);
+    overallG = overallGainW(eyeG, skinG, hairG, browG);
+    overallP = (overallC!=null && overallG!=null) ? Math.round(Math.min(10,overallC+overallG)*10)/10 : null;
+    eyeP  = (eyeC !=null && eyeG !=null) ? Math.round(Math.min(10,eyeC +eyeG )*10)/10 : null;
+    browP = (browC!=null && browG!=null) ? Math.round(Math.min(10,browC+browG)*10)/10 : null;
+    skinP = (skinC!=null && skinG!=null) ? Math.round(Math.min(10,skinC+skinG)*10)/10 : null;
+    hairP = (hairC!=null && hairG!=null) ? Math.round(Math.min(10,hairC+hairG)*10)/10 : null;
+  }
+
+  // Rank label (matches glowai.html RANK_TIERS)
+  function rankLabel(score) {
+    if (score == null) return null;
+    if (score >= 9.0) return { label: 'Elite',        color: '#c084fc' };
+    if (score >= 8.0) return { label: 'Excellent',    color: '#a3e635' };
+    if (score >= 7.0) return { label: 'Good',         color: '#60a5fa' };
+    if (score >= 6.0) return { label: 'Average',      color: '#facc15' };
+    if (score >= 5.0) return { label: 'Below Average',color: '#f97316' };
+    return                      { label: 'Weak',         color: '#f87171' };
+  }
+
+  // Ranking
+  function ranking(score) {
+    if (score == null) return '—';
+    if (score >= 9.0) return 'Top <span style="color:var(--accent)">1%</span>';
+    if (score >= 8.5) return 'Top <span style="color:var(--accent)">5%</span>';
+    if (score >= 8.0) return 'Top <span style="color:var(--accent)">10%</span>';
+    if (score >= 7.5) return 'Top <span style="color:var(--accent)">15%</span>';
+    if (score >= 7.0) return 'Top <span style="color:var(--accent)">25%</span>';
+    if (score >= 6.5) return 'Top <span style="color:var(--accent)">35%</span>';
+    if (score >= 6.0) return 'Top <span style="color:var(--accent)">40%</span>';
+    if (score >= 5.5) return 'Top <span style="color:var(--accent)">50%</span>';
+    if (score >= 5.0) return '<span style="color:var(--muted)">Average</span>';
+    if (score >= 4.0) return 'Bottom <span style="color:#f97316">30%</span>';
+    return 'Bottom <span style="color:#f87171">10%</span>';
+  }
+
+  // Bar color by score
+  function barClass(score) {
+    if (score == null) return '';
+    if (score >= 7.0) return '';       // default accent
+    if (score >= 5.0) return 'mid';
+    return 'low';
+  }
+
+  // ── Load scan photo ──
+  const scanPhoto = localStorage.getItem('protocol_photo');
+
+  const fmt = v => v != null ? parseFloat(v).toFixed(1) : '—';
+
+  // ── Fill static elements ──
+  const el = id => document.getElementById(id);
+  // ── Profile photo ──
+  if (scanPhoto) {
+    const inner = el('profilePhotoInner');
+    if (inner) {
+      inner.innerHTML = `<img src="${scanPhoto}" style="width:100%;height:100%;object-fit:cover;object-position:top center;display:block;">`;
+    }
+  }
+
+  if (el('dashOverallScore')) el('dashOverallScore').textContent = overallC != null ? fmt(overallC) : '—';
+  if (el('dashRanking'))      el('dashRanking').innerHTML = ranking(overallC);
+  if (el('dashPSCurrent'))    el('dashPSCurrent').textContent  = overallC != null ? fmt(overallC) : '—';
+  if (el('dashPSPotential'))  el('dashPSPotential').textContent= overallP != null ? fmt(overallP) : '—';
+  if (el('dashPSGain'))       el('dashPSGain').textContent     = overallG != null ? '+' + fmt(overallG) : '—';
+  const rlC = rankLabel(overallC); const rlP = rankLabel(overallP);
+  if (el('dashPSCurrentRank'))   { const r=rlC; if(r) { el('dashPSCurrentRank').textContent=r.label; el('dashPSCurrentRank').style.color=r.color; } }
+  if (el('dashPSPotentialRank')) { const r=rlP; if(r) { el('dashPSPotentialRank').textContent=r.label; el('dashPSPotentialRank').style.color=r.color; } }
+
+  // ── Top Opportunities — sorted by gain desc ──
+  const OPP_META = {
+    skin:  { label:'Skin',      area:'skin',  icon:'🌿', iconBg:'rgba(16,185,129,0.85)',  img:'/skin.png', svgHtml:`<svg width="60" height="60" viewBox="0 0 80 80" fill="none" opacity="0.3"><ellipse cx="40" cy="38" rx="26" ry="30" fill="#c4956a"/><circle cx="28" cy="30" r="3" fill="#a0522d"/><circle cx="44" cy="22" r="2.5" fill="#a0522d"/><circle cx="50" cy="35" r="3.5" fill="#a0522d"/><circle cx="33" cy="44" r="2" fill="#a0522d"/></svg>` },
+    eyes:  { label:'Eyes',      area:'eyes',  icon:'👁', iconBg:'rgba(99,102,241,0.85)',   img:'/eye.png', svgHtml:`<svg width="70" height="40" viewBox="0 0 90 50" fill="none" opacity="0.35"><ellipse cx="45" cy="25" rx="35" ry="18" stroke="#60a5fa" stroke-width="2" fill="none"/><ellipse cx="45" cy="25" rx="12" ry="12" fill="#1e40af"/><circle cx="45" cy="25" r="6" fill="#1e3a8a"/></svg>` },
+    brows: { label:'Eyebrows',  area:'brows', icon:'〜', iconBg:'rgba(163,230,53,0.85)',   img:'/eyebrow.png', svgHtml:`<svg width="80" height="30" viewBox="0 0 100 36" fill="none" opacity="0.4"><path d="M10 28 Q20 8 40 10 Q55 11 60 16" stroke="#8b7355" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M70 16 Q75 8 90 10 Q98 11 100 18" stroke="#8b7355" stroke-width="7" stroke-linecap="round" fill="none"/></svg>` },
+    hair:  { label:'Hair',      area:'hair',  icon:'💈', iconBg:'rgba(20,184,166,0.85)',   img:'/hair.png', svgHtml:`<svg width="70" height="70" viewBox="0 0 80 80" fill="none" opacity="0.35"><path d="M10 45 Q8 20 40 15 Q72 20 70 45 Q72 25 60 20 Q50 16 40 16 Q30 16 20 20 Q8 25 10 45Z" fill="#5c4a2a"/><path d="M15 50 Q12 35 25 25 Q35 18 50 20 Q65 22 68 35 Q70 50 65 58" stroke="#4a3820" stroke-width="4" fill="none" stroke-linecap="round"/></svg>` },
+  };
+  const oppData = [
+    { key:'skin',  gain: skinG },
+    { key:'eyes',  gain: eyeG  },
+    { key:'brows', gain: browG },
+    { key:'hair',  gain: hairG },
+  ].filter(o => o.gain != null).sort((a,b) => b.gain - a.gain);
+
+  const oppsGrid = el('oppsGrid');
+  if (oppsGrid) {
+    if (!oppData.length) {
+      oppsGrid.innerHTML = '<div style="padding:24px;color:var(--muted);font-size:12px;text-align:center;">Run a face scan to see your opportunities.</div>';
+    } else {
+      const maxGain = Math.max(...oppData.map(o=>o.gain), 0.1);
+      oppsGrid.innerHTML = oppData.map((o,i) => {
+        const m = OPP_META[o.key];
+        const barW = Math.round((o.gain / maxGain) * 100);
+        const imgSrc = m.img || (scanPhoto || null);
+        const imgContent = imgSrc
+          ? `<img src="${imgSrc}" style="width:100%;height:120px;object-fit:cover;object-position:center;display:block;">`
+          : `<div style="height:120px;display:flex;align-items:center;justify-content:center;">${m.svgHtml}</div>`;
+        return `<div class="opp-card" onclick="goImprove('${m.area}')">
+          <div class="opp-img-wrap">
+            ${imgContent}
+            <div class="opp-rank">${i+1}</div>
+          </div>
+          <div class="opp-body">
+            <div class="opp-cat">${m.label}</div>
+            <div class="opp-gain-label">Potential Gain</div>
+            <div class="opp-gain-val">+${fmt(o.gain)}</div>
+            <div class="opp-bar-track"><div class="opp-bar-fill" style="width:${barW}%;"></div></div>
+            <button class="opp-btn">Improve Now</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ── Face Areas ──
+  const AREA_ROWS = [
+    { key:'skin',  label:'Skin Quality', icon:'🌿', area:'skin',  score: skinC },
+    { key:'brows', label:'Eyebrows',     icon:'〜', area:'brows', score: browC },
+    { key:'eyes',  label:'Eyes',         icon:'👁', area:'eyes',  score: eyeC  },
+    { key:'hair',  label:'Hair',         icon:'💈', area:'hair',  score: hairC },
+  ];
+  const faceGrid = el('faceAreasGrid');
+  if (faceGrid) {
+    faceGrid.innerHTML = AREA_ROWS.map(r => {
+      const hasData = r.score != null;
+      const scoreStr  = hasData ? fmt(r.score) + ' / 10' : '— / 10';
+      const barWidth  = hasData ? Math.round(r.score/10*100) + '%' : '0%';
+      const cls       = hasData ? barClass(r.score) : 'low';
+      return `<div class="face-area-row" onclick="goImprove('${r.area}')">
+        <span class="fa-icon">${r.icon}</span>
+        <span class="fa-label">${r.label}</span>
+        <div class="fa-score-track">
+          <div class="fa-bar"><div class="fa-bar-fill ${cls}" style="width:${barWidth};"></div></div>
+          <span class="fa-score">${scoreStr}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── ON LOAD ──
+window.addEventListener('load', () => {
+  renderProfile();
+  renderSidebar();
+  renderScanData();
+
+  const onboardDone = localStorage.getItem(OB_KEY);
+  if (!onboardDone) {
+    // First visit — show modal after 2 seconds
+    setTimeout(openObModal, 2000);
+  }
+
+  // Check for area completions from improve pages
+  const justCompleted = localStorage.getItem('protocol_area_just_completed');
+  if (justCompleted) {
+    localStorage.removeItem('protocol_area_just_completed');
+    setTimeout(() => completeArea(justCompleted), 400);
+  }
+});
+
+// Dev reset — triple-click the logo to wipe state and reload
+document.querySelector('.header-logo').addEventListener('click', (() => {
+  let c = 0, t;
+  return () => {
+    c++; clearTimeout(t);
+    t = setTimeout(() => { c = 0; }, 600);
+    if (c >= 3) {
+      localStorage.removeItem('protocol_state');
+      localStorage.removeItem('protocol_area_just_completed');
+      location.reload();
+    }
+  };
+})());
+
+// Nav switching
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

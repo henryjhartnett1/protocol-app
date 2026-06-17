@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tasks</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0a0a0a;--bg1:#111;--bg2:#161616;--bg3:#1e1e1e;
+  --border:#1f1f1f;--border2:#2a2a2a;
+  --text:#f0f0f0;--muted:#6b7280;--muted2:#9ca3af;
+  --accent:#a3e635;--purple:#8b5cf6;--purple-dim:rgba(139,92,246,0.15);
+  --gold:#f59e0b;--green:#22c55e;--red:#ef4444;
+}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100%;overflow:hidden;}
+::-webkit-scrollbar{display:none;}
+
+/* ── HEADER ── */
+.header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:56px;background:var(--bg);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;
+}
+.header-btn{background:none;border:none;color:var(--text);cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;}
+.header-title{font-size:18px;font-weight:800;letter-spacing:-0.3px;}
+.xp-badge{display:flex;align-items:center;gap:5px;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:800;color:var(--purple-light,#a78bfa);}
+.xp-badge span{color:#c4b5fd;}
+
+/* ── WEEK SELECTOR ── */
+.week-wrap{position:fixed;top:56px;left:0;right:0;z-index:99;background:var(--bg);padding:12px 16px 10px;border-bottom:1px solid var(--border);}
+.week-row{display:flex;justify-content:space-between;gap:4px;}
+.day-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 2px;border-radius:12px;transition:background .15s;}
+.day-btn:hover{background:var(--bg2);}
+.day-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.day-num{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--muted2);transition:all .2s;}
+.day-btn.today .day-label{color:var(--purple-light,#a78bfa);}
+.day-btn.today .day-num{background:var(--purple);color:#fff;box-shadow:0 0 16px rgba(139,92,246,0.4);}
+.day-btn.selected:not(.today) .day-num{background:var(--bg3);color:var(--text);border:1px solid var(--border2);}
+.day-btn.has-tasks .day-num::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent);}
+.day-num-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
+
+/* ── SCROLL AREA ── */
+.scroll-area{position:fixed;top:120px;left:0;right:0;bottom:60px;overflow-y:auto;padding:16px 16px 24px;}
+
+/* ── PROGRESS SECTION ── */
+.progress-card{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:14px 16px;margin-bottom:16px;}
+.progress-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.progress-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.progress-count{font-size:13px;font-weight:800;color:var(--text);}
+.progress-count span{color:var(--accent);}
+.progress-bar-track{height:6px;background:var(--bg3);border-radius:4px;overflow:hidden;}
+.progress-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--purple),var(--accent));transition:width .4s ease;}
+
+/* ── TODAY HEADER ── */
+.today-header{margin-bottom:12px;}
+.today-label{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--purple-light,#a78bfa);margin-bottom:4px;}
+.today-date{font-size:26px;font-weight:900;color:#fff;letter-spacing:-0.5px;margin-bottom:2px;}
+.today-sub{font-size:12px;color:var(--muted2);font-weight:500;}
+
+/* ── TASK LIST ── */
+.task-list{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.task-item{
+  display:flex;align-items:center;gap:14px;padding:14px 16px;
+  border-bottom:1px solid var(--border);cursor:pointer;
+  transition:background .15s, opacity .3s, max-height .4s;
+  overflow:hidden;max-height:100px;
+}
+.task-item:last-child{border-bottom:none;}
+.task-item:hover{background:var(--bg3);}
+.task-item.completing{animation:taskComplete .5s ease forwards;}
+@keyframes taskComplete{
+  0%{opacity:1;transform:translateX(0);}
+  30%{opacity:1;transform:translateX(8px);background:rgba(34,197,94,0.08);}
+  100%{opacity:0;transform:translateX(20px);max-height:0;padding:0 16px;}
+}
+.task-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:var(--bg3);}
+.task-body{flex:1;min-width:0;}
+.task-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px;}
+.task-desc{font-size:12px;color:var(--muted2);line-height:1.3;}
+.task-circle{width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;background:transparent;}
+.task-circle.done{background:var(--green);border-color:var(--green);}
+.task-circle svg{opacity:0;transform:scale(0.5);transition:all .2s;}
+.task-circle.done svg{opacity:1;transform:scale(1);}
+
+/* ── MOBILE ── */
+@media (max-width: 380px) {
+  .header{padding:0 14px;}
+  .week-wrap{padding:10px 10px 8px;}
+  .week-row{gap:2px;}
+  .day-btn{padding:6px 0;}
+  .day-num{width:30px;height:30px;font-size:13px;}
+  .day-label{font-size:8px;}
+  .scroll-area{padding:14px 12px 24px;}
+  .today-date{font-size:22px;}
+  .task-item{padding:12px 14px;gap:10px;}
+  .task-icon{width:36px;height:36px;font-size:17px;}
+}
+
+/* ── TIME-OF-DAY SECTIONS ── */
+.tod-section{margin-bottom:20px;}
+.tod-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:0 2px;}
+.tod-icon{font-size:15px;}
+.tod-label{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);flex:1;}
+.tod-count{font-size:11px;font-weight:700;color:var(--muted);background:var(--bg2);border:1px solid var(--border);padding:2px 9px;border-radius:20px;}
+.tod-tasks{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;overflow:hidden;}
+
+/* ── SKINCARE GROUP ── */
+.skincare-group{margin-bottom:10px;}
+.skincare-group-header{
+  display:flex;align-items:center;gap:10px;
+  padding:13px 16px;cursor:pointer;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:14px;
+  transition:background .15s;user-select:none;
+}
+.skincare-group-header:hover{background:var(--bg3);}
+.group-icon{font-size:18px;width:36px;height:36px;border-radius:10px;background:rgba(163,230,53,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.group-title{flex:1;font-size:14px;font-weight:700;color:#fff;}
+.group-badge{font-size:11px;font-weight:700;color:var(--muted);background:var(--bg3);border:1px solid var(--border);padding:2px 9px;border-radius:20px;}
+.group-arrow{font-size:11px;color:var(--muted);margin-left:4px;transition:transform .2s;}
+.group-arrow{transform:rotate(-90deg);}
+.group-arrow.open{transform:rotate(0deg);}
+.group-tasks-wrap{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin-top:6px;margin-left:16px;display:none;}
+.group-tasks-wrap.open{display:block;}
+
+/* ── EMPTY STATE ── */
+.empty-day{text-align:center;padding:48px 24px;color:var(--muted);font-size:14px;}
+
+/* ── ADVANCED BUTTON ── */
+.advanced-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:14px;
+  padding:16px;cursor:pointer;margin-bottom:14px;transition:background .15s;
+}
+.advanced-btn:hover{background:var(--bg3);}
+.advanced-btn-left{display:flex;align-items:center;gap:12px;}
+.advanced-btn-icon{width:38px;height:38px;border-radius:10px;background:rgba(139,92,246,0.12);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.advanced-btn-label{font-size:14px;font-weight:700;color:#fff;}
+.advanced-btn-sub{font-size:11px;color:var(--muted2);margin-top:1px;}
+.advanced-chevron{color:var(--muted);font-size:18px;}
+
+/* ── ALL DONE STATE ── */
+.all-done{display:none;text-align:center;padding:40px 24px;}
+.all-done.show{display:block;}
+.all-done-emoji{font-size:52px;margin-bottom:16px;}
+.all-done-title{font-size:22px;font-weight:900;color:#fff;margin-bottom:6px;}
+.all-done-sub{font-size:13px;color:var(--muted2);margin-bottom:24px;line-height:1.5;}
+.all-done-stats{display:flex;justify-content:center;gap:24px;margin-bottom:24px;}
+.all-done-stat{text-align:center;}
+.all-done-stat-val{font-size:24px;font-weight:900;color:var(--accent);margin-bottom:2px;}
+.all-done-stat-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.all-done-card{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:20px;margin-bottom:14px;}
+
+/* ── XP FLOAT ANIMATION ── */
+.xp-float{
+  position:fixed;font-size:13px;font-weight:800;color:var(--accent);
+  pointer-events:none;z-index:999;opacity:1;
+  animation:xpFly .8s ease forwards;
+}
+@keyframes xpFly{
+  0%{opacity:1;transform:translateY(0) scale(1);}
+  100%{opacity:0;transform:translateY(-60px) scale(1.3);}
+}
+
+/* ── ADVANCED MODAL ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);
+  align-items:flex-end;
+}
+.modal-overlay.show{display:flex;}
+.modal-sheet{
+  width:100%;background:var(--bg1);border-radius:20px 20px 0 0;
+  padding:24px 20px 40px;max-height:80vh;overflow-y:auto;
+}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px;}
+.modal-title{font-size:16px;font-weight:800;color:#fff;margin-bottom:4px;}
+.modal-sub{font-size:12px;color:var(--muted2);margin-bottom:20px;}
+.adv-task-item{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+.adv-task-item:last-child{border-bottom:none;}
+.adv-task-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(139,92,246,0.1);flex-shrink:0;}
+.adv-task-name{font-size:14px;font-weight:700;color:#fff;}
+.adv-task-desc{font-size:11px;color:var(--muted2);margin-top:2px;}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;height:60px;
+  background:var(--bg);border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-around;z-index:100;
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 16px;flex:1;}
+.nav-item svg{opacity:0.4;}
+.nav-item span{font-size:10px;font-weight:600;letter-spacing:0.5px;color:var(--muted);text-transform:capitalize;}
+.nav-item.active svg{opacity:1;}
+.nav-item.active span{color:var(--purple-light,#a78bfa);}
+.nav-item.active svg path,.nav-item.active svg rect,.nav-item.active svg circle,.nav-item.active svg polyline,.nav-item.active svg line{stroke:var(--purple-light,#a78bfa);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <button class="header-btn" onclick="window.location.href='/dashboard'">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+  <div class="header-title">Tasks</div>
+  <div class="xp-badge" id="xpBadge">
+    ⚡ <span id="xpDisplay">0</span> XP
+  </div>
+</div>
+
+<!-- WEEK SELECTOR -->
+<div class="week-wrap">
+  <div class="week-row" id="weekRow"></div>
+</div>
+
+<!-- SCROLL AREA -->
+<div class="scroll-area" id="scrollArea">
+
+  <!-- PROGRESS -->
+  <div class="progress-card" id="progressCard">
+    <div class="progress-top">
+      <span class="progress-label">Daily Progress</span>
+      <span class="progress-count" id="progressCount"><span id="doneCount">0</span> / <span id="totalCount">0</span> Complete</span>
+    </div>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- TODAY HEADER -->
+  <div class="today-header" id="todayHeader"></div>
+
+  <!-- TASK LIST (sections rendered dynamically) -->
+  <div id="taskList"></div>
+
+  <!-- ALL DONE STATE -->
+  <div class="all-done" id="allDone">
+    <div class="all-done-emoji">🎯</div>
+    <div class="all-done-title">Today's Schedule Complete</div>
+    <div class="all-done-sub">You've completed every task for today.<br>Come back tomorrow to keep your streak alive.</div>
+    <div class="all-done-stats">
+      <div class="all-done-stat">
+        <div class="all-done-stat-val" id="doneXP">+0</div>
+        <div class="all-done-stat-label">XP Earned</div>
+      </div>
+      <div class="all-done-stat">
+        <div class="all-done-stat-val" id="doneStreak">0</div>
+        <div class="all-done-stat-label">Day Streak</div>
+      </div>
+    </div>
+    <div class="all-done-card">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Come back tomorrow</div>
+      <div style="font-size:13px;color:var(--muted2);">Your next tasks reset at midnight. Keep the streak going.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item" onclick="window.location.href='/dashboard'">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Dashboard</span>
+  </div>
+  <div class="nav-item" onclick="window.location.href='/glowai'">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+    <span>Analysis</span>
+  </div>
+  <div class="nav-item" onclick="window.location.href='/improve?area=skin'">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M3 3h18v18H3z" rx="2"/><path d="M8 12h8M12 8v8"/></svg>
+    <span>Roadmap</span>
+  </div>
+  <div class="nav-item active">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span>Tasks</span>
+  </div>
+  <div class="nav-item" onclick="">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span>Progress</span>
+  </div>
+</div>
+
+<script>
+// ── TASK METADATA ──────────────────────────────────────────────────────────
+// type: 'daily'|'weekly' (day 0=Sun..6=Sat)   tod: 'morning'|'day'|'night'
+const TASK_META = {
+  // SKIN — daily
+  'ess-cleanser':       {icon:'🧴',name:'Cleanse Face',          desc:'Keep skin clean and clear',                         type:'daily', tod:'morning'},
+  'ess-cleanser-pm':    {icon:'🧴',name:'Cleanse Face',          desc:'Cleanse away the day before your night routine',    type:'daily', tod:'night'},
+  'ess-moisturizer':    {icon:'💧',name:'Morning Moisturizer',  desc:'Hydrate and protect your skin barrier',             type:'daily', tod:'morning'},
+  'ess-moisturizer-pm': {icon:'🌙',name:'Night Moisturizer',    desc:'Repair and replenish skin overnight',               type:'daily', tod:'night'},
+  'ess-sunscreen':      {icon:'☀️',name:'Apply SPF',            desc:'Protect skin from UV damage',                       type:'daily', tod:'morning'},
+  'g-retinol':       {icon:'⚗️',name:'Apply Retinol',         desc:'Apply retinol serum to clean skin at night',   type:'daily',  tod:'night'},
+  'g-benzoyl':       {icon:'🔬',name:'Benzoyl Peroxide',      desc:'Apply to active breakouts before bed',         type:'daily',  tod:'night'},
+  'g-adapalene':     {icon:'⚗️',name:'Apply Adapalene',       desc:'Apply retinoid treatment at night',            type:'daily',  tod:'night'},
+  'g-vitc':          {icon:'🍊',name:'Vitamin C Serum',       desc:'Apply to face each morning under SPF',         type:'daily',  tod:'morning'},
+  'g-niacinamide':   {icon:'🌸',name:'Niacinamide Serum',     desc:'Apply to reduce redness and improve clarity',  type:'daily',  tod:'morning'},
+  'adv-ghkcu':       {icon:'⚗️',name:'GHK-Cu Peptide',        desc:'Apply copper peptide serum for skin quality',  type:'daily',  tod:'morning'},
+  'adv-collagen':    {icon:'🧬',name:'Collagen Peptides',     desc:'Take collagen supplement with your water',     type:'daily',  tod:'night'},
+  'g-prescription':  {icon:'🏥',name:'Prescription Acne',    desc:'Apply prescription acne medication',           type:'daily',  tod:'night'},
+  // SKIN — weekly
+  'g-aha':           {icon:'✨',name:'Chemical Exfoliant',    desc:'Exfoliate for smoother and brighter skin',     type:'weekly', day:4, tod:'night'},
+  'skin-microneedle':{icon:'🧬',name:'Microneedling Session', desc:'Complete your microneedling treatment',        type:'weekly', day:6, tod:'night'},
+
+  // EYES — daily
+  'eye-d-whitening': {icon:'💧',name:'Use Eye Drops',         desc:'Improve eye brightness and reduce redness',   type:'daily',  tod:'morning'},
+  'eye-d-lash':      {icon:'✏️',name:'Lash Growth Serum',      desc:'Promote lash growth and thickness',           type:'daily',  tod:'night'},
+  'eye-d-ice':       {icon:'🧊',name:'Ice Roll Eyes',         desc:'Reduce puffiness around the eyes',            type:'daily',  tod:'morning'},
+  'eye-d-hydration': {icon:'💦',name:'Eye Hydration',         desc:'Stay hydrated to keep eyes bright and clear', type:'daily',  tod:'day'},
+  'eye-f-contacts':  {icon:'👁️',name:'Wear Contacts',         desc:'Put in your colored contacts',                type:'daily',  tod:'morning'},
+  'eye-f-concealer': {icon:'💫',name:'Under Eye Concealer',   desc:'Apply concealer under eyes',                  type:'daily',  tod:'morning'},
+  'eye-f-mascara':   {icon:'✏️',name:'Apply Mascara',         desc:'Apply mascara for lash definition',           type:'daily',  tod:'morning'},
+  'eye-f-waterline': {icon:'✏️',name:'Line Waterline',        desc:'Apply eyeliner to waterline',                 type:'daily',  tod:'morning'},
+  'eye-a-contrast':  {icon:'🎨',name:'Eye Contrast',          desc:'Apply eye contrast technique daily',          type:'daily',  tod:'morning'},
+  'eye-a-undereye':  {icon:'💫',name:'Under Eye Treatment',   desc:'Apply under-eye treatment product',           type:'daily',  tod:'day'},
+  'eye-a-framing':   {icon:'🪮',name:'Frame Eyes',            desc:'Groom and frame the eye area',                type:'daily',  tod:'morning'},
+  'eye-a-brightness':{icon:'💡',name:'Eye Brightness',        desc:'Apply brightness-enhancing routine',          type:'daily',  tod:'morning'},
+  // EYES — weekly
+  'eye-w-brow':      {icon:'✂️',name:'Brow Check',            desc:'Assess and clean up your brow shape',         type:'weekly', day:3, tod:'morning'},
+  'eye-w-puffiness': {icon:'🧊',name:'Puffiness Treatment',   desc:'Extended under-eye puffiness session',        type:'weekly', day:6, tod:'night'},
+
+  // BROWS — daily
+  'brow-d-serum':    {icon:'✏️',name:'Brow Growth Serum',     desc:'Promote eyebrow density and growth',          type:'daily',  tod:'night'},
+  'brow-d-condition':{icon:'🌿',name:'Condition Brows',       desc:'Keep brows healthy and well-groomed',         type:'daily',  tod:'morning'},
+  'brow-f-pencil':   {icon:'✏️',name:'Fill Brows',            desc:'Fill in brows with pencil for definition',    type:'daily',  tod:'morning'},
+  'brow-f-gel':      {icon:'🪮',name:'Apply Brow Gel',        desc:'Set brows in place with gel',                 type:'daily',  tod:'morning'},
+  'brow-f-fiber':    {icon:'✨',name:'Brow Fiber',            desc:'Apply fiber for fuller-looking brows',        type:'daily',  tod:'morning'},
+  'brow-a-design':   {icon:'📐',name:'Brow Design',           desc:'Follow your brow design routine',             type:'daily',  tod:'day'},
+  'brow-a-styling':  {icon:'🪮',name:'Style Brows',           desc:'Style and shape brows daily',                 type:'daily',  tod:'morning'},
+  'brow-a-tail':     {icon:'✏️',name:'Define Brow Tail',      desc:'Define and shape the brow tail',              type:'daily',  tod:'night'},
+  // BROWS — weekly
+  'brow-w-shape':    {icon:'✂️',name:'Shape Eyebrows',        desc:'Maintain your eyebrow shape',                 type:'weekly', day:2, tod:'night'},
+  'brow-w-strays':   {icon:'✂️',name:'Remove Stray Hairs',    desc:'Pluck stray hairs for clean definition',      type:'weekly', day:4, tod:'night'},
+  'brow-w-tail':     {icon:'✏️',name:'Define Brow Tail',      desc:'Shape and define the outer brow tail',        type:'weekly', day:5, tod:'morning'},
+  'brow-w-edge':     {icon:'✂️',name:'Edge Brows',            desc:'Clean up brow edges for sharp definition',    type:'weekly', day:1, tod:'morning'},
+  'brow-w-maintain': {icon:'🪮',name:'Brow Maintenance',      desc:'Regular brow grooming and upkeep',            type:'weekly', day:3, tod:'night'},
+  'brow-w-cleanup':  {icon:'✂️',name:'Brow Cleanup',          desc:'Full brow shape and cleanup session',         type:'weekly', day:1, tod:'night'},
+  'brow-w-thickness':{icon:'🌿',name:'Thickness Routine',     desc:'Apply treatment for fuller brows',            type:'weekly', day:6, tod:'night'},
+  'brow-f-tint':     {icon:'🎨',name:'Brow Tint',             desc:'Apply brow tint for color and definition',    type:'weekly', day:1, tod:'morning'},
+  'brow-a-lamination':{icon:'✨',name:'Brow Lamination',      desc:'Complete your brow lamination session',       type:'weekly', day:6, tod:'day'},
+  'brow-a-mapping':  {icon:'📐',name:'Brow Mapping',          desc:'Follow your brow mapping routine',            type:'weekly', day:0, tod:'day'},
+
+  // HAIR — daily
+  'hair-d1':         {icon:'🧴',name:'Hair Care Routine',     desc:'Follow your daily hair care routine',         type:'daily',  tod:'morning'},
+  'hair-d2':         {icon:'💧',name:'Condition Hair',        desc:'Keep hair hydrated and healthy',              type:'daily',  tod:'night'},
+  'hair-d3':         {icon:'🪮',name:'Style Hair',            desc:'Groom and style your hair properly',          type:'daily',  tod:'morning'},
+  // HAIR — weekly
+  'hair-w-cut':      {icon:'💈',name:'Haircut / Style',       desc:'Maintain your haircut and style',             type:'weekly', day:6, tod:'day'},
+  'hair-w1':         {icon:'🚿',name:'Deep Condition',        desc:'Weekly deep conditioning treatment',          type:'weekly', day:0, tod:'night'},
+  'hair-w2':         {icon:'✂️',name:'Hair Maintenance',      desc:'Weekly hair upkeep routine',                  type:'weekly', day:3, tod:'night'},
+  'hair-m1':         {icon:'💈',name:'Hair Treatment',        desc:'Complete your hair treatment session',        type:'weekly', day:0, tod:'night'},
+  'hair-m2':         {icon:'✂️',name:'Trim Split Ends',       desc:'Trim split ends for healthier hair',          type:'weekly', day:6, tod:'day'},
+};
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let planState = {};
+try { planState = JSON.parse(localStorage.getItem('protocol_plan_state') || '{}'); } catch(e){}
+
+let xp      = parseInt(localStorage.getItem('protocol_xp')     || '0');
+let streak  = parseInt(localStorage.getItem('protocol_streak') || '0');
+let lastCompleteDateKey = localStorage.getItem('protocol_last_complete') || '';
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function completionsKey(dateKey) {
+  return 'protocol_completions_' + dateKey;
+}
+
+function getCompletions(dateKey) {
+  try { return JSON.parse(localStorage.getItem(completionsKey(dateKey)) || '[]'); } catch(e){ return []; }
+}
+
+function saveCompletions(dateKey, arr) {
+  localStorage.setItem(completionsKey(dateKey), JSON.stringify(arr));
+}
+
+// ── SELECTED DATE ──────────────────────────────────────────────────────────
+let selectedDate = new Date();
+
+// ── BUILD WEEK ─────────────────────────────────────────────────────────────
+function buildWeek() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const row = document.getElementById('weekRow');
+  row.innerHTML = '';
+
+  // Start from Monday of current week
+  const start = new Date(today);
+  const dow = today.getDay();
+  start.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const isToday = d.toDateString() === today.toDateString();
+    const isSelected = d.toDateString() === selectedDate.toDateString();
+
+    const btn = document.createElement('div');
+    btn.className = 'day-btn' + (isToday ? ' today' : '') + (isSelected ? ' selected' : '');
+    btn.innerHTML = `
+      <div class="day-label">${dayNames[d.getDay()]}</div>
+      <div class="day-num-wrap"><div class="day-num">${d.getDate()}</div></div>`;
+    btn.addEventListener('click', () => {
+      selectedDate = new Date(d);
+      buildWeek();
+      renderTasks();
+    });
+    row.appendChild(btn);
+  }
+}
+
+// ── DYNAMIC WEEKLY TASK DAY ASSIGNMENT ─────────────────────────────────────
+// Weekly tasks shouldn't all pile onto the same hardcoded day. Instead, the
+// active weekly tasks in the user's plan are spread evenly across the 7
+// days so (when there are enough of them) every day pairs the daily
+// routine with one weekly task. Assignments are persisted so a given task
+// always lands on the same day until the active set changes.
+function getWeeklyAssignments() {
+  let stored = {};
+  try { stored = JSON.parse(localStorage.getItem('protocol_weekly_assignments') || '{}'); } catch(e){}
+
+  const activeIds = Object.entries(planState)
+    .filter(([id, state]) => state === 'have' && TASK_META[id] && TASK_META[id].type === 'weekly')
+    .map(([id]) => id)
+    .sort();
+
+  // Drop assignments for tasks no longer active
+  Object.keys(stored).forEach(id => { if (!activeIds.includes(id)) delete stored[id]; });
+
+  // Evenly distribute: always place the next task on the day that
+  // currently has the fewest weekly tasks assigned.
+  const counts = [0,0,0,0,0,0,0];
+  Object.values(stored).forEach(d => { counts[d]++; });
+
+  activeIds.forEach(id => {
+    if (stored[id] === undefined) {
+      let bestDay = 0;
+      for (let d = 1; d < 7; d++) { if (counts[d] < counts[bestDay]) bestDay = d; }
+      stored[id] = bestDay;
+      counts[bestDay]++;
+    }
+  });
+
+  localStorage.setItem('protocol_weekly_assignments', JSON.stringify(stored));
+  return stored;
+}
+
+// ── GET TODAY'S TASKS GROUPED BY TIME-OF-DAY ──────────────────────────────
+function getTasksForDate(date) {
+  const dow = date.getDay(); // 0=Sun..6=Sat
+  const groups = { morning: [], day: [], night: [] };
+  const weeklyAssignments = getWeeklyAssignments();
+
+  for (const [id, state] of Object.entries(planState)) {
+    const meta = TASK_META[id];
+    if (!meta) continue;
+
+    if (state === 'buying') {
+      // Show "Buy X" task during the day until purchased
+      groups.day.push('buy__' + id);
+    } else if (state === 'have') {
+      const eligible =
+        meta.type === 'daily' ||
+        (meta.type === 'weekly' && weeklyAssignments[id] === dow);
+      if (eligible) {
+        const bucket = meta.tod || 'morning';
+        groups[bucket].push(id);
+        // Cleanser appears in both morning and night skincare
+        if (id === 'ess-cleanser') groups.night.push(id);
+      }
+    }
+  }
+  return groups;
+}
+
+// ── RESOLVE TASK META (handles buy__ synthetic tasks) ─────────────────────
+function resolveMeta(taskId) {
+  if (taskId.startsWith('buy__')) {
+    const realId = taskId.slice(5);
+    const real = TASK_META[realId];
+    if (!real) return null;
+    return { icon:'🛒', name:'Buy ' + real.name, desc:'Pick up ' + real.name + ' so you can start using it', tod:'morning', _buyFor: realId };
+  }
+  return TASK_META[taskId] || null;
+}
+
+// ── GROUP DEFINITIONS ──────────────────────────────────────────────────────
+const SKINCARE_IDS = {
+  morning: new Set(['ess-cleanser','ess-moisturizer','ess-sunscreen','g-vitc','g-niacinamide','adv-ghkcu','g-prescription']),
+  night:   new Set(['ess-cleanser','ess-cleanser-pm','ess-moisturizer-pm','g-retinol','g-benzoyl','g-adapalene','adv-collagen','g-prescription','g-aha','skin-microneedle']),
+};
+const EYE_IDS = new Set([
+  'eye-d-whitening','eye-d-ice','eye-d-hydration',
+  'eye-f-contacts','eye-f-concealer','eye-f-mascara','eye-f-waterline',
+  'eye-a-contrast','eye-a-undereye','eye-a-framing','eye-a-brightness',
+  'eye-w-brow','eye-w-puffiness',
+]);
+const LONGTERM_IDS = new Set(['brow-d-serum','eye-d-lash']);
+const GROOMING_IDS = new Set(['brow-d-condition']);
+
+const BROW_IDS = new Set([
+  'brow-f-pencil','brow-f-gel','brow-f-fiber','brow-f-tint',
+  'brow-a-design','brow-a-styling','brow-a-tail','brow-a-lamination','brow-a-mapping',
+  'brow-w-shape','brow-w-strays','brow-w-tail','brow-w-edge','brow-w-maintain','brow-w-cleanup','brow-w-thickness',
+]);
+
+// Track which groups are open (false = collapsed)
+const groupOpen = {
+  morning: false, night: false,
+  'eye-morning': false, 'eye-day': false, 'eye-night': false,
+  'brow-morning': false, 'brow-day': false, 'brow-night': false,
+  'buy-morning': false, 'buy-day': false, 'buy-night': false,
+  'longterm-morning': false, 'longterm-day': false, 'longterm-night': false,
+  'grooming-morning': false, 'grooming-day': false, 'grooming-night': false,
+};
+
+function toggleGroup(key) {
+  groupOpen[key] = !groupOpen[key];
+  const wrap  = document.getElementById('group-tasks-' + key);
+  const arrow = document.getElementById('group-arrow-' + key);
+  if (wrap)  wrap.classList.toggle('open',  groupOpen[key]);
+  if (arrow) arrow.classList.toggle('open', groupOpen[key]);
+}
+
+// ── RENDER TASKS ───────────────────────────────────────────────────────────
+const TOD_CONFIG = [
+  { key:'morning', icon:'☀️', label:'Morning', groupLabel:'Morning Skincare', groupIcon:'🧴' },
+  { key:'day',     icon:'🌤', label:'Day',     groupLabel:null },
+  { key:'night',   icon:'🌙', label:'Night',   groupLabel:'Night Skincare',   groupIcon:'🌙' },
+];
+
+function renderTasks() {
+  const dateKey = getDateKey(selectedDate);
+  const completions = getCompletions(dateKey);
+  const groups = getTasksForDate(selectedDate);
+  const allTasks = [...groups.morning, ...groups.day, ...groups.night];
+
+  // Today header
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const isToday = selectedDate.toDateString() === new Date().toDateString();
+  const remaining = allTasks.filter(id => !completions.includes(id)).length;
+
+  document.getElementById('todayHeader').innerHTML = `
+    <div class="today-label">${isToday ? 'TODAY' : dayNames[selectedDate.getDay()].toUpperCase()}</div>
+    <div class="today-date">${dayNames[selectedDate.getDay()]}, ${monthNames[selectedDate.getMonth()]} ${selectedDate.getDate()}</div>
+    <div class="today-sub">${allTasks.length === 0 ? 'No tasks for this day' : remaining === 0 ? 'All tasks complete 🎯' : `${remaining} Task${remaining !== 1 ? 's' : ''} To Complete`}</div>
+  `;
+
+  // Progress bar
+  const doneCount = completions.filter(id => allTasks.includes(id)).length;
+  const totalCount = allTasks.length;
+  const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+  document.getElementById('doneCount').textContent = doneCount;
+  document.getElementById('totalCount').textContent = totalCount;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  const list = document.getElementById('taskList');
+
+  if (allTasks.length === 0) {
+    list.innerHTML = `<div class="empty-day">No tasks for this day.<br><span style="font-size:11px;">Add tasks from the Roadmap to see them here.</span></div>`;
+    checkAllDone(allTasks, completions, dateKey);
+    document.getElementById('xpDisplay').textContent = xp;
+    return;
+  }
+
+  function taskCard(id) {
+    const meta = resolveMeta(id);
+    if (!meta) return '';
+    if (completions.includes(id)) return '';
+    const isBuy = id.startsWith('buy__');
+    return `
+      <div class="task-item" id="task-${CSS.escape(id)}" onclick="completeTask('${id}','${dateKey}')">
+        <div class="task-icon" style="${isBuy ? 'background:rgba(245,158,11,0.12);' : ''}">${meta.icon}</div>
+        <div class="task-body">
+          <div class="task-name">${meta.name}</div>
+          <div class="task-desc">${meta.desc}</div>
+        </div>
+        <div class="task-circle">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5"><polyline points="2 6 5 9 10 3"/></svg>
+        </div>
+      </div>`;
+  }
+
+  function makeGroup(groupKey, groupLabel, groupIcon, taskIds) {
+    const remaining = taskIds.filter(id => !completions.includes(id)).length;
+    if (taskIds.length === 0 || remaining === 0) return '';
+    const isOpen = groupOpen[groupKey] === true;
+    return `
+      <div class="skincare-group">
+        <div class="skincare-group-header" onclick="toggleGroup('${groupKey}')">
+          <div class="group-icon">${groupIcon}</div>
+          <span class="group-title">${groupLabel}</span>
+          <span class="group-badge" id="group-count-${groupKey}">${remaining} left</span>
+          <svg class="group-arrow ${isOpen ? 'open' : ''}" id="group-arrow-${groupKey}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="group-tasks-wrap ${isOpen ? 'open' : ''}" id="group-tasks-${groupKey}">
+          ${taskIds.map(taskCard).join('')}
+        </div>
+      </div>`;
+  }
+
+  list.innerHTML = TOD_CONFIG.map(({ key, icon, label, groupLabel, groupIcon }) => {
+    const ids = groups[key] || [];
+    const sectionRemaining = ids.filter(id => !completions.includes(id)).length;
+    if (ids.length === 0 || sectionRemaining === 0) return '';
+
+    const rid = id => id.startsWith('buy__') ? id.slice(5) : id;
+    const skincareSet = SKINCARE_IDS[key];
+    const buyIds      = ids.filter(id => id.startsWith('buy__'));
+    const nonBuy      = ids.filter(id => !id.startsWith('buy__'));
+    const skinIds     = nonBuy.filter(id => skincareSet && skincareSet.has(rid(id)));
+    const longtermIds = nonBuy.filter(id => !(skincareSet && skincareSet.has(rid(id))) && LONGTERM_IDS.has(rid(id)));
+    const groomingIds = nonBuy.filter(id => !(skincareSet && skincareSet.has(rid(id))) && !LONGTERM_IDS.has(rid(id)) && GROOMING_IDS.has(rid(id)));
+    const eyeIds      = nonBuy.filter(id => !(skincareSet && skincareSet.has(rid(id))) && !LONGTERM_IDS.has(rid(id)) && !GROOMING_IDS.has(rid(id)) && EYE_IDS.has(rid(id)));
+    const browIds     = nonBuy.filter(id => !(skincareSet && skincareSet.has(rid(id))) && !LONGTERM_IDS.has(rid(id)) && !GROOMING_IDS.has(rid(id)) && BROW_IDS.has(rid(id)));
+    const otherIds    = nonBuy.filter(id => !(skincareSet && skincareSet.has(rid(id))) && !LONGTERM_IDS.has(rid(id)) && !GROOMING_IDS.has(rid(id)) && !EYE_IDS.has(rid(id)) && !BROW_IDS.has(rid(id)));
+
+    const buyHtml      = makeGroup('buy-' + key, 'Buy Products', '🛒', buyIds);
+    const skinHtml     = groupLabel ? makeGroup(key, groupLabel, groupIcon, skinIds) : '';
+    const longtermHtml = makeGroup('longterm-' + key, 'Longterm Impact', '🌱', longtermIds);
+    const groomingHtml = makeGroup('grooming-' + key, 'Grooming', '✂️', groomingIds);
+    const eyeHtml      = makeGroup('eye-' + key, 'Eye Frauds', '👁️', eyeIds);
+    const browHtml     = makeGroup('brow-' + key, 'Eyebrow Frauds', '✏️', browIds);
+    const otherHtml = otherIds.filter(id => !completions.includes(id)).map(taskCard).join('');
+
+    return `
+      <div class="tod-section" id="tod-${key}">
+        <div class="tod-header">
+          <span class="tod-icon">${icon}</span>
+          <span class="tod-label">${label}</span>
+          <span class="tod-count" id="tod-count-${key}">${sectionRemaining}</span>
+        </div>
+        ${buyHtml}
+        ${skinHtml}
+        ${longtermHtml}
+        ${groomingHtml}
+        ${eyeHtml}
+        ${browHtml}
+        ${otherHtml ? `<div class="tod-tasks">${otherHtml}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  checkAllDone(allTasks, completions, dateKey);
+  document.getElementById('xpDisplay').textContent = xp;
+}
+
+function getDateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+
+// ── COMPLETE TASK ──────────────────────────────────────────────────────────
+function completeTask(id, dateKey) {
+  const completions = getCompletions(dateKey);
+  if (completions.includes(id)) return; // already done
+
+  // If this is a "Buy X" task, promote the item to 'have' in planState
+  if (id.startsWith('buy__')) {
+    const realId = id.slice(5);
+    planState[realId] = 'have';
+    localStorage.setItem('protocol_plan_state', JSON.stringify(planState));
+  }
+
+  completions.push(id);
+  saveCompletions(dateKey, completions);
+
+  // XP
+  const xpGain = 10;
+  xp += xpGain;
+  localStorage.setItem('protocol_xp', xp);
+  document.getElementById('xpDisplay').textContent = xp;
+
+  // Float XP
+  const el = document.getElementById('task-' + CSS.escape(id)) || document.querySelector(`[id="task-${id}"]`);
+  if (el) {
+    const rect = el.getBoundingClientRect();
+    const float = document.createElement('div');
+    float.className = 'xp-float';
+    float.textContent = '+' + xpGain + ' XP';
+    float.style.left = (rect.right - 60) + 'px';
+    float.style.top  = (rect.top + rect.height / 2) + 'px';
+    document.body.appendChild(float);
+    setTimeout(() => float.remove(), 900);
+
+    // Animate task out, then re-render (completed tasks are hidden)
+    el.classList.add('completing');
+    setTimeout(() => renderTasks(), 480);
+  } else {
+    renderTasks();
+  }
+}
+
+// ── ALL DONE ───────────────────────────────────────────────────────────────
+function checkAllDone(allTasks, completions, dateKey) {
+  const isToday = dateKey === todayKey();
+  const allComplete = allTasks.length > 0 && allTasks.every(id => completions.includes(id));
+
+  const allDoneEl = document.getElementById('allDone');
+  const taskListEl = document.getElementById('taskList');
+  const progressCard = document.getElementById('progressCard');
+
+  if (allComplete && isToday) {
+    // Update streak
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yKey = getDateKey(yesterday);
+    if (lastCompleteDateKey === yKey || lastCompleteDateKey === '') {
+      streak++;
+    } else if (lastCompleteDateKey !== todayKey()) {
+      streak = 1;
+    }
+    lastCompleteDateKey = todayKey();
+    localStorage.setItem('protocol_streak', streak);
+    localStorage.setItem('protocol_last_complete', lastCompleteDateKey);
+
+    document.getElementById('doneXP').textContent = '+' + (allTasks.length * 10);
+    document.getElementById('doneStreak').textContent = streak;
+
+    taskListEl.style.display = 'none';
+    allDoneEl.classList.add('show');
+  } else {
+    taskListEl.style.display = '';
+    allDoneEl.classList.remove('show');
+  }
+}
+
+// ── ADVANCED MODAL ─────────────────────────────────────────────────────────
+function openAdvanced() {
+  document.getElementById('advModal').classList.add('show');
+}
+function closeAdvanced(e) {
+  if (e.target === document.getElementById('advModal')) {
+    document.getElementById('advModal').classList.remove('show');
+  }
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+buildWeek();
+renderTasks();
+</script>
+</body>
+</html>

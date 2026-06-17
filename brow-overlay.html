@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROTOCOL · Brow Test</title>
+  <style>
+    :root { --bg:#000; --bg1:#0a0a0a; --accent:#c8ff00; --white:#f0f0f0; --muted:#777; --border:#1e1e1e; --brd2:#2a2a2a; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--white); font-family: 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+    .hdr { height: 52px; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+    .hdr-logo { font-size: 11px; font-weight: 900; letter-spacing: 5px; color: var(--accent); }
+    .hdr-tag  { font-size: 9px; font-weight: 700; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+
+    #uploadScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 52px); gap: 20px; padding: 40px; }
+    .u-eyebrow { font-size: 9px; font-weight: 800; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; }
+    .u-heading { font-size: 28px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
+    .u-sub     { font-size: 11px; color: var(--muted); text-align: center; max-width: 360px; line-height: 1.65; }
+    .upload-zone { border: 1px dashed var(--brd2); padding: 52px 80px; display: flex; flex-direction: column; align-items: center; gap: 14px; cursor: pointer; transition: border-color .15s; width: 100%; max-width: 440px; }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); }
+    .uz-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    .uz-sub   { font-size: 9px; color: var(--muted); }
+    #fileInput { display: none; }
+    .status    { font-size: 10px; color: var(--muted); }
+    .status.ok { color: var(--accent); }
+    .status.err{ color: #ff6b6b; }
+
+    #resultScreen { display: none; }
+    .layout { display: flex; height: calc(100vh - 52px); }
+    .canvas-panel { flex: 1; display: flex; align-items: center; justify-content: center; background: #050505; overflow: hidden; }
+    #c { max-width: 100%; max-height: 100%; display: block; cursor: crosshair; }
+
+    .panel { width: 220px; flex-shrink: 0; border-left: 1px solid var(--border); background: var(--bg1); display: flex; flex-direction: column; overflow-y: auto; }
+    .sec { padding: 13px 15px; border-bottom: 1px solid var(--border); }
+    .sec-title { font-size: 8px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+    .hint { font-size: 9px; color: var(--muted); line-height: 1.6; margin-top: 6px; }
+
+    .row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 9px; }
+    .row:last-child { margin-bottom: 0; }
+    .lbl { font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+    .lbl b { color: var(--white); font-weight: 900; }
+    input[type=range] { width: 100%; accent-color: var(--accent); }
+    select { width: 100%; background: var(--bg); border: 1px solid var(--brd2); color: var(--white); padding: 7px 8px; font-size: 10px; font-family: inherit; outline: none; }
+
+    .tabs { display: flex; gap: 2px; margin-bottom: 9px; }
+    .tab { flex: 1; padding: 7px; background: var(--bg); border: 1px solid var(--brd2); font-size: 8px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); cursor: pointer; text-align: center; }
+    .tab.on { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    .btn { width: 100%; padding: 11px; border: none; font-size: 9px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-bottom: 5px; }
+    .btn:last-child { margin-bottom: 0; }
+    .btn-a { background: var(--accent); color: #000; }
+    .btn-a:hover { background: #d4ff20; }
+    .btn-b { background: transparent; color: var(--muted); border: 1px solid var(--brd2); }
+    .btn-b:hover { color: var(--white); border-color: var(--white); }
+    .btn-c { background: #0d1a00; color: var(--accent); border: 1px solid var(--accent); }
+
+    .bottom { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; padding: 13px 15px; gap: 5px; }
+    .mode-note { font-size: 9px; color: var(--muted); text-align: center; padding: 5px 0 0; }
+    .mode-note span { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">PROTOCOL</div>
+  <div class="hdr-tag">Brow Overlay Test</div>
+</div>
+
+<div id="uploadScreen">
+  <div class="u-eyebrow">Prototype</div>
+  <div class="u-heading">Brow Replacement</div>
+  <div class="u-sub">Upload face photo. Position brows in Edit mode. Hit Compare to see full removal + replacement.</div>
+  <div class="upload-zone" id="zone">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".3"><rect x="3" y="3" width="18" height="18"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <div class="uz-title">Drop Face Photo</div>
+    <div class="uz-sub">JPG or PNG · front-facing</div>
+  </div>
+  <input type="file" id="fileInput" accept="image/*">
+  <div class="status" id="loadSt">Loading brow PNGs…</div>
+</div>
+
+<div id="resultScreen">
+  <div class="layout">
+    <div class="canvas-panel"><canvas id="c"></canvas></div>
+    <div class="panel">
+
+      <div class="sec">
+        <div class="sec-title">Mode</div>
+        <button class="btn btn-b" id="btnMode">Compare ◀▶</button>
+        <div class="mode-note" id="modeNote">Edit — <span>drag brows to align</span></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title">Active Brow</div>
+        <div class="tabs">
+          <div class="tab on" data-brow="left"  id="tL">Left</div>
+          <div class="tab"    data-brow="right" id="tR">Right</div>
+        </div>
+        <div class="row">
+          <div class="lbl">Angle <b id="vAngle">0°</b></div>
+          <input type="range" id="sAngle" min="-20" max="20" value="0" step="0.5">
+        </div>
+        <div class="row">
+          <div class="lbl">Width <b id="vWidth">—</b></div>
+          <input type="range" id="sWidth" min="20" max="600" value="100">
+        </div>
+        <div class="row">
+          <div class="lbl">V-offset <b id="vOff">0</b></div>
+          <input type="range" id="sOff" min="-80" max="80" value="0">
+        </div>
+        <div class="hint">Drag brow to move. Green dot = scale width.</div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title">Removal</div>
+        <div class="row">
+          <div class="lbl">Height <b id="vRH">40px</b></div>
+          <input type="range" id="sRH" min="10" max="120" value="40">
+        </div>
+        <div class="row">
+          <div class="lbl">Feather <b id="vFt">8px</b></div>
+          <input type="range" id="sFt" min="2" max="40" value="8">
+        </div>
+        <div class="row">
+          <div class="lbl">Sample dist <b id="vSD">5px</b></div>
+          <input type="range" id="sSD" min="1" max="80" value="5">
+        </div>
+        <div class="hint">Height = erase zone size. Sample dist = how far outside the zone to grab skin from. Keep this LOW (3–8px) or it samples beard/hair.</div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title">Overlay</div>
+        <div class="row">
+          <div class="lbl">Opacity <b id="vOp">90%</b></div>
+          <input type="range" id="sOp" min="10" max="100" value="90">
+        </div>
+        <div class="row">
+          <div class="lbl">Blend</div>
+          <select id="sBlend">
+            <option value="multiply">Multiply (white bg)</option>
+            <option value="source-over">Normal (transparent)</option>
+            <option value="darken">Darken</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <button class="btn btn-a" id="btnSave">Save Result</button>
+        <button class="btn btn-b" id="btnBack">← New Photo</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Assets ──
+let lBrow = null, rBrow = null, face = null, assetsOk = false;
+
+function loadImg(src) {
+  return new Promise((ok, fail) => {
+    const i = new Image();
+    i.onload = () => ok(i);
+    i.onerror = () => fail(new Error('Cannot load: ' + src));
+    i.src = src;
+  });
+}
+
+const loadSt = document.getElementById('loadSt');
+Promise.all([loadImg('/straight_masculine_left.png'), loadImg('/straight_masculine_right.png')])
+  .then(([l, r]) => {
+    lBrow = l; rBrow = r; assetsOk = true;
+    loadSt.textContent = '✓ Ready — upload a face photo';
+    loadSt.className = 'status ok';
+  })
+  .catch(e => { loadSt.textContent = 'Error: ' + e.message; loadSt.className = 'status err'; });
+
+// ── Upload ──
+const zone = document.getElementById('zone');
+const fi   = document.getElementById('fileInput');
+zone.addEventListener('click', () => fi.click());
+zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) loadFace(e.dataTransfer.files[0]); });
+fi.addEventListener('change', e => { if (e.target.files[0]) loadFace(e.target.files[0]); });
+
+function loadFace(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => { face = img; if (assetsOk) startEditor(); };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Editor ──
+const cv  = document.getElementById('c');
+const ctx = cv.getContext('2d');
+
+const B = {
+  left:  { x:0, y:0, w:0, angle:0, vo:0 },
+  right: { x:0, y:0, w:0, angle:0, vo:0 }
+};
+
+let active = 'left', mode = 'edit', split = 0.5, drag = null;
+
+function img(k)  { return k === 'left' ? lBrow : rBrow; }
+function bh(k)   { return B[k].w * (img(k).naturalHeight / img(k).naturalWidth); }
+function cy(k)   { return B[k].y + B[k].vo; }
+
+function startEditor() {
+  const W = face.naturalWidth, H = face.naturalHeight;
+  cv.width = W; cv.height = H;
+  const w0 = W * 0.22;
+  B.left  = { x: W*0.27, y: H*0.31, w: w0, angle:0, vo:0 };
+  B.right = { x: W*0.73, y: H*0.31, w: w0, angle:0, vo:0 };
+  document.getElementById('sWidth').max = Math.round(W * 0.8);
+  syncSliders();
+  document.getElementById('uploadScreen').style.display = 'none';
+  document.getElementById('resultScreen').style.display = 'block';
+  render();
+}
+
+// ── Skin removal ──
+// Samples avg skin color above + below each brow, fills with a blurred gradient.
+function removeBrowOnCtx(oc, origData, W, H, k) {
+  const b = B[k];
+  const feather = +document.getElementById('sFt').value;
+  const rmH     = +document.getElementById('sRH').value;
+  const sd      = +document.getElementById('sSD').value;
+
+  const cx    = b.x;
+  const cyK   = b.y + b.vo;
+  const iL    = Math.max(0, Math.round(cx - b.w/2));
+  const iR    = Math.min(W, Math.round(cx + b.w/2));
+  const iT    = Math.max(0, Math.round(cyK - rmH/2));
+  const iB    = Math.min(H, Math.round(cyK + rmH/2));
+
+  // Sample rows
+  const aRow = Math.max(0, iT - sd);
+  const bRow = Math.min(H-1, iB + sd);
+
+  const topC = avgRow(origData, W, aRow, iL, iR);
+  const botC = avgRow(origData, W, bRow, iL, iR);
+
+  // Build gradient top→bottom
+  const grad = oc.createLinearGradient(cx, iT, cx, iB);
+  grad.addColorStop(0, `rgb(${topC.r|0},${topC.g|0},${topC.b|0})`);
+  grad.addColorStop(1, `rgb(${botC.r|0},${botC.g|0},${botC.b|0})`);
+
+  // Draw with blur for soft feathered edges
+  oc.save();
+  oc.filter = `blur(${feather}px)`;
+  oc.fillStyle = grad;
+  // Expand rect so the blur fully covers the inner removal zone
+  oc.fillRect(iL - feather, iT - feather,
+              (iR - iL) + feather*2,
+              (iB - iT) + feather*2);
+  oc.restore();
+  oc.filter = 'none';
+}
+
+function avgRow(data, W, row, l, r) {
+  let rv = 0, gv = 0, bv = 0, n = 0;
+  for (let x = Math.max(0,l); x <= Math.min(W-1,r); x++) {
+    const i = (row * W + x) * 4;
+    rv += data[i]; gv += data[i+1]; bv += data[i+2]; n++;
+  }
+  return n ? { r: rv/n, g: gv/n, b: bv/n } : { r:180, g:150, b:130 };
+}
+
+// Build full result canvas: remove brows → overlay new brows
+function buildResult() {
+  const W = cv.width, H = cv.height;
+
+  // Get original image data for sampling
+  const tmp = document.createElement('canvas');
+  tmp.width = W; tmp.height = H;
+  tmp.getContext('2d').drawImage(face, 0, 0);
+  const origData = tmp.getContext('2d').getImageData(0, 0, W, H).data;
+
+  // Result canvas
+  const off = document.createElement('canvas');
+  off.width = W; off.height = H;
+  const oc = off.getContext('2d');
+  oc.drawImage(face, 0, 0);
+
+  // Remove both original brows
+  removeBrowOnCtx(oc, origData, W, H, 'left');
+  removeBrowOnCtx(oc, origData, W, H, 'right');
+
+  // Place replacement brows
+  const alpha = +document.getElementById('sOp').value / 100;
+  const blend =  document.getElementById('sBlend').value;
+  drawBrow(oc, 'left',  alpha, blend);
+  drawBrow(oc, 'right', alpha, blend);
+
+  return off;
+}
+
+// ── Render ──
+function drawBrow(oc, k, alpha, blend) {
+  const b = B[k];
+  const h = bh(k);
+  oc.save();
+  oc.globalAlpha = alpha;
+  oc.globalCompositeOperation = blend;
+  oc.translate(b.x, cy(k));
+  oc.rotate(b.angle);
+  oc.drawImage(img(k), -b.w/2, -h/2, b.w, h);
+  oc.restore();
+}
+
+function drawHandles(k) {
+  const b = B[k];
+  const h = bh(k);
+  const ft = +document.getElementById('sFt').value;
+  const rH = +document.getElementById('sRH').value;
+  const cosA = Math.cos(b.angle), sinA = Math.sin(b.angle);
+
+  ctx.save();
+  ctx.translate(b.x, cy(k));
+  ctx.rotate(b.angle);
+
+  // Removal zone (axis-aligned rect shown unrotated here for clarity)
+  ctx.strokeStyle = 'rgba(255,60,60,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([3,3]);
+  ctx.strokeRect(-b.w/2 - ft, -rH/2 - ft, b.w + ft*2, rH + ft*2);
+  ctx.setLineDash([]);
+
+  // Brow placement zone
+  ctx.strokeStyle = k === active ? 'rgba(200,255,0,0.8)' : 'rgba(200,255,0,0.3)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(-b.w/2, -h/2, b.w, h);
+
+  // Scale handle
+  if (k === active) {
+    ctx.fillStyle = '#c8ff00';
+    ctx.beginPath();
+    ctx.arc(b.w/2 + 8, rH/2 + 8, 7, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function render() {
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+
+  if (mode === 'edit') {
+    ctx.drawImage(face, 0, 0);
+    const alpha = +document.getElementById('sOp').value / 100;
+    const blend  = document.getElementById('sBlend').value;
+    drawBrow(ctx, 'left',  alpha, blend);
+    drawBrow(ctx, 'right', alpha, blend);
+    drawHandles('left');
+    drawHandles('right');
+
+  } else {
+    const result = buildResult();
+    const sx = Math.round(W * split);
+
+    // Original (left)
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, sx, H); ctx.clip();
+    ctx.drawImage(face, 0, 0);
+    ctx.restore();
+
+    // Result (right)
+    ctx.save();
+    ctx.beginPath(); ctx.rect(sx, 0, W-sx, H); ctx.clip();
+    ctx.drawImage(result, 0, 0);
+    ctx.restore();
+
+    // Divider
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillRect(sx-1, 0, 2, H);
+
+    // Handle
+    ctx.beginPath(); ctx.arc(sx, H/2, 14, 0, Math.PI*2);
+    ctx.fillStyle = 'white'; ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('◀▶', sx, H/2);
+
+    // Labels
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(10, 10, 80, 22);
+    ctx.fillRect(sx + 12, 10, 72, 22);
+    ctx.fillStyle = '#aaa';
+    ctx.font = '700 9px sans-serif'; ctx.letterSpacing = '2px';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('ORIGINAL', 18, 22);
+    ctx.fillStyle = '#c8ff00';
+    ctx.fillText('RESULT', sx + 20, 22);
+  }
+}
+
+// ── Canvas pointer ──
+function cvPt(e) {
+  const r = cv.getBoundingClientRect();
+  return {
+    x: (e.clientX - r.left) * (cv.width  / r.width),
+    y: (e.clientY - r.top)  * (cv.height / r.height)
+  };
+}
+
+function hitBrow(k, mx, my) {
+  const b = B[k]; const h = bh(k);
+  const dx = mx - b.x, dy = my - cy(k);
+  const cosA = Math.cos(-b.angle), sinA = Math.sin(-b.angle);
+  const lx = dx*cosA - dy*sinA, ly = dx*sinA + dy*cosA;
+  const rmH = +document.getElementById('sRH').value;
+  return Math.abs(lx) <= b.w/2 + 12 && Math.abs(ly) <= rmH/2 + 12;
+}
+
+function hitScale(k, mx, my) {
+  const b = B[k];
+  const ft = +document.getElementById('sFt').value;
+  const rH = +document.getElementById('sRH').value;
+  const cosA = Math.cos(b.angle), sinA = Math.sin(b.angle);
+  const hW = b.w/2 + 8, hH = rH/2 + 8;
+  const hx = b.x + hW*cosA - hH*sinA;
+  const hy = cy(k) + hW*sinA + hH*cosA;
+  return Math.sqrt((mx-hx)**2 + (my-hy)**2) < 14;
+}
+
+cv.addEventListener('mousedown', e => {
+  const {x, y} = cvPt(e);
+  if (mode === 'compare') {
+    drag = {type:'split'};
+    split = Math.max(0.02, Math.min(0.98, x / cv.width));
+    render(); return;
+  }
+  for (const k of ['right','left']) {
+    if (hitScale(k, x, y)) {
+      drag = {type:'scale', k, sx:x, sy:y, sw:B[k].w, bx:B[k].x, bcy:cy(k)};
+      return;
+    }
+  }
+  for (const k of ['right','left']) {
+    if (hitBrow(k, x, y)) {
+      active = k; setTab(k); syncSliders();
+      drag = {type:'move', k, sx:x, sy:y, bx:B[k].x, by:B[k].y};
+      render(); return;
+    }
+  }
+});
+
+cv.addEventListener('mousemove', e => {
+  if (!drag) return;
+  const {x, y} = cvPt(e);
+  if (drag.type === 'split') {
+    split = Math.max(0.02, Math.min(0.98, x / cv.width));
+  } else if (drag.type === 'move') {
+    B[drag.k].x = drag.bx + (x - drag.sx);
+    B[drag.k].y = drag.by + (y - drag.sy);
+  } else if (drag.type === 'scale') {
+    const dist = Math.sqrt((x - drag.bx)**2 + (y - drag.bcy)**2);
+    B[drag.k].w = Math.max(20, dist * 2);
+    syncWidthDisp(drag.k);
+  }
+  render();
+});
+
+document.addEventListener('mouseup', () => { drag = null; });
+
+// Touch
+cv.addEventListener('touchstart', e => { e.preventDefault(); cv.dispatchEvent(new MouseEvent('mousedown', {clientX:e.touches[0].clientX, clientY:e.touches[0].clientY, buttons:1})); }, {passive:false});
+cv.addEventListener('touchmove',  e => { e.preventDefault(); cv.dispatchEvent(new MouseEvent('mousemove',  {clientX:e.touches[0].clientX, clientY:e.touches[0].clientY, buttons:1})); }, {passive:false});
+cv.addEventListener('touchend',   () => { drag = null; });
+
+// ── Sliders ──
+function syncSliders() {
+  const b = B[active];
+  set('sAngle', (b.angle * 180/Math.PI).toFixed(1)); disp('vAngle', (b.angle*180/Math.PI).toFixed(1) + '°');
+  set('sWidth', Math.round(b.w)); disp('vWidth', Math.round(b.w) + 'px');
+  set('sOff',   b.vo); disp('vOff', b.vo);
+}
+function syncWidthDisp(k) {
+  if (k === active) { set('sWidth', Math.round(B[k].w)); disp('vWidth', Math.round(B[k].w) + 'px'); }
+}
+function set(id, v) { document.getElementById(id).value = v; }
+function disp(id, v) { document.getElementById(id).textContent = v; }
+
+document.getElementById('sAngle').addEventListener('input', e => { B[active].angle = +e.target.value * Math.PI/180; disp('vAngle', e.target.value + '°'); render(); });
+document.getElementById('sWidth').addEventListener('input', e => { B[active].w = +e.target.value; disp('vWidth', e.target.value + 'px'); render(); });
+document.getElementById('sOff').addEventListener('input',   e => { B[active].vo = +e.target.value; disp('vOff', e.target.value); render(); });
+document.getElementById('sOp').addEventListener('input',    e => { disp('vOp',  e.target.value + '%'); render(); });
+document.getElementById('sRH').addEventListener('input', e => { disp('vRH', e.target.value + 'px'); render(); });
+document.getElementById('sFt').addEventListener('input', e => { disp('vFt', e.target.value + 'px'); render(); });
+document.getElementById('sSD').addEventListener('input', e => { disp('vSD', e.target.value + 'px'); render(); });
+// Sync initial display values
+disp('vFt', '8px'); disp('vSD', '5px');
+document.getElementById('sBlend').addEventListener('change', render);
+
+// ── Tabs ──
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => { active = t.dataset.brow; setTab(active); syncSliders(); render(); });
+});
+function setTab(k) {
+  document.getElementById('tL').classList.toggle('on', k==='left');
+  document.getElementById('tR').classList.toggle('on', k==='right');
+}
+
+// ── Mode ──
+document.getElementById('btnMode').addEventListener('click', () => {
+  mode = mode === 'edit' ? 'compare' : 'edit';
+  const btn  = document.getElementById('btnMode');
+  const note = document.getElementById('modeNote');
+  if (mode === 'compare') {
+    btn.textContent = '← Back to Edit';
+    btn.className = 'btn btn-c';
+    note.innerHTML = 'Compare — <span>drag the divider</span>';
+  } else {
+    btn.textContent = 'Compare ◀▶';
+    btn.className = 'btn btn-b';
+    note.innerHTML = 'Edit — <span>drag brows to align</span>';
+  }
+  render();
+});
+
+// ── Save / Back ──
+document.getElementById('btnSave').addEventListener('click', () => {
+  const r = buildResult();
+  const a = document.createElement('a');
+  a.download = 'brow-result.png';
+  a.href = r.toDataURL('image/png');
+  a.click();
+});
+
+document.getElementById('btnBack').addEventListener('click', () => {
+  face = null; drag = null; mode = 'edit';
+  document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('uploadScreen').style.display = 'flex';
+  fi.value = '';
+  document.getElementById('btnMode').textContent = 'Compare ◀▶';
+  document.getElementById('btnMode').className = 'btn btn-b';
+});
+</script>
+</body>
+</html>

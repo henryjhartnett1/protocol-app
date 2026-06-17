@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Build Your Road Map</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #050505; --accent: #b4ff3c; --border: rgba(255,255,255,0.08);
+    --muted: rgba(255,255,255,0.35); --muted2: rgba(255,255,255,0.6); --white: #fff;
+  }
+  body { background: var(--bg); color: var(--white); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: clamp(24px,8vw,48px) clamp(16px,5vw,24px); }
+
+  /* ── Upload phase ── */
+  #uploadPhase { width: 100%; max-width: 560px; text-align: center; }
+  .tag { font-size: 9px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+  h1 { font-size: clamp(26px,7vw,38px); font-weight: 900; letter-spacing: -1px; line-height: 1.15; margin-bottom: 12px; }
+  .sub { font-size: 14px; color: var(--muted2); line-height: 1.7; margin-bottom: 40px; }
+
+  .upload-zone { border: 1px dashed rgba(180,255,60,0.3); padding: clamp(28px,8vw,48px) clamp(16px,5vw,32px); cursor: pointer; position: relative; transition: border-color 0.15s, background 0.15s; margin-bottom: 24px; }
+  .upload-zone:hover { border-color: var(--accent); background: rgba(180,255,60,0.03); }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
+  .upload-text { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+  .upload-text span { color: var(--accent); }
+
+  #previewWrap { display: none; margin-bottom: 24px; position: relative; }
+  #previewImg { width: 100%; max-height: 420px; object-fit: cover; display: block; }
+  .preview-label { position: absolute; bottom: 10px; left: 10px; font-size: 9px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; background: rgba(0,0,0,0.7); color: var(--accent); padding: 4px 10px; }
+
+  #buildBtn { display: none; width: 100%; padding: 22px; background: var(--accent); color: #000; border: none; font-size: 11px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; cursor: pointer; transition: opacity 0.15s; }
+  #buildBtn:hover { opacity: 0.88; }
+  #buildBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Result phase ── */
+  #resultPhase { display: none; width: 100%; max-width: 680px; text-align: center; }
+  .result-tag { font-size: 9px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+  .result-heading { font-size: clamp(22px,6vw,28px); font-weight: 900; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .result-sub { font-size: 13px; color: var(--muted2); margin-bottom: 32px; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 32px; }
+  .compare-col { position: relative; }
+  .compare-col img { width: 100%; display: block; }
+  .compare-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.75); font-size: 9px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; padding: 8px 12px; text-align: center; }
+  .compare-label.after { color: var(--accent); }
+
+  #getStartedBtn { width: 100%; padding: 22px; background: var(--accent); color: #000; border: none; font-size: 12px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; cursor: pointer; transition: opacity 0.15s; }
+  #getStartedBtn:hover { opacity: 0.88; }
+
+  canvas { display: none; }
+</style>
+</head>
+<body>
+
+<!-- Upload Phase -->
+<div id="uploadPhase">
+  <div class="tag">Protocol — 3 Month Transformation</div>
+  <h1>See Your Potential.<br>Build Your Road Map.</h1>
+  <p class="sub">Upload a clear photo of your face. We'll show you exactly what's possible in 90 days.</p>
+
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" accept="image/*" id="fileInput"/>
+    <div class="upload-icon">↑</div>
+    <div class="upload-text">Drop your photo here or <span>browse</span></div>
+  </div>
+
+  <div id="previewWrap">
+    <img id="previewImg" src="" alt="Your photo"/>
+    <div class="preview-label">Your Photo</div>
+  </div>
+
+  <button id="buildBtn" onclick="startBuild()">▶ Build My Road Map</button>
+</div>
+
+<!-- Result Phase -->
+<div id="resultPhase">
+  <div class="result-tag">Your Transformation</div>
+  <h1 class="result-heading">This Is What's Possible.</h1>
+  <p class="result-sub">Based on your facial structure — achievable in 90 days.</p>
+  <div class="compare-grid">
+    <div class="compare-col">
+      <img id="beforeImg" src="" alt="Before"/>
+      <div class="compare-label">NOW</div>
+    </div>
+    <div class="compare-col">
+      <img id="afterImg" src="" alt="After"/>
+      <div class="compare-label after">90 DAYS</div>
+    </div>
+  </div>
+  <button id="getStartedBtn" onclick="window.location.href='/dashboard'">Get Started →</button>
+</div>
+
+<canvas id="processCanvas"></canvas>
+
+<script>
+  const OAI_SIZE = 1024;
+  let _originalImg = null;
+  let _originalDataUrl = null;
+  let _simulatePromise = null;
+
+  // Kicks off /api/simulate immediately (called as soon as a photo is uploaded) so the
+  // generation happens in the background while the user is still looking at the preview.
+  function kickOffSimulate() {
+    const match = _originalDataUrl.match(/^data:([^;]+);base64,(.*)$/);
+    const mimeType    = match ? match[1] : 'image/jpeg';
+    const imageBase64 = match ? match[2] : _originalDataUrl.split(',')[1];
+
+    _simulatePromise = fetch('/api/simulate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64, mimeType })
+    }).then(async resp => {
+      const data = await resp.json();
+      if (!resp.ok || data.error) throw new Error(typeof data.error === 'object' ? (data.error.message || JSON.stringify(data.error)) : data.error);
+      if (!data.imageUrl) throw new Error('No image returned');
+      return data;
+    });
+  }
+
+  // ── File upload ──────────────────────────────────────────────────────────
+  document.getElementById('fileInput').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      _originalDataUrl = ev.target.result;
+      const img = new Image();
+      img.onload = () => {
+        _originalImg = img;
+        document.getElementById('previewImg').src = _originalDataUrl;
+        document.getElementById('previewWrap').style.display = 'block';
+        document.getElementById('buildBtn').style.display = 'block';
+        document.getElementById('uploadZone').style.display = 'none';
+        kickOffSimulate();
+      };
+      img.src = _originalDataUrl;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ── Build mask PNG ───────────────────────────────────────────────────────
+  function buildMaskPng() {
+    const proc = document.getElementById('processCanvas');
+    proc.width = proc.height = OAI_SIZE;
+    const ctx = proc.getContext('2d');
+
+    // Draw original scaled to square
+    ctx.drawImage(_originalImg, 0, 0, OAI_SIZE, OAI_SIZE);
+
+    // Mask zone: brows + eyes (y=20%–48%)
+    const mx = Math.round(OAI_SIZE * 0.12);
+    const my = Math.round(OAI_SIZE * 0.20);
+    const mw = Math.round(OAI_SIZE * 0.76);
+    const mh = Math.round(OAI_SIZE * 0.28);
+
+    const imgData = ctx.getImageData(0, 0, OAI_SIZE, OAI_SIZE);
+    const d = imgData.data;
+
+    for (let y = 0; y < OAI_SIZE; y++) {
+      for (let x = 0; x < OAI_SIZE; x++) {
+        const i = (y * OAI_SIZE + x) * 4;
+        const inMask = x >= mx && x < mx + mw && y >= my && y < my + mh;
+        d[i] = 0; d[i+1] = 0; d[i+2] = 0;
+        d[i+3] = inMask ? 0 : 255;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+    return proc.toDataURL('image/png').split(',')[1];
+  }
+
+  function buildImagePng() {
+    const proc = document.getElementById('processCanvas');
+    proc.width = proc.height = OAI_SIZE;
+    proc.getContext('2d').drawImage(_originalImg, 0, 0, OAI_SIZE, OAI_SIZE);
+    return proc.toDataURL('image/png').split(',')[1];
+  }
+
+  // ── Main build flow ──────────────────────────────────────────────────────
+  // No transition/loading page: generation already started in the background as soon as
+  // the photo was uploaded (kickOffSimulate). Clicking "Build My Road Map" just waits on
+  // that same promise (instant if it already finished) and jumps straight to the result.
+  async function startBuild() {
+    if (!_originalImg) return;
+    const btn = document.getElementById('buildBtn');
+    btn.disabled = true;
+
+    try {
+      if (!_simulatePromise) kickOffSimulate();
+      const data = await _simulatePromise;
+      const resultSrc = data.imageUrl;
+
+      document.getElementById('uploadPhase').style.display = 'none';
+      document.getElementById('beforeImg').src = _originalDataUrl;
+      document.getElementById('afterImg').src  = resultSrc;
+      document.getElementById('resultPhase').style.display = 'block';
+
+      // Store for dashboard
+      localStorage.setItem('transformedPhoto', resultSrc);
+      localStorage.setItem('originalPhoto', _originalDataUrl);
+
+    } catch(e) {
+      btn.disabled = false;
+      alert('Error: ' + e.message);
+    }
+  }
+</script>
+</body>
+</html>
