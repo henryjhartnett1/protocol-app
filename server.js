@@ -247,14 +247,7 @@ function buildMakeupVtoTaskBody(fileId) {
 
 const server = http.createServer((req, res) => {
 
-  if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html')) {
-    const html = fs.readFileSync(path.join(__dirname, 'dashboard.html'), 'utf8');
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(html);
-    return;
-  }
-
-  if (req.method === 'GET' && req.url === '/analyze') {
+  if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html' || req.url === '/analyze')) {
     const html = fs.readFileSync(path.join(__dirname, 'glowai.html'), 'utf8');
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(html);
