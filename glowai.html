@@ -1969,13 +1969,28 @@ async function simulatePotential() {
   }, 4000);
 
   try {
-    const resp = await fetch('/api/simulate', {
+    // /api/simulate is a long pipeline (60-90+ seconds), so it returns a jobId
+    // immediately instead of holding the request open. Holding one request open
+    // that long was causing "load failed" on mobile (flaky cellular connections /
+    // proxy timeouts drop long-idle requests). We poll for the result instead.
+    const startResp = await fetch('/api/simulate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imageBase64, mimeType, hairData, browData, eyeData, skinData, roadmapText })
     });
-    const data = await resp.json();
-    if (!resp.ok || data.error) throw new Error(data.error || 'Generation failed');
+    const startData = await startResp.json();
+    if (!startResp.ok || startData.error) throw new Error(startData.error || 'Generation failed to start');
+    const jobId = startData.jobId;
+
+    let data;
+    while (true) {
+      await new Promise(r => setTimeout(r, 3000));
+      const statusResp = await fetch(`/api/simulate-status?id=${jobId}`);
+      const statusData = await statusResp.json();
+      if (statusData.status === 'done') { data = statusData; break; }
+      if (statusData.status === 'error') throw new Error(statusData.error || 'Generation failed');
+      // status === 'running' -> keep polling
+    }
 
     _simResultUrl = data.imageUrl;
 
@@ -2533,12 +2548,12 @@ function rerunSim() {
       trackEl.style.display = 'none';
       // Sequential status labels timed across full duration (~15s)
       const statuses = opts.statuses || [
-        'Analyzing face shape...',
-        'Analyzing hair...',
-        'Analyzing eyebrows...',
-        'Analyzing eyes...',
-        'Analyzing skin...',
-        'Building your report...',
+        'Analyzing...',
+        'Analyzing...',
+        'Analyzing...',
+        'Analyzing...',
+        'Analyzing...',
+        'Analyzing...',
       ];
       statuses.forEach((s, i) => setTimeout(() => { statusEl.textContent = s; }, i * 2000));
     }
@@ -3257,6 +3272,8 @@ function rerunSim() {
       underEyeScore:       e.underEyeScore       ?? null,
       eyeContrast:         e.eyeContrast         ?? null,
       overallScore:        e.overallScore        ?? e.eyeScore ?? null,
+      eyeColorName:        e.eyeColor?.name      ?? null,
+      eyeColorHex:         e.eyeColor?.hex       ?? null,
     };
     // Formula-computed section score (average of 7 metrics)
     const computedEyeScore = calcEyeScore(eyeSaved);
@@ -4099,18 +4116,31 @@ let _simulatePromise = null;
 // user clicks "Build My Roadmap" it's usually already done, so there's no transition page —
 // goToBestRoadmap() just awaits this same promise and shows the result instantly.
 function kickOffSimulate(imageBase64, mimeType) {
+  // /api/simulate is a long pipeline (60-90+ seconds) — it returns a jobId immediately
+  // instead of holding the request open (which caused "load failed" on mobile from
+  // flaky cellular connections / proxy timeouts dropping long-idle requests). We start
+  // the job here, then poll /api/simulate-status until it's done.
   _simulatePromise = fetch('/api/simulate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ imageBase64, mimeType: mimeType || 'image/jpeg' })
-  }).then(async resp => {
-    const rawText = await resp.text();
-    let data;
-    try { data = JSON.parse(rawText); }
-    catch(_) { throw new Error('Server error: ' + rawText.slice(0, 300)); }
-    if (data.error) throw new Error(typeof data.error === 'object' ? (data.error.message || JSON.stringify(data.error)) : data.error);
-    if (!data.imageUrl) throw new Error('No image returned from enhancement API');
-    return data;
+  }).then(async startResp => {
+    const startRawText = await startResp.text();
+    let startData;
+    try { startData = JSON.parse(startRawText); }
+    catch(_) { throw new Error('Server error: ' + startRawText.slice(0, 300)); }
+    if (startData.error) throw new Error(typeof startData.error === 'object' ? (startData.error.message || JSON.stringify(startData.error)) : startData.error);
+    const jobId = startData.jobId;
+    if (!jobId) throw new Error('No jobId returned from /api/simulate');
+
+    while (true) {
+      await new Promise(r => setTimeout(r, 3000));
+      const statusResp = await fetch(`/api/simulate-status?id=${jobId}`);
+      const statusData = await statusResp.json();
+      if (statusData.status === 'done') return statusData;
+      if (statusData.status === 'error') throw new Error(statusData.error || 'Generation failed');
+      // status === 'running' -> keep polling
+    }
   });
   return _simulatePromise;
 }

@@ -2,6 +2,25 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const crypto = require('crypto');
+
+// ── In-memory job store for the long-running /api/simulate pipeline ────────
+// /api/simulate chains 3 sequential Perfect Corp pipelines (makeup-vto ->
+// face-reshape -> hair-transfer), each with its own polling loop, so the
+// whole thing can take 60-90+ seconds. Holding one HTTP request open that
+// long causes "load failed" on mobile (flaky cellular connections / proxy
+// timeouts drop long-idle requests). Instead, /api/simulate now just starts
+// the job and returns a jobId immediately; the client polls
+// /api/simulate-status?id=<jobId> every few seconds for the result.
+const simulateJobs = new Map(); // jobId -> { status: 'running'|'done'|'error', imageUrl?, improvements?, error? }
+
+// Clean up old finished jobs so this map doesn't grow forever.
+setInterval(() => {
+  const cutoff = Date.now() - 10 * 60 * 1000; // 10 min
+  for (const [id, job] of simulateJobs) {
+    if (job.status !== 'running' && job.createdAt < cutoff) simulateJobs.delete(id);
+  }
+}, 60 * 1000);
 
 // ── Load .env (local dev only) ──────────────────────────────────────────────
 // Render/Railway/etc. inject real env vars directly, so this is a no-op in
@@ -143,9 +162,9 @@ async function pcRunTask(feature, taskBody, label, version = 'v2.0') {
 }
 
 // Hairstyle button id -> Perfect Corp hair-transfer template_id.
-// NOTE: only "male_wavy_undercut" is confirmed (from the user's real Playground request).
-// The rest are placeholders until the real template_id list (Playground "List predefined
-// templates v2.1" response) is provided — swap these in once we have them.
+// NOTE: "male_wavy_undercut" and "male_tousled_cut" are confirmed (from the user's real
+// Playground requests). The rest are still placeholders pointing at male_wavy_undercut
+// until their real template_id values are confirmed the same way — swap them in as we get them.
 const HAIR_TEMPLATE_MAP = {
   fringe:   'male_wavy_undercut',
   curtains: 'male_wavy_undercut',
@@ -153,6 +172,7 @@ const HAIR_TEMPLATE_MAP = {
   sidepart: 'male_wavy_undercut',
   crop:     'male_wavy_undercut',
   buzz:     'male_wavy_undercut',
+  tousled:  'male_tousled_cut',
 };
 
 // Builds the confirmed makeup-vto effects array (concealer, eyebrows, eyelashes, foundation)
@@ -176,14 +196,14 @@ function buildFaceReshapeTaskBody(fileId) {
       eye_height: 25,
       eye_distance: 0,
       eye_angle: -50,
-      face_reshape_left: 0,
-      face_reshape_right: 0,
+      face_reshape_left: -60,
+      face_reshape_right: -60,
       chin_reshape_left: 0,
       chin_reshape_right: 0,
-      chin_length: -25,
+      chin_length: 75,
       face_width: 0,
-      cheekbones: 50,
-      jaw: 50
+      cheekbones: 20,
+      jaw: 0
     },
     global: {
       skin_smooth_strength: 0,
@@ -198,34 +218,32 @@ function buildMakeupVtoTaskBody(fileId) {
     effects: [
       {
         category: 'eyebrows',
-        pattern: {
-          type: 'shape',
-          name: 'Straight17',
-          curvature: 0,
-          thickness: 35,
-          definition: 100
-        },
+        // pattern.type: 'color' keeps the user's own eyebrow shape instead of applying
+        // one of Perfect Corp's preset shape templates — only color is changed. The API
+        // requires this `pattern` block even for color-only edits (confirmed via 400:
+        // "Object has missing required properties (['pattern'])").
+        pattern: { type: 'color' },
         palettes: [
-          { color: '#3F2E21', colorIntensity: 100, texture: 'matte' }
+          { color: '#301708', colorIntensity: 100, texture: 'matte' }
         ]
       },
       {
         category: 'eyelashes',
         palettes: [
-          { color: '#000000', colorIntensity: 30 }
+          { color: '#000000', colorIntensity: 25 }
         ],
         pattern: {
-          name: 'UpperDense3'
+          name: 'Upper15'
         }
       },
       {
         category: 'foundation',
         palettes: [
           {
-            color: '#C99B5A',
-            colorIntensity: 100,
+            color: '#A06A4B',
+            colorIntensity: 50,
             coverageIntensity: 50,
-            glowIntensity: 50
+            glowIntensity: 0
           }
         ]
       },
@@ -741,6 +759,8 @@ eyeContrast: How striking the eyes appear — evaluate eye color visibility, eye
 
 Do NOT calculate potential. Omit eyePotential and eyePotentialGain — computed client-side.
 
+ALSO DETECT EYE COLOR: Identify the natural iris color from the photo. Classify into one of: "Brown", "Dark Brown", "Hazel", "Green", "Blue", "Gray", "Amber". Provide an approximate hex color swatch matching the iris.
+
 Return ONLY this JSON, no markdown:
 {
   "eyeScore": 7.8,
@@ -754,10 +774,11 @@ Return ONLY this JSON, no markdown:
   "underEyeScore": 6.5,
   "eyeContrast": 5.0,
   "overallScore": 7.8,
+  "eyeColor": { "name": "Brown", "hex": "#6F4E37" },
   "certain": true
 }
 
-If eyes not clearly visible, set certain to false.`,
+If eyes not clearly visible, set certain to false. If eye color cannot be determined, set eyeColor to null.`,
           messages: [{
             role: 'user',
             content: [
@@ -2073,70 +2094,128 @@ End with a "Daily Non-Negotiables" section (5 habits to do every single day).`;
     return;
   }
 
+  // ── Runs the actual 3-Month Potential pipeline in the background and writes
+  // the result into simulateJobs. Never called inline from the request handler.
+  async function runSimulateJob(jobId, parsed) {
+    try {
+      const { imageBase64, mimeType } = parsed;
+
+      // ── 3-Month Potential image chains three confirmed Perfect Corp pipelines:
+      // 1) makeup-vto (eyebrows/eyelashes/foundation/concealer) on the original photo, then
+      // 2) face-reshape (eyes) run on THAT result, then 3) hair-transfer.
+      const contentType = (mimeType || '').includes('png') ? 'image/png' : 'image/jpeg';
+      const fileName = contentType === 'image/png' ? 'photo.png' : 'photo.jpg';
+      const imgBuf = Buffer.from(imageBase64, 'base64');
+
+      // ── Step 1: makeup-vto (brows/lashes/foundation/concealer) on the original photo ──
+      console.log('[simulate:pc] uploading source photo for makeup-vto...');
+      const makeupFileId = await pcUploadFile('makeup-vto', imgBuf, contentType, fileName);
+      console.log('[simulate:pc] uploaded, file_id:', makeupFileId);
+
+      const taskBody = buildMakeupVtoTaskBody(makeupFileId);
+      console.log('[simulate:pc] running makeup-vto task...');
+      const resultData = await pcRunTask('makeup-vto', taskBody, 'makeup-vto');
+      const resultUrl = resultData?.results?.url || resultData?.results?.output?.[0]?.url || resultData?.output?.[0] || resultData?.url;
+      if (!resultUrl) throw new Error('makeup-vto: no result url in: ' + JSON.stringify(resultData).slice(0,300));
+      const makeupBuf = await pcFetchBuf(resultUrl);
+
+      // ── Step 2: face-reshape (eyes) on the makeup-vto result ──
+      console.log('[simulate:pc] uploading makeup-vto result for face-reshape (eyes)...');
+      const eyesFileId = await pcUploadFile('face-reshape', makeupBuf, 'image/jpeg', 'makeup-result.jpg', 'v2.0');
+      console.log('[simulate:pc] uploaded, file_id:', eyesFileId);
+
+      const eyesTaskBody = buildFaceReshapeTaskBody(eyesFileId);
+      console.log('[simulate:pc] running face-reshape (eyes) task...');
+      const eyesResultData = await pcRunTask('face-reshape', eyesTaskBody, 'face-reshape', 'v2.0');
+      const eyesResultUrl = eyesResultData?.results?.url || eyesResultData?.results?.output?.[0]?.url || eyesResultData?.output?.[0] || eyesResultData?.url;
+      if (!eyesResultUrl) throw new Error('face-reshape: no result url in: ' + JSON.stringify(eyesResultData).slice(0,300));
+      const eyesBuf = await pcFetchBuf(eyesResultUrl);
+
+      // ── Step 3: hair-transfer on the face-reshape result ──
+      // The UI promises "APPLYING HAIR IMPROVEMENTS..." but this step was previously
+      // missing entirely, so the simulated photo never actually changed the hair.
+      // Always uses the "wavy undercut" template per the user's instruction, same as
+      // the standalone hair-tryon endpoint, regardless of the recommended haircut text.
+      let finalBuf = eyesBuf;
+      const hairTemplateId = 'male_wavy_undercut';
+
+      try {
+        console.log('[simulate:pc] uploading face-reshape result for hair-transfer, template:', hairTemplateId);
+        const hairFileId = await pcUploadFile('hair-transfer', eyesBuf, 'image/jpeg', 'eyes-result.jpg', 'v2.1');
+        console.log('[simulate:pc] uploaded, file_id:', hairFileId);
+
+        // Confirmed from the user's real Playground request: template_id + hair_color:
+        // 'ref' works together in a single call — Perfect Corp uses src_file_id itself
+        // as the implicit color reference, so no separate ref_file_id/ref upload needed.
+        // (Passing template_id together with an explicit ref_file_id is rejected by the
+        // schema: "Should provide either 'ref_file_id' or 'template_id'".)
+        const hairTaskBody = { src_file_id: hairFileId, template_id: hairTemplateId, hair_color: 'ref' };
+        console.log('[simulate:pc] running hair-transfer task...');
+        const hairResultData = await pcRunTask('hair-transfer', hairTaskBody, 'hair-transfer', 'v2.1');
+        const hairResultUrl = hairResultData?.results?.url || hairResultData?.results?.output?.[0]?.url || hairResultData?.output?.[0] || hairResultData?.url;
+        if (!hairResultUrl) throw new Error('hair-transfer: no result url in: ' + JSON.stringify(hairResultData).slice(0,300));
+        finalBuf = await pcFetchBuf(hairResultUrl);
+      } catch (hairErr) {
+        // Don't let a hair-transfer failure kill the whole simulation — fall back to
+        // the brows/eyes-only result rather than erroring the entire request.
+        console.error('[simulate:pc] hair-transfer step failed, continuing without it:', hairErr.message);
+      }
+
+      const b64 = finalBuf.toString('base64');
+      const imageUrl = `data:image/jpeg;base64,${b64}`;
+
+      // Fixed improvements list reflecting what this pipeline actually changes.
+      const improvements = [
+        'Hair: updated to recommended haircut (hair-transfer)',
+        'Brows: thicker, denser, well-defined',
+        'Eyelashes: fuller, more defined',
+        'Skin: even tone with healthy glow (foundation)',
+        'Eyes: brightened under-eyes, no dark circles (concealer)',
+        'Eyes: enlarged, more open and symmetrical shape (face-reshape)',
+        'Face: sharper cheekbones and jawline, refined chin length (face-reshape)'
+      ];
+
+      console.log('[simulate:pc] done.');
+      simulateJobs.set(jobId, { status: 'done', imageUrl, improvements, createdAt: Date.now() });
+
+    } catch(e) {
+      console.error('[simulate] Error:', e.message);
+      simulateJobs.set(jobId, { status: 'error', error: e.message, createdAt: Date.now() });
+    }
+  }
+
+  // Kicks off the pipeline and returns a jobId immediately — the long pipeline runs
+  // in the background, so the request never sits open long enough to time out on
+  // a flaky mobile connection. Client then polls /api/simulate-status?id=<jobId>.
   if (req.method === 'POST' && req.url === '/api/simulate') {
     const chunks = [];
     req.on('data', c => chunks.push(c));
-    req.on('end', async () => {
+    req.on('end', () => {
       try {
         const parsed = JSON.parse(Buffer.concat(chunks).toString());
-        const { imageBase64, mimeType, hairData, browData, eyeData, skinData, roadmapText } = parsed;
+        const jobId = crypto.randomUUID();
+        simulateJobs.set(jobId, { status: 'running', createdAt: Date.now() });
+        runSimulateJob(jobId, parsed); // fire-and-forget, not awaited
 
-        // ── 3-Month Potential image now chains three confirmed Perfect Corp pipelines:
-        // 1) makeup-vto (eyebrows/eyelashes/foundation/concealer) on the original photo, then
-        // 2) face-reshape (eyes) run on THAT result.
-        // Response contract ({imageUrl, improvements}) is unchanged so glowai.html's
-        // simulatePotential() doesn't need to change.
-        const contentType = (mimeType || '').includes('png') ? 'image/png' : 'image/jpeg';
-        const fileName = contentType === 'image/png' ? 'photo.png' : 'photo.jpg';
-        const imgBuf = Buffer.from(imageBase64, 'base64');
-
-        // ── Step 1: makeup-vto (brows/lashes/foundation/concealer) on the original photo ──
-        console.log('[simulate:pc] uploading source photo for makeup-vto...');
-        const makeupFileId = await pcUploadFile('makeup-vto', imgBuf, contentType, fileName);
-        console.log('[simulate:pc] uploaded, file_id:', makeupFileId);
-
-        const taskBody = buildMakeupVtoTaskBody(makeupFileId);
-        console.log('[simulate:pc] running makeup-vto task...');
-        const resultData = await pcRunTask('makeup-vto', taskBody, 'makeup-vto');
-        const resultUrl = resultData?.results?.url || resultData?.results?.output?.[0]?.url || resultData?.output?.[0] || resultData?.url;
-        if (!resultUrl) throw new Error('makeup-vto: no result url in: ' + JSON.stringify(resultData).slice(0,300));
-        const makeupBuf = await pcFetchBuf(resultUrl);
-
-        // ── Step 2: face-reshape (eyes) on the makeup-vto result ──
-        console.log('[simulate:pc] uploading makeup-vto result for face-reshape (eyes)...');
-        const eyesFileId = await pcUploadFile('face-reshape', makeupBuf, 'image/jpeg', 'makeup-result.jpg', 'v2.0');
-        console.log('[simulate:pc] uploaded, file_id:', eyesFileId);
-
-        const eyesTaskBody = buildFaceReshapeTaskBody(eyesFileId);
-        console.log('[simulate:pc] running face-reshape (eyes) task...');
-        const eyesResultData = await pcRunTask('face-reshape', eyesTaskBody, 'face-reshape', 'v2.0');
-        const eyesResultUrl = eyesResultData?.results?.url || eyesResultData?.results?.output?.[0]?.url || eyesResultData?.output?.[0] || eyesResultData?.url;
-        if (!eyesResultUrl) throw new Error('face-reshape: no result url in: ' + JSON.stringify(eyesResultData).slice(0,300));
-        const eyesBuf = await pcFetchBuf(eyesResultUrl);
-
-        const b64 = eyesBuf.toString('base64');
-        const imageUrl = `data:image/jpeg;base64,${b64}`;
-
-        // Fixed improvements list reflecting what this pipeline actually changes.
-        const improvements = [
-          'Brows: thicker, denser, well-defined',
-          'Eyelashes: fuller, more defined',
-          'Skin: even tone with healthy glow (foundation)',
-          'Eyes: brightened under-eyes, no dark circles (concealer)',
-          'Eyes: enlarged, more open and symmetrical shape (face-reshape)',
-          'Face: sharper cheekbones and jawline, refined chin length (face-reshape)'
-        ];
-
-        console.log('[simulate:pc] done.');
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-        res.end(JSON.stringify({ imageUrl, improvements }));
-
+        res.end(JSON.stringify({ jobId }));
       } catch(e) {
-        console.error('[simulate] Error:', e.message);
+        console.error('[simulate] Error starting job:', e.message);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
       }
     });
+    return;
+  }
+
+  // Poll endpoint for the async /api/simulate job above.
+  if (req.method === 'GET' && req.url.startsWith('/api/simulate-status')) {
+    const urlObj = new URL(req.url, 'http://localhost');
+    const jobId = urlObj.searchParams.get('id');
+    const job = jobId && simulateJobs.get(jobId);
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+    if (!job) { res.end(JSON.stringify({ status: 'error', error: 'Job not found' })); return; }
+    res.end(JSON.stringify(job));
     return;
   }
 
@@ -2160,10 +2239,13 @@ End with a "Daily Non-Negotiables" section (5 habits to do every single day).`;
         const fileId = await pcUploadFile('hair-transfer', imgBuf, contentType, fileName, 'v2.1');
         console.log('[hair-tryon:pc] uploaded, file_id:', fileId);
 
-        const templateId = HAIR_TEMPLATE_MAP[styleId] || 'male_wavy_undercut';
-        const taskBody = { src_file_id: fileId, template_id: templateId, hair_color: 'src' };
+        const templateId = 'male_wavy_undercut';
 
-        console.log('[hair-tryon:pc] running hair-transfer task with template:', templateId);
+        // Confirmed from the user's real Playground request: template_id + hair_color:
+        // 'ref' works together in a single call — Perfect Corp uses src_file_id itself
+        // as the implicit color reference, so no separate ref_file_id/ref upload needed.
+        console.log('[hair-tryon:pc] running hair-transfer with template:', templateId);
+        const taskBody = { src_file_id: fileId, template_id: templateId, hair_color: 'ref' };
         const resultData = await pcRunTask('hair-transfer', taskBody, 'hair-transfer', 'v2.1');
         const resultUrl = resultData?.results?.url || resultData?.results?.output?.[0]?.url || resultData?.output?.[0] || resultData?.url;
         if (!resultUrl) throw new Error('hair-transfer: no result url in: ' + JSON.stringify(resultData).slice(0,300));

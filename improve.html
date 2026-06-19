@@ -116,7 +116,8 @@ header{
 .habit-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg1);border-bottom:1px solid var(--border);transition:background .15s;}
 .habit-item:last-child{border-bottom:none;}
 .habit-item:hover{background:var(--bg2);}
-.habit-item-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.habit-item-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden;}
+.task-icon-img{width:100%;height:100%;object-fit:cover;border-radius:inherit;}
 .habit-item-content{flex:1;min-width:0;}
 .habit-item-name{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;}
 .habit-item-desc{font-size:10px;color:var(--muted);line-height:1.4;}
@@ -177,7 +178,7 @@ header{
 .tp-group-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;margin-top:8px;}
 .tp-group-label:first-child{margin-top:0;}
 .tp-item{display:flex;align-items:center;gap:8px;padding:5px 0;}
-.tp-item-icon{width:22px;height:22px;border-radius:6px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.tp-item-icon{width:22px;height:22px;border-radius:6px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;overflow:hidden;}
 .tp-item-name{flex:1;font-size:11px;color:var(--text);}
 .tp-remove{width:18px;height:18px;border-radius:4px;background:var(--bg3);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;transition:all .15s;flex-shrink:0;}
 .tp-remove:hover{background:rgba(239,68,68,0.15);color:var(--red);}
@@ -460,7 +461,7 @@ const AREAS = {
     daily: [],
     dailyTip: null,
     weekly: [
-      { id:'hair-w-cut', icon:'✂️', name:'Get Haircut', desc:'Maintain the hairstyle matched to your face shape.', gain:2.0, time:'30 min', added:false },
+      { id:'hair-w-cut', icon:'/FRINGEICON.png', name:'Get Haircut', desc:'Maintain the hairstyle matched to your face shape.', gain:1.0, time:'30 min', added:false },
     ],
     monthly: [],
   },
@@ -534,7 +535,7 @@ const TASK_VALUES = {
   // Tone (conditional on toneEvenness)
   'g-vitc':          0.50, 'g-niacinamide':  0.50,
   // Advanced (conditional)
-  'adv-ghkcu':       0.75, 'adv-collagen':   0.25,
+  'adv-ghkcu':       0.75, 'adv-ghkcu2': 0.50,
   // Legacy / unused (kept for productState compatibility)
   'g-salicylic': 0, 'g-ha': 0, 'g-oilclean': 0, 'fraud-concealer': 0,
   'h-exercise':  0, 'h-sunlight': 0,
@@ -542,20 +543,19 @@ const TASK_VALUES = {
   'skin-w1': 0, 'skin-w2': 0, 'skin-w3': 0, 'skin-m1': 0, 'skin-m2': 0,
   // ── EYES ──
   'eye-d-whitening': 0.10, 'eye-d-lash':      0.25, 'eye-d-ice':       0.10,
-  'eye-d-sleep':     0.25, 'eye-d-hydration': 0.10,
-  'eye-w-brow':      0,    'eye-w-puffiness': 0,
+  'eye-w-puffiness': 0,
   'eye-f-contacts':  1.00, 'eye-f-concealer': 0.50, 'eye-f-mascara':   0.25, 'eye-f-waterline': 0.25,
   'eye-a-contrast':  0.75, 'eye-a-undereye':  0.75, 'eye-a-framing':   0,    'eye-a-brightness': 0,
   // ── BROWS ──
-  'brow-d-serum':    0.50, 'brow-d-condition': 0.10,
-  'brow-w-shape':    0.50, 'brow-w-strays':    0.25, 'brow-w-photos':  0,
+  'brow-d-serum':    0.50,
+  'brow-w-shape':    0.50, 'brow-w-strays':    0.25,
   'brow-w-edge':     0,    'brow-w-maintain':  0,    'brow-w-tail':    0.25,
   'brow-w-cleanup':  0,    'brow-w-thickness': 0,
-  'brow-f-pencil':   1.00, 'brow-f-gel':       0.25, 'brow-f-fiber':   0.75, 'brow-f-tint': 0.50,
+  'brow-f-pencil':   1.00, 'brow-f-gel':       0.25, 'brow-f-fiber':   0.75,
   'brow-a-design':   0,    'brow-a-lamination':0.75, 'brow-a-mapping': 1.50,
   'brow-a-styling':   0,    'brow-a-tail':    0,
   // ── HAIR ──
-  'hair-w-cut': 2.00,
+  'hair-w-cut': 1.00,
 };
 
 // Canonical section membership — which task IDs belong to which section.
@@ -563,14 +563,14 @@ const TASK_VALUES = {
 const SECTION_TASK_IDS = {
   // skin is populated dynamically by buildSkinRoadmap() based on user scores
   skin:  ['ess-cleanser','ess-cleanser-pm','ess-moisturizer','ess-moisturizer-pm','ess-sunscreen'],
-  eyes:  ['eye-d-whitening','eye-d-lash','eye-d-ice','eye-d-sleep','eye-d-hydration',
-          'eye-w-photos','eye-w-brow','eye-w-puffiness',
+  eyes:  ['eye-d-whitening','eye-d-lash','eye-d-ice',
+          'eye-w-puffiness',
           'eye-f-contacts','eye-f-concealer','eye-f-mascara','eye-f-waterline',
           'eye-a-contrast','eye-a-undereye','eye-a-framing','eye-a-brightness'],
-  brows: ['brow-d-serum','brow-d-condition',
-          'brow-w-shape','brow-w-strays','brow-w-photos','brow-w-edge',
+  brows: ['brow-d-serum',
+          'brow-w-shape','brow-w-strays','brow-w-edge',
           'brow-w-maintain','brow-w-tail','brow-w-cleanup','brow-w-thickness',
-          'brow-f-pencil','brow-f-gel','brow-f-fiber','brow-f-tint',
+          'brow-f-pencil','brow-f-gel','brow-f-fiber',
           'brow-a-design','brow-a-lamination','brow-a-mapping',
           'brow-a-styling','brow-a-tail'],
   hair:  ['hair-w-cut'],
@@ -598,25 +598,25 @@ const productState = (() => {
 
 // ── SKIN PRODUCT DATA ──
 const SKIN_ESSENTIALS = [
-  { id:'ess-cleanser',    icon:'🧴', name:'Cleanser',        desc:'Removes dirt, oil, and impurities without stripping your skin barrier.', when:'AM + PM' },
-  { id:'ess-moisturizer', icon:'💧', name:'Moisturizer',     desc:'Keeps skin hydrated and supports barrier repair. Non-negotiable daily step.', when:'AM + PM' },
-  { id:'ess-sunscreen',   icon:'☀️', name:'Sunscreen SPF 50+', desc:'Prevents UV damage, dark spots, and premature aging. Most impactful product you can use.', when:'Every AM' },
+  { id:'ess-cleanser',    icon:'/Cleanser.png', name:'Cleanser',        desc:'Removes dirt, oil, and impurities without stripping your skin barrier.', when:'AM + PM' },
+  { id:'ess-moisturizer', icon:'/MOISTURIZER.png', name:'Moisturizer',     desc:'Keeps skin hydrated and supports barrier repair. Non-negotiable daily step.', when:'AM + PM' },
+  { id:'ess-sunscreen',   icon:'/SS.png', name:'Sunscreen SPF 50+', desc:'Prevents UV damage, dark spots, and premature aging. Most impactful product you can use.', when:'Every AM' },
 ];
 
 const GOAL_PRODUCTS = {
   'Clear Acne':           { id:'g-salicylic',  icon:'🔬', name:'Salicylic Acid Serum (2%)', reason:'Helps reduce acne and unclog pores.' },
-  'Reduce Redness':       { id:'g-niacinamide', icon:'🌸', name:'Niacinamide Serum',          reason:'Helps calm redness and improve skin barrier health.' },
+  'Reduce Redness':       { id:'g-niacinamide', icon:'/NI.png', name:'Niacinamide Serum',          reason:'Helps calm redness and improve skin barrier health.' },
   'Improve Skin Texture': { id:'g-aha',         icon:'✨', name:'AHA/BHA Exfoliant',          reason:'Improves skin smoothness and texture.' },
-  'Remove Dark Spots':    { id:'g-vitc',        icon:'🍊', name:'Vitamin C Serum',            reason:'Helps fade pigmentation and brighten skin.' },
-  'Anti-Aging':           { id:'g-retinol',     icon:'⚗️', name:'Retinol Serum',              reason:'Most recognized anti-aging skincare ingredient.' },
-  'Brighter Skin':        { id:'g-vitc',        icon:'🍊', name:'Vitamin C Serum',            reason:'Associated with brighter and more radiant skin.' },
+  'Remove Dark Spots':    { id:'g-vitc',        icon:'/VCS.png', name:'Vitamin C Serum',            reason:'Helps fade pigmentation and brighten skin.' },
+  'Anti-Aging':           { id:'g-retinol',     icon:'/RETINOL.png', name:'Retinol Serum',              reason:'Most recognized anti-aging skincare ingredient.'},
+  'Brighter Skin':        { id:'g-vitc',        icon:'/VCS.png', name:'Vitamin C Serum',            reason:'Associated with brighter and more radiant skin.' },
   'Healthier Glow':       { id:'g-ha',          icon:'💦', name:'Hyaluronic Acid Serum',      reason:'Improves hydration and creates a healthier appearance.' },
   'Reduce Oily Skin':     { id:'g-oilclean',    icon:'🧼', name:'Oil-Control Cleanser',       reason:'Targets excess oil production.' },
   'Improve all':          null, // handled specially
 };
 
 const SKIN_ADVANCED = {
-  id: 'adv-ghkcu', icon: '⚗️', name: 'GHK-Cu (Copper Peptide)',
+  id: 'adv-ghkcu', icon: '/GHKI.png', name: 'GHK-Cu (Copper Peptide)',
   reason: 'Supports skin quality and collagen production. May improve overall skin appearance. Popular among advanced skincare users.',
   bullets: ['Improved skin quality', 'Improved skin health', 'Long-term optimization'],
   difficulty: 'Easy', time: '30 seconds daily', category: 'Advanced',
@@ -624,44 +624,40 @@ const SKIN_ADVANCED = {
 
 // Full product metadata for score-based skin roadmap
 const SKIN_TASK_DATA = {
-  'ess-cleanser':       { icon:'🧴', name:'Cleanser (AM)',               desc:'Removes dirt, oil, and impurities. Start every morning with a clean base.', category:'foundation' },
-  'ess-cleanser-pm':    { icon:'🧴', name:'Cleanser (PM)',               desc:'Cleanse away the day before your night routine. Never skip this step.', category:'foundation' },
-  'ess-moisturizer':    { icon:'💧', name:'Morning Moisturizer',        desc:'Hydrates and supports barrier repair. Apply after cleanser every morning.', category:'foundation' },
-  'ess-moisturizer-pm': { icon:'🌙', name:'Night Moisturizer',          desc:'Repair and replenish skin overnight. Heavier formula for nighttime recovery.', category:'foundation' },
-  'ess-sunscreen':      { icon:'☀️', name:'Sunscreen SPF 50+',         desc:'Prevents UV damage and preserves skin quality long-term.', category:'foundation' },
+  'ess-cleanser':       { icon:'/Cleanser.png', name:'Cleanser (AM)',               desc:'Removes dirt, oil, and impurities. Start every morning with a clean base.', category:'foundation' },
+  'ess-cleanser-pm':    { icon:'/Cleanser.png', name:'Cleanser (PM)',               desc:'Cleanse away the day before your night routine. Never skip this step.', category:'foundation' },
+  'ess-moisturizer':    { icon:'/MOISTURIZER.png', name:'Morning Moisturizer',        desc:'Hydrates and supports barrier repair. Apply after cleanser every morning.', category:'foundation' },
+  'ess-moisturizer-pm': { icon:'/MOISTURIZER.png', name:'Night Moisturizer',          desc:'Repair and replenish skin overnight. Heavier formula for nighttime recovery.', category:'foundation' },
+  'ess-sunscreen':      { icon:'/SS.png', name:'Sunscreen SPF 50+',         desc:'Prevents UV damage and preserves skin quality long-term.', category:'foundation' },
   'g-benzoyl':       { icon:'🔬', name:'Benzoyl Peroxide',              desc:'Kills acne-causing bacteria and reduces active breakouts.', category:'acne', condition:'Recommended: acneScore ≤ 7' },
   'g-adapalene':     { icon:'⚗️', name:'Adapalene (Differin)',          desc:'Prescription-strength retinoid that clears acne and prevents future breakouts.', category:'acne', condition:'Recommended: acneScore ≤ 6' },
   'g-prescription':  { icon:'🏥', name:'Prescription Acne Treatment',  desc:'Medical-grade treatment for moderate to severe acne. Highest-impact acne intervention.', category:'acne', condition:'Recommended: acneScore ≤ 4' },
   'g-aha':           { icon:'✨', name:'Chemical Exfoliant (AHA/BHA)', desc:'Removes dead skin cells and smooths the skin surface.', category:'texture', condition:'Recommended: textureScore ≤ 7' },
-  'g-retinol':       { icon:'⚗️', name:'Retinol',                      desc:'Increases cell turnover and improves long-term skin texture and quality.', category:'texture' },
+  'g-retinol':       { icon:'/RETINOL.png', name:'Retinol',                      desc:'Increases cell turnover and improves long-term skin texture and quality.', category:'texture' },
   'skin-microneedle':{ icon:'🧬', name:'Microneedling',                 desc:'Professional treatment that dramatically improves skin texture and reduces scarring.', category:'texture', condition:'Recommended: textureScore ≤ 5' },
-  'g-vitc':          { icon:'🍊', name:'Vitamin C Serum',               desc:'Fades dark spots and evens skin tone. Apply every morning under SPF.', category:'tone', condition:'Recommended: toneEvenness ≤ 8' },
-  'g-niacinamide':   { icon:'🌸', name:'Niacinamide',                   desc:'Reduces redness, evens tone, and improves overall skin clarity.', category:'tone', condition:'Recommended: toneEvenness ≤ 7' },
-  'adv-ghkcu':       { icon:'⚗️', name:'GHK-Cu (Copper Peptide)',       desc:'Advanced peptide that improves skin quality, texture, and overall appearance.', category:'advanced' },
-  'adv-collagen':    { icon:'🧬', name:'Collagen Peptides',             desc:'Supports skin elasticity and glow from within.', category:'advanced', condition:'Recommended: skinGlow ≤ 7' },
+  'g-vitc':          { icon:'/VCS.png', name:'Vitamin C Serum',               desc:'Fades dark spots and evens skin tone. Apply every morning under SPF.', category:'tone', condition:'Recommended: toneEvenness ≤ 8' },
+  'g-niacinamide':   { icon:'/NI.png', name:'Niacinamide',                   desc:'Reduces redness, evens tone, and improves overall skin clarity.', category:'tone', condition:'Recommended: toneEvenness ≤ 7' },
+  'adv-ghkcu':       { icon:'/GHKI.png', name:'GHK-Cu (Copper Peptide)',       desc:'Advanced peptide that improves skin quality, texture, and overall appearance.', category:'advanced' },
+  'adv-ghkcu2':      { icon:'/MT2.png', name:'MT2 (Melanotan II)',       desc:'Peptide that stimulates natural melanin production for a deeper, more even tan.', category:'advanced' },
 };
 
 const IMPROVE_ALL_PRODUCTS = [
   { id:'g-salicylic',  icon:'🔬', name:'Salicylic Acid Serum (2%)', reason:'Helps reduce acne and unclog pores.' },
-  { id:'g-niacinamide', icon:'🌸', name:'Niacinamide Serum',         reason:'Calms redness and improves skin barrier health.' },
-  { id:'g-vitc',       icon:'🍊', name:'Vitamin C Serum',            reason:'Fades pigmentation and brightens skin.' },
+  { id:'g-niacinamide', icon:'/NI.png', name:'Niacinamide Serum',         reason:'Calms redness and improves skin barrier health.' },
+  { id:'g-vitc',       icon:'/VCS.png', name:'Vitamin C Serum',            reason:'Fades pigmentation and brightens skin.' },
   { id:'g-retinol',    icon:'⚗️', name:'Retinol Serum',              reason:'Most recognized anti-aging skincare ingredient.' },
 ];
 
 // ── EYES DATA ──
 // All possible eye items (for productState ID stability)
 const EYE_ALL_ITEMS = {
-  'eye-d-whitening':  { id:'eye-d-whitening',  icon:'💧', name:'Eye Whitening Drops',     type:'daily'   },
-  'eye-d-lash':       { id:'eye-d-lash',        icon:'✨', name:'Eyelash Growth Serum',     type:'daily'   },
+  'eye-d-whitening':  { id:'eye-d-whitening',  icon:'/EYEWHITENINGDROPS.png', name:'Eye Whitening Drops',     type:'daily'   },
+  'eye-d-lash':       { id:'eye-d-lash',        icon:'/LASHSERUM.png', name:'Eyelash Growth Serum',     type:'daily'   },
   'eye-d-ice':        { id:'eye-d-ice',         icon:'🧊', name:'Ice Water Face Dunk',      type:'daily'   },
-  'eye-d-sleep':      { id:'eye-d-sleep',       icon:'😴', name:'Sleep 8+ Hours',           type:'daily'   },
-  'eye-d-hydration':  { id:'eye-d-hydration',   icon:'💦', name:'Hydration Goal',           type:'daily'   },
-  'eye-w-photos':     { id:'eye-w-photos',      icon:'📷', name:'Under-Eye Progress Photos',type:'weekly'  },
-  'eye-w-brow':       { id:'eye-w-brow',        icon:'✂️', name:'Eyebrow Cleanup',          type:'weekly'  },
   'eye-w-puffiness':  { id:'eye-w-puffiness',   icon:'🔍', name:'Puffiness Check',          type:'weekly'  },
-  'eye-f-contacts':   { id:'eye-f-contacts',    icon:'👁️', name:'Colored Contacts',         type:'instant', difficulty:'Easy', time:'10 sec'  },
-  'eye-f-concealer':  { id:'eye-f-concealer',   icon:'🎨', name:'Under-Eye Concealer',      type:'instant', difficulty:'Easy', time:'30 sec'  },
-  'eye-f-mascara':    { id:'eye-f-mascara',     icon:'✏️', name:'Mascara',                  type:'instant', difficulty:'Easy', time:'30 sec'  },
+  'eye-f-contacts':   { id:'eye-f-contacts',    icon:'/CC.png', name:'Colored Contacts',         type:'instant', difficulty:'Easy', time:'10 sec'  },
+  'eye-f-concealer':  { id:'eye-f-concealer',   icon:'/UEC.png', name:'Under-Eye Concealer',      type:'instant', difficulty:'Easy', time:'30 sec'  },
+  'eye-f-mascara':    { id:'eye-f-mascara',     icon:'/MASCARA.png', name:'Mascara',                  type:'instant', difficulty:'Easy', time:'30 sec'  },
   'eye-f-waterline':  { id:'eye-f-waterline',   icon:'🖊️', name:'White Waterline Pencil',   type:'instant', difficulty:'Easy', time:'15 sec'  },
   'eye-a-contrast':   { id:'eye-a-contrast',    icon:'⚡', name:'Eye Contrast Optimization',type:'advanced'},
   'eye-a-undereye':   { id:'eye-a-undereye',    icon:'✦',  name:'Under-Eye Brightness Opt.',type:'advanced'},
@@ -677,50 +673,50 @@ const EYES_FRAUDS = Object.values(EYE_ALL_ITEMS).filter(i => i.type === 'instant
 const EYE_ROADMAP_DATA = {
   canthalTilt: {
     goal: 'Make your natural eye angle more noticeable.',
-    daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice','eye-d-sleep'],
-    weekly:   ['eye-w-photos','eye-w-brow'],
+    daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
+    weekly:   [],
     instant:  ['eye-f-contacts','eye-f-concealer','eye-f-mascara','eye-f-waterline'],
     advanced: ['eye-a-contrast','eye-a-undereye'],
   },
   eyeShape: {
     goal: 'Draw more attention toward your natural eye shape.',
-    daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice','eye-d-hydration'],
-    weekly:   ['eye-w-brow','eye-w-photos'],
+    daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
+    weekly:   [],
     instant:  ['eye-f-contacts','eye-f-mascara','eye-f-waterline'],
     advanced: ['eye-a-framing','eye-a-contrast'],
   },
   eyeExposure: {
     goal: 'Make your naturally visible eyes even more attention-grabbing.',
-    daily:    ['eye-d-whitening','eye-d-ice','eye-d-lash','eye-d-sleep'],
-    weekly:   ['eye-w-puffiness','eye-w-brow'],
+    daily:    ['eye-d-whitening','eye-d-ice','eye-d-lash'],
+    weekly:   ['eye-w-puffiness'],
     instant:  ['eye-f-concealer','eye-f-contacts','eye-f-waterline','eye-f-mascara'],
     advanced: ['eye-a-undereye','eye-a-brightness'],
   },
   upperEyelidExposure: {
     goal: 'Increase the intensity and structure of the eye area.',
-    daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice','eye-d-hydration'],
-    weekly:   ['eye-w-photos'],
+    daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
+    weekly:   [],
     instant:  ['eye-f-contacts','eye-f-mascara','eye-f-concealer'],
     advanced: ['eye-a-framing','eye-a-contrast'],
   },
   eyeDepth: {
     goal: 'Make your deep-set eyes appear even more striking.',
-    daily:    ['eye-d-whitening','eye-d-lash','eye-d-sleep','eye-d-ice'],
-    weekly:   ['eye-w-photos','eye-w-brow'],
+    daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
+    weekly:   [],
     instant:  ['eye-f-contacts','eye-f-concealer','eye-f-mascara'],
     advanced: ['eye-a-contrast','eye-a-undereye'],
   },
   eyeSpacing: {
     goal: 'Preserve harmony while increasing eye impact.',
-    daily:    ['eye-d-whitening','eye-d-lash','eye-d-hydration','eye-d-sleep'],
-    weekly:   ['eye-w-brow','eye-w-photos'],
+    daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
+    weekly:   [],
     instant:  ['eye-f-contacts','eye-f-mascara','eye-f-concealer'],
     advanced: ['eye-a-contrast'],
   },
   eyeSymmetry: {
     goal: 'Make your balanced eye area even more noticeable.',
-    daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice','eye-d-sleep'],
-    weekly:   ['eye-w-brow','eye-w-photos'],
+    daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
+    weekly:   [],
     instant:  ['eye-f-contacts','eye-f-mascara','eye-f-concealer','eye-f-waterline'],
     advanced: ['eye-a-framing','eye-a-contrast'],
   },
@@ -748,19 +744,16 @@ function getEyeRoadmapAllIds() {
 // ── BROWS DATA ──
 // All possible brow items (for productState ID stability)
 const BROW_ALL_ITEMS = {
-  'brow-d-serum':     { id:'brow-d-serum',     icon:'✨', name:'Eyebrow Growth Serum',     type:'daily'   },
-  'brow-d-condition': { id:'brow-d-condition',  icon:'💧', name:'Brow Conditioning',         type:'daily'   },
-  'brow-w-shape':     { id:'brow-w-shape',      icon:'✂️', name:'Shape Cleanup',             type:'weekly'  },
+  'brow-d-serum':     { id:'brow-d-serum',     icon:'/MINOXIDIL.png', name:'Apply Minixodil',     type:'daily'   },
+  'brow-w-shape':     { id:'brow-w-shape',      icon:'/SHAPECLEANUP.png', name:'Shape Cleanup',             type:'weekly'  },
   'brow-w-strays':    { id:'brow-w-strays',     icon:'🪮', name:'Stray Hair Removal',         type:'weekly'  },
-  'brow-w-photos':    { id:'brow-w-photos',     icon:'📷', name:'Progress Photos',            type:'weekly'  },
   'brow-w-edge':      { id:'brow-w-edge',       icon:'✂️', name:'Edge Cleanup',               type:'weekly'  },
   'brow-w-maintain':  { id:'brow-w-maintain',   icon:'🪮', name:'Shape Maintenance',          type:'weekly'  },
   'brow-w-tail':      { id:'brow-w-tail',       icon:'✂️', name:'Tail Maintenance',           type:'weekly'  },
   'brow-w-thickness': { id:'brow-w-thickness',  icon:'✂️', name:'Thickness Preservation Cleanup', type:'weekly' },
   'brow-w-cleanup':   { id:'brow-w-cleanup',    icon:'✂️', name:'Cleanup',                    type:'weekly'  },
-  'brow-f-tint':      { id:'brow-f-tint',       icon:'🎨', name:'Eyebrow Tint',               type:'instant', difficulty:'Easy', time:'10 min' },
-  'brow-f-gel':       { id:'brow-f-gel',        icon:'💈', name:'Brow Gel',                   type:'instant', difficulty:'Easy', time:'10 sec' },
-  'brow-f-pencil':    { id:'brow-f-pencil',     icon:'✏️', name:'Brow Pencil',                type:'instant', difficulty:'Easy', time:'1 min'  },
+  'brow-f-gel':       { id:'brow-f-gel',        icon:'/BROWGEL.png', name:'Brow Gel',                   type:'instant', difficulty:'Easy', time:'10 sec' },
+  'brow-f-pencil':    { id:'brow-f-pencil',     icon:'/BROWPENCIL.png', name:'Brow Pencil',                type:'instant', difficulty:'Easy', time:'1 min'  },
   'brow-f-fiber':     { id:'brow-f-fiber',      icon:'🖊️', name:'Brow Fiber Filler',          type:'instant', difficulty:'Easy', time:'1 min'  },
   'brow-a-lamination':{ id:'brow-a-lamination', icon:'⚡', name:'Brow Lamination',            type:'advanced' },
   'brow-a-mapping':   { id:'brow-a-mapping',    icon:'✦',  name:'Professional Brow Mapping',  type:'advanced' },
@@ -770,52 +763,52 @@ const BROW_ALL_ITEMS = {
 };
 
 // Legacy references for productState compatibility
-const BROWS_HABITS = [BROW_ALL_ITEMS['brow-d-serum'], BROW_ALL_ITEMS['brow-d-condition']];
-const BROWS_WEEKLY = [BROW_ALL_ITEMS['brow-w-shape'],  BROW_ALL_ITEMS['brow-w-photos']];
+const BROWS_HABITS = [BROW_ALL_ITEMS['brow-d-serum']];
+const BROWS_WEEKLY = [BROW_ALL_ITEMS['brow-w-shape'],  BROW_ALL_ITEMS['brow-w-strays']];
 const BROWS_FRAUDS = [BROW_ALL_ITEMS['brow-f-pencil'], BROW_ALL_ITEMS['brow-f-gel']];
 
 // ── BROW ROADMAP TEMPLATES ──
 const BROW_ROADMAP_DATA = {
   eyebrowFraming: {
     goal: 'Create even stronger eye framing.',
-    daily:    ['brow-d-serum','brow-d-condition'],
-    weekly:   ['brow-w-shape','brow-w-strays','brow-w-photos'],
-    instant:  ['brow-f-tint','brow-f-gel','brow-f-pencil','brow-f-fiber'],
+    daily:    ['brow-d-serum'],
+    weekly:   ['brow-w-shape','brow-w-strays'],
+    instant:  ['brow-f-gel','brow-f-pencil','brow-f-fiber'],
     advanced: ['brow-a-lamination','brow-a-design'],
   },
   eyebrowShape: {
     goal: 'Make your natural eyebrow structure more noticeable.',
-    daily:    ['brow-d-serum','brow-d-condition'],
-    weekly:   ['brow-w-edge','brow-w-maintain','brow-w-photos'],
-    instant:  ['brow-f-gel','brow-f-pencil','brow-f-tint'],
+    daily:    ['brow-d-serum'],
+    weekly:   ['brow-w-edge','brow-w-maintain'],
+    instant:  ['brow-f-gel','brow-f-pencil'],
     advanced: ['brow-a-mapping','brow-a-lamination'],
   },
   eyebrowPosition: {
     goal: 'Maximize the structure your brows create around the eyes.',
-    daily:    ['brow-d-serum','brow-d-condition'],
-    weekly:   ['brow-w-shape','brow-w-photos'],
-    instant:  ['brow-f-tint','brow-f-gel','brow-f-pencil'],
+    daily:    ['brow-d-serum'],
+    weekly:   ['brow-w-shape'],
+    instant:  ['brow-f-gel','brow-f-pencil'],
     advanced: ['brow-a-styling','brow-a-lamination'],
   },
   eyebrowThickness: {
     goal: 'Turn your natural thickness into a defining facial feature.',
-    daily:    ['brow-d-serum','brow-d-condition'],
-    weekly:   ['brow-w-thickness','brow-w-photos'],
-    instant:  ['brow-f-gel','brow-f-tint','brow-f-pencil'],
+    daily:    ['brow-d-serum'],
+    weekly:   ['brow-w-thickness'],
+    instant:  ['brow-f-gel','brow-f-pencil'],
     advanced: ['brow-a-styling','brow-a-lamination'],
   },
   eyebrowDensity: {
     goal: 'Make your dense brows appear even more powerful and structured.',
-    daily:    ['brow-d-serum','brow-d-condition'],
-    weekly:   ['brow-w-cleanup','brow-w-photos'],
-    instant:  ['brow-f-tint','brow-f-gel','brow-f-pencil'],
+    daily:    ['brow-d-serum'],
+    weekly:   ['brow-w-cleanup'],
+    instant:  ['brow-f-gel','brow-f-pencil'],
     advanced: ['brow-a-lamination','brow-a-design'],
   },
   eyebrowLength: {
     goal: 'Maximize the eye framing created by your brow length.',
-    daily:    ['brow-d-serum','brow-d-condition'],
-    weekly:   ['brow-w-tail','brow-w-photos'],
-    instant:  ['brow-f-pencil','brow-f-tint','brow-f-gel'],
+    daily:    ['brow-d-serum'],
+    weekly:   ['brow-w-tail'],
+    instant:  ['brow-f-pencil','brow-f-gel'],
     advanced: ['brow-a-mapping','brow-a-tail'],
   },
 };
@@ -889,7 +882,7 @@ const currentHairInput = { faceShape: 'oval' };
 function getHairWeekly() {
   const shape = HAIR_FACE_SHAPES[currentHairInput.faceShape];
   return [
-    { id:'hair-w-cut', icon:'✂️', name:`Get ${shape.haircut}`, impact:5, improves:['Face framing','Overall appearance'] },
+    { id:'hair-w-cut', icon:'/FRINGEICON.png', name:`Get ${shape.haircut}`, impact:5, improves:['Face framing','Overall appearance'] },
   ];
 }
 
@@ -1078,9 +1071,10 @@ function renderProductCard(p, type, goal) {
 
   return `
     <div class="prod-card" data-task-id="${p.id}" data-card-type="skin-card">
-      <div class="prod-icon" style="background:${iconBg(p.icon)};">${p.icon}</div>
+      <div class="prod-icon" style="background:${iconBg(p.icon)};">${renderIcon(p.icon)}</div>
       <div class="prod-body">
         <div class="prod-name">${p.name}</div>
+        ${learnMoreBtn(p.id, p.name)}
         <div class="prod-desc">${p.desc || p.reason || ''}</div>
         ${whenTag}${goalTag}
       </div>
@@ -1107,7 +1101,7 @@ function buildSkinRoadmap() {
   if (tone    <= 8) tasks.push('g-vitc');
   if (tone    <= 7) tasks.push('g-niacinamide');
   tasks.push('adv-ghkcu'); // always recommended
-  if (glow    <= 7) tasks.push('adv-collagen');
+  tasks.push('adv-ghkcu2'); // duplicate of adv-ghkcu, always recommended
 
   // Update section membership so getSectionPotential() reflects this user's roadmap
   SECTION_TASK_IDS.skin = tasks;
@@ -1137,9 +1131,10 @@ function renderSkin() {
     const condTag = t.condition ? `<div class="prod-goal-tag" style="background:rgba(96,165,250,0.08);border-color:rgba(96,165,250,0.2);color:#60a5fa;">${t.condition}</div>` : '';
     return `
       <div class="prod-card" data-task-id="${id}" data-card-type="skin-card">
-        <div class="prod-icon" style="background:${iconBg(t.icon)};">${t.icon}</div>
+        <div class="prod-icon" style="background:${iconBg(t.icon)};">${renderIcon(t.icon)}</div>
         <div class="prod-body">
           <div class="prod-name">${t.name}</div>
+          ${learnMoreBtn(id, t.name)}
           <div class="prod-desc">${t.desc}</div>
           ${condTag}
         </div>
@@ -1204,9 +1199,10 @@ function renderEyes() {
       : `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${id}','have')">+ Add to Daily</button><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
     return `
       <div class="prod-card" data-task-id="${id}" data-card-type="daily-habit">
-        <div class="prod-icon" style="background:${iconBg(h.icon)};">${h.icon}</div>
+        <div class="prod-icon" style="background:${iconBg(h.icon)};">${renderIcon(h.icon)}</div>
         <div class="prod-body">
           <div class="prod-name">${h.name}</div>
+          ${learnMoreBtn(id, h.name)}
         </div>
         <div class="prod-action">${action}</div>
       </div>`;
@@ -1221,9 +1217,10 @@ function renderEyes() {
       : `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${id}','have')">+ Add to Weekly</button><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
     return `
       <div class="prod-card" data-task-id="${id}" data-card-type="weekly-habit">
-        <div class="prod-icon" style="background:${iconBg(h.icon)};">${h.icon}</div>
+        <div class="prod-icon" style="background:${iconBg(h.icon)};">${renderIcon(h.icon)}</div>
         <div class="prod-body">
           <div class="prod-name">${h.name}</div>
+          ${learnMoreBtn(id, h.name)}
         </div>
         <div class="prod-action">${action}</div>
       </div>`;
@@ -1242,9 +1239,10 @@ function renderEyes() {
       action = `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">I Have This</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Need To Buy</button></div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
     return `
       <div class="prod-card" data-task-id="${id}" data-card-type="instant-fix">
-        <div class="prod-icon" style="background:rgba(245,158,11,0.12);">${f.icon}</div>
+        <div class="prod-icon" style="background:rgba(245,158,11,0.12);">${renderIcon(f.icon)}</div>
         <div class="prod-body">
           <div class="prod-name">${f.name}</div>
+          ${learnMoreBtn(id, f.name)}
           ${f.difficulty ? `<div class="frauds-meta" style="margin-top:4px;"><div class="frauds-meta-row"><span class="frauds-meta-label">Time</span><span class="frauds-meta-val">${f.time}</span></div></div>` : ''}
         </div>
         <div class="prod-action">${action}</div>
@@ -1264,9 +1262,10 @@ function renderEyes() {
       action = `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">Unlock</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Learn More</button></div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
     return `
       <div class="prod-card" data-task-id="${id}" data-card-type="advanced-upgrade">
-        <div class="prod-icon" style="background:rgba(99,102,241,0.12);">${a.icon}</div>
+        <div class="prod-icon" style="background:rgba(99,102,241,0.12);">${renderIcon(a.icon)}</div>
         <div class="prod-body">
           <div class="prod-name">${a.name}</div>
+          ${learnMoreBtn(id, a.name)}
         </div>
         <div class="prod-action">${action}</div>
       </div>`;
@@ -1343,9 +1342,10 @@ function renderHair() {
           : `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${h.id}','have')">+ Add to Weekly</button><button class="own-undo" onclick="dismissTask('${h.id}')">×</button></div>`;
         return `
           <div class="prod-card" data-task-id="${h.id}" data-card-type="weekly-habit">
-            <div class="prod-icon" style="background:rgba(107,114,128,0.15);">${h.icon}</div>
+            <div class="prod-icon" style="background:rgba(107,114,128,0.15);">${renderIcon(h.icon)}</div>
             <div class="prod-body">
               <div class="prod-name">${h.name}</div>
+              ${learnMoreBtn(h.id, h.name)}
               <div class="eye-stars-row"><span class="eye-stars-filled">${'★'.repeat(h.impact)}</span><span class="eye-stars-empty">${'☆'.repeat(5-h.impact)}</span></div>
               <div class="eye-tags">${h.improves.map(i => `<span class="eye-tag">${i}</span>`).join('')}</div>
             </div>
@@ -1380,7 +1380,7 @@ function renderBrows() {
     const action = s === 'have'
       ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
       : `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${id}','have')">+ Add to Daily</button><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
-    return `<div class="prod-card" data-task-id="${id}" data-card-type="daily-habit"><div class="prod-icon" style="background:${iconBg(h.icon)};">${h.icon}</div><div class="prod-body"><div class="prod-name">${h.name}</div></div><div class="prod-action">${action}</div></div>`;
+    return `<div class="prod-card" data-task-id="${id}" data-card-type="daily-habit"><div class="prod-icon" style="background:${iconBg(h.icon)};">${renderIcon(h.icon)}</div><div class="prod-body"><div class="prod-name">${h.name}</div>${learnMoreBtn(id, h.name)}</div><div class="prod-action">${action}</div></div>`;
   }
 
   function weeklyCard(id) {
@@ -1389,7 +1389,7 @@ function renderBrows() {
     const action = s === 'have'
       ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Weekly</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
       : `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${id}','have')">+ Add to Weekly</button><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
-    return `<div class="prod-card" data-task-id="${id}" data-card-type="weekly-habit"><div class="prod-icon" style="background:${iconBg(h.icon)};">${h.icon}</div><div class="prod-body"><div class="prod-name">${h.name}</div></div><div class="prod-action">${action}</div></div>`;
+    return `<div class="prod-card" data-task-id="${id}" data-card-type="weekly-habit"><div class="prod-icon" style="background:${iconBg(h.icon)};">${renderIcon(h.icon)}</div><div class="prod-body"><div class="prod-name">${h.name}</div>${learnMoreBtn(id, h.name)}</div><div class="prod-action">${action}</div></div>`;
   }
 
   function instantCard(id) {
@@ -1402,7 +1402,7 @@ function renderBrows() {
       action = `<div class="own-status-wrap"><div class="own-status own-buying">📋 Purchasing</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
     else
       action = `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">I Have This</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Need To Buy</button></div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
-    return `<div class="prod-card" data-task-id="${id}" data-card-type="instant-fix"><div class="prod-icon" style="background:rgba(245,158,11,0.12);">${f.icon}</div><div class="prod-body"><div class="prod-name">${f.name}</div>${f.time ? `<div class="frauds-meta" style="margin-top:4px;"><div class="frauds-meta-row"><span class="frauds-meta-label">Time</span><span class="frauds-meta-val">${f.time}</span></div></div>` : ''}</div><div class="prod-action">${action}</div></div>`;
+    return `<div class="prod-card" data-task-id="${id}" data-card-type="instant-fix"><div class="prod-icon" style="background:rgba(245,158,11,0.12);">${renderIcon(f.icon)}</div><div class="prod-body"><div class="prod-name">${f.name}</div>${learnMoreBtn(id, f.name)}${f.time ? `<div class="frauds-meta" style="margin-top:4px;"><div class="frauds-meta-row"><span class="frauds-meta-label">Time</span><span class="frauds-meta-val">${f.time}</span></div></div>` : ''}</div><div class="prod-action">${action}</div></div>`;
   }
 
   function advancedCard(id) {
@@ -1415,7 +1415,7 @@ function renderBrows() {
       action = `<div class="own-status-wrap"><div class="own-status own-buying">📋 In Progress</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
     else
       action = `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">Unlock</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Learn More</button></div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
-    return `<div class="prod-card" data-task-id="${id}" data-card-type="advanced-upgrade"><div class="prod-icon" style="background:rgba(99,102,241,0.12);">${a.icon}</div><div class="prod-body"><div class="prod-name">${a.name}</div></div><div class="prod-action">${action}</div></div>`;
+    return `<div class="prod-card" data-task-id="${id}" data-card-type="advanced-upgrade"><div class="prod-icon" style="background:rgba(99,102,241,0.12);">${renderIcon(a.icon)}</div><div class="prod-body"><div class="prod-name">${a.name}</div>${learnMoreBtn(id, a.name)}</div><div class="prod-action">${action}</div></div>`;
   }
 
   return `
@@ -1520,7 +1520,7 @@ function renderHabitGroup(type, icon, name, sub, items, btnClass, btnLabel, tip)
   const addedCount = items.filter(i => added[i.id]).length;
   const itemsHtml = items.map(item => `
     <div class="habit-item">
-      <div class="habit-item-icon" style="background:${iconBg(item.icon)};">${item.icon}</div>
+      <div class="habit-item-icon" style="background:${iconBg(item.icon)};">${renderIcon(item.icon)}</div>
       <div class="habit-item-content">
         <div class="habit-item-name">${item.name}</div>
         <div class="habit-item-desc">${item.desc}</div>
@@ -1572,6 +1572,571 @@ function iconBg(emoji) {
     '🧖':'rgba(163,230,53,0.12)','🫧':'rgba(59,130,246,0.15)',
   };
   return map[emoji] || 'rgba(107,114,128,0.15)';
+}
+
+// Task icons can be either an emoji character or an image path (e.g. '/MINOXIDIL.png').
+// This renders the right thing for either case so all the icon containers below
+// (.prod-icon, .habit-item-icon, .tp-item-icon) can keep using ${renderIcon(x.icon)}
+// regardless of which kind of icon a given task has.
+function renderIcon(icon) {
+  if (typeof icon === 'string' && /\.(png|jpe?g|webp|svg|gif)$/i.test(icon)) {
+    return `<img src="${icon}" class="task-icon-img" alt=""/>`;
+  }
+  return icon;
+}
+
+// "Learn More" link rendered underneath every task's name. Centralized here so all
+// the prod-card/habit-item templates can just call ${learnMoreBtn(x.id, x.name)}.
+// Takes the name directly (rather than looking it up by id) so it works for every
+// task across skin/eyes/brows/hair without needing one shared lookup table.
+function learnMoreBtn(id, name) {
+  const safeName = (name || id || '').replace(/'/g, "\\'");
+  return `<button class="learn-more-btn" type="button" onclick="event.stopPropagation();showLearnMore('${id}','${safeName}')">Learn More</button>`;
+}
+
+// Rich "Learn More" detail content, keyed by task id. Tasks not yet in here fall
+// back to a simple alert (see showLearnMore below) until their content is written.
+const TASK_DETAILS = {
+  'ess-cleanser': {
+    impactStars: 4, impactLabel: 'High Impact',
+    time: '30 sec / day', difficulty: 'Easy',
+    why: 'A morning cleanser removes oil, sweat, and bacteria that build up overnight. Starting the day with clean skin allows your other skincare products to absorb better and helps keep your complexion clearer throughout the day.',
+    benefits: [
+      'Removes excess oil', 'Prevents clogged pores', 'Helps reduce acne',
+      'Fresher appearance', 'Improves product absorption', 'Healthier-looking skin',
+      'Removes overnight buildup', 'Better skin texture',
+    ],
+    science: 'A gentle cleanser removes excess sebum, dead skin cells, and bacteria without damaging the skin barrier. This reduces pore congestion and creates the ideal foundation for the rest of your skincare routine.',
+    usage: [
+      'Wet your face with lukewarm water', 'Massage cleanser for 30–60 seconds',
+      'Focus on oily areas', 'Rinse thoroughly',
+      'Pat dry with a clean towel', 'Apply moisturizer immediately afterward',
+    ],
+    resultsTiming: 'Results: Cleaner skin immediately', resultsDuration: 'Best results: 2–4 weeks',
+    resultsNote: 'Cleaner skin immediately. Best results after 2–4 weeks of consistent use.',
+    hideResultsSection: true,
+  },
+  'ess-moisturizer': {
+    impactStars: 5, impactLabel: 'Very High Impact',
+    time: '20 sec / day', difficulty: 'Easy',
+    why: 'Moisturizer keeps your skin hydrated and strengthens the skin barrier, making your complexion smoother, healthier, and more resilient. Well-moisturized skin naturally looks brighter and more youthful.',
+    benefits: [
+      'Hydrated skin', 'Stronger skin barrier', 'Smoother texture',
+      'Healthier appearance', 'Reduces dryness', 'Improves glow',
+      'Supports skin repair', 'Better long-term skin health',
+    ],
+    science: 'Moisturizers trap water inside the skin while reinforcing the protective barrier. This reduces water loss, improves texture, and allows skin to repair itself more effectively.',
+    usage: [
+      'Apply after cleansing', 'Use morning and night',
+      'Cover the entire face evenly', "Don't forget the neck",
+      'Allow it to absorb fully', 'Use daily for best results',
+    ],
+    resultsTiming: 'Results: Hydration immediately', resultsDuration: 'Max improvement: 2–3 weeks',
+    resultsNote: 'Hydration immediately. Maximum improvements within 2–3 weeks.',
+    hideResultsSection: true,
+  },
+  'ess-sunscreen': {
+    impactStars: 5, impactLabel: 'Very High Impact',
+    time: '20 sec / day', difficulty: 'Easy',
+    why: 'Sunscreen is the single most important product for maintaining healthy skin. It prevents sun damage, premature aging, pigmentation, redness, and collagen loss while preserving all of the progress made by your skincare routine.',
+    benefits: [
+      'Prevents premature aging', 'Reduces dark spots', 'Prevents redness',
+      'Protects collagen', 'Keeps skin tone even', 'Prevents UV damage',
+      'Maintains skin quality', 'Preserves results',
+    ],
+    science: 'UV radiation breaks down collagen, increases pigmentation, and accelerates skin aging. Daily SPF dramatically slows these processes and protects the skin from cumulative damage.',
+    usage: [
+      'Apply every morning', 'Use SPF 50 or higher',
+      'Cover your entire face and neck', 'Apply after moisturizer',
+      'Reapply every 2 hours outdoors', 'Wear daily—even on cloudy days',
+    ],
+    resultsTiming: 'Results: Protection begins immediately', resultsDuration: 'Long-term: months to years',
+    resultsNote: 'Protection begins immediately. Long-term improvements accumulate over months and years.',
+    hideResultsSection: true,
+  },
+  'g-retinol': {
+    impactStars: 5, impactLabel: 'Very High Impact',
+    time: '30 sec / night', difficulty: '?',
+    why: 'Retinol is one of the most effective skincare ingredients available. It improves texture, unclogs pores, smooths fine lines, and increases overall skin quality through long-term collagen production.',
+    benefits: [
+      'Smoother skin', 'Better texture', 'Fewer breakouts',
+      'Smaller-looking pores', 'More collagen', 'Improves fine lines',
+      'Brighter complexion', 'Long-term skin improvement',
+    ],
+    science: 'Retinol increases cell turnover and stimulates collagen production, replacing older damaged skin cells with healthier ones while improving skin structure over time.',
+    usage: [
+      'Apply only at night', 'Use a pea-sized amount',
+      'Start 2–3 nights per week', 'Apply after cleansing',
+      'Moisturize afterward', 'Wear SPF every morning',
+    ],
+    resultsTiming: 'Texture improves: 4–6 weeks', resultsDuration: 'Major results: 3–6 months',
+    resultsNote: 'Texture improves in 4–6 weeks. Major improvements appear after 3–6 months.',
+    resultsImage: '/RETBA.webp',
+    resultsImagePos: { x: 49, y: 89, scale: 1.0 },
+  },
+  'g-vitc': {
+    impactStars: 4, impactLabel: 'High Impact',
+    time: '20 sec / day', difficulty: '?',
+    why: 'Vitamin C brightens the skin, fades pigmentation, and protects against environmental damage. It creates a healthier, more even complexion while boosting overall skin radiance.',
+    benefits: [
+      'Brighter skin', 'Fades dark spots', 'Evens skin tone',
+      'Increases glow', 'Antioxidant protection', 'Supports collagen',
+      'Reduces discoloration', 'Healthier complexion',
+    ],
+    science: 'Vitamin C reduces excess melanin production while protecting skin cells from oxidative damage. It also supports collagen formation, improving both tone and firmness.',
+    usage: [
+      'Apply every morning', 'Use after cleansing',
+      'Apply before moisturizer', 'Follow with sunscreen',
+      'Store away from sunlight', 'Use consistently',
+    ],
+    resultsTiming: 'Glow improves: 2 weeks', resultsDuration: 'Pigmentation: 6–12 weeks',
+    resultsNote: 'Glow improves within 2 weeks. Pigmentation improves over 6–12 weeks.',
+    hideResultsSection: true,
+  },
+  'g-niacinamide': {
+    impactStars: 4, impactLabel: 'High Impact',
+    time: '20 sec / day', difficulty: '?',
+    why: 'Niacinamide improves multiple skin concerns at once, including redness, oil production, uneven tone, and enlarged pores. It is one of the most versatile ingredients in skincare.',
+    benefits: [
+      'Reduces redness', 'Evens skin tone', 'Controls oil',
+      'Smaller-looking pores', 'Improves skin barrier', 'Smoother texture',
+      'Brighter complexion', 'Supports healthy skin',
+    ],
+    science: 'Niacinamide strengthens the skin barrier while reducing inflammation and regulating oil production. It also improves pigmentation and overall skin clarity with consistent use.',
+    usage: [
+      'Apply morning and night', 'Use after cleansing',
+      'Apply before moisturizer', 'Cover the full face evenly',
+      'Use daily', 'Pair with sunscreen',
+    ],
+    resultsTiming: 'Oil control improves: 2 weeks', resultsDuration: 'Tone & redness: 4–8 weeks',
+    resultsNote: 'Oil control improves in 2 weeks. Tone and redness improve in 4–8 weeks.',
+    resultsImage: '/NII.jpg',
+    resultsImagePos: { x: 51, y: 88, scale: 1.0 },
+  },
+  'hair-w-cut': {
+    impactStars: 5, impactLabel: 'Very High Impact',
+    time: '30 min (one-time haircut)', difficulty: 'Easy',
+    why: 'A textured fringe is the hairstyle that best complements your facial structure by improving facial proportions and increasing eye emphasis. It frames the upper face, balances facial length, and directs attention toward your strongest features, creating a cleaner, more attractive appearance.',
+    benefits: [
+      'Improves facial proportions', 'Frames the eyes naturally', 'Enhances facial harmony',
+      'More modern appearance', 'Better hair texture and movement', 'Increases overall attractiveness',
+      'Works with your natural hair type', 'Instantly boosts first impressions',
+    ],
+    science: 'Your hairstyle is one of the largest contributors to overall facial attractiveness because it changes how people perceive your facial proportions. A textured fringe shortens perceived face length, creates stronger facial framing, and emphasizes the eyes, leading to a more balanced appearance.',
+    usage: [
+      'Show your barber the recommended hairstyle reference photo', 'Ask for a textured fringe with natural movement, not a blunt cut',
+      'Style using a matte clay or texture powder for volume and separation', 'Keep the fringe sitting naturally across the forehead',
+      'Get a maintenance haircut every 4–6 weeks', 'Avoid heavy shine products that flatten the hairstyle',
+    ],
+    resultsTiming: 'Results: Immediately after your haircut', resultsDuration: 'Best appearance: After 3–7 days of styling practice',
+    resultsNote: 'Once the haircut is complete, you’ll see an immediate improvement. Learning to style it consistently will maximize the results over the following week.',
+    resultsImage: '/FRINGERL.jpg',
+    resultsImagePos: { x: 50, y: 50, scale: 1.00 },
+  },
+  'adv-ghkcu': {
+    impactStars: 5, impactLabel: 'Very High Impact',
+    time: '20 sec / day', difficulty: '?',
+    why: 'GHK-Cu is an advanced peptide that supports skin repair, collagen production, and overall skin quality. It helps create smoother, firmer, healthier-looking skin over time and is one of the highest-potential anti-aging ingredients available.',
+    benefits: [
+      'Boosts collagen', 'Improves firmness', 'Smoother skin',
+      'Faster skin repair', 'Better elasticity', 'Improves overall skin quality',
+      'Healthier complexion', 'Long-term anti-aging benefits',
+    ],
+    science: 'GHK-Cu is a naturally occurring copper peptide that activates genes involved in tissue repair and collagen production. Research suggests it can improve skin remodeling, elasticity, and overall skin health with consistent use.',
+    usage: [
+      'Apply once daily', 'Use after cleansing',
+      'Apply before moisturizer', 'Cover the entire face evenly',
+      'Use consistently for best results', 'Wear sunscreen every morning',
+    ],
+    resultsTiming: 'Healthier skin: 4–6 weeks', resultsDuration: 'Major results: 3–6 months',
+    resultsNote: 'Healthier skin within 4–6 weeks. Major improvements in firmness and skin quality after 3–6 months.',
+    resultsImage: '/GHKCURI.jpg',
+    resultsImagePos: { x: 50, y: 50, scale: 1.00 },
+  },
+  'adv-ghkcu2': {
+    impactStars: 5, impactLabel: 'Very High Impact',
+    time: '30 sec / day', difficulty: '?',
+    why: 'MT2 is a peptide that stimulates your body’s natural melanin production, allowing you to develop a deeper, more even tan with significantly less sun exposure. A healthy tan increases facial contrast, improves skin tone, and can make skin appear clearer and more defined.',
+    benefits: [
+      'Produces a deeper natural tan', 'Improves facial contrast', 'Creates a more even skin tone',
+      'Helps skin appear healthier', 'Can reduce the appearance of blemishes', 'Requires less UV exposure to tan',
+      'Long-lasting results with maintenance', 'Significantly boosts overall appearance',
+    ],
+    science: 'MT2 is a synthetic peptide that activates melanocortin receptors responsible for melanin production. As melanin levels increase, the skin gradually becomes darker and more UV-resistant, allowing many users to tan more efficiently than they naturally would.',
+    usage: [
+      'Start with a low dose and increase gradually if tolerated', 'Follow proper injection technique if using injectable MT2',
+      'Pair with short, controlled UV exposure to stimulate tanning', 'Stay hydrated throughout the process',
+      'Avoid excessive sun exposure or sunburns', 'Once your desired tan is reached, reduce to a maintenance schedule',
+    ],
+    resultsTiming: 'First changes: 5–10 days', resultsDuration: 'Maximum results: 4–8 weeks',
+    resultsNote: 'Noticeable tan within 2–4 weeks. Results vary depending on your natural skin tone, UV exposure, and consistency. Most users begin noticing increased pigmentation within the first week.',
+    resultsImage: '/MT2RL.jpg',
+    resultsImagePos: { x: 50, y: 50, scale: 1.00 },
+  },
+  'eye-d-whitening': {
+    impactStars: 5, impactLabel: 'Very High Impact',
+    time: '30 sec / day', difficulty: 'Easy',
+    why: 'Eye whitening drops temporarily reduce redness in the whites of your eyes, making you look healthier, more awake, and increasing eye contrast.',
+    benefits: [
+      'Whiter sclera (eye whites)', 'Healthier, more refreshed appearance', 'More awake and alert look',
+      'Better eye contrast', 'Makes eye color stand out', 'Improves first impressions',
+      'Works in under 1 minute', 'Non-invasive and easy to use',
+    ],
+    science: 'Redness in the sclera is caused by dilated blood vessels. Whitening drops contain ingredients that temporarily constrict these vessels, reducing redness and making the whites of your eyes appear brighter and cleaner.',
+    usage: [
+      'Implement into morning routine', 'Look up and pull lower lid down', 'Apply 1 drop to each eye',
+      'Blink gently', 'Wait 1–2 minutes', 'Use before contacts if worn', 'Do not overuse throughout the day',
+    ],
+    resultsTiming: 'Immediately', resultsDuration: 'Duration: 4–8 hours',
+    resultsNote: 'Results are temporary but work within 60 seconds.',
+    resultsImage: '/EYEWHITENING%20DROPS.jpeg',
+    resultsImagePos: { x: 50, y: 0, scale: 1.00 },
+    tips: [
+      'Combine with 8+ hours of sleep', 'Stay hydrated', 'Use before photos or events',
+      'Avoid rubbing your eyes', 'Store in a cool place for comfort',
+    ],
+    products: [
+      { name: 'Visine Advanced Redness Relief', badge: 'Popular Choice' },
+      { name: 'Lumify Redness Reliever Drops', badge: 'Doctor Recommended' },
+      { name: 'Rohto Cool Redness Relief', badge: 'Long Lasting' },
+    ],
+  },
+  'eye-d-lash': {
+    impactStars: 4, impactLabel: 'High Impact',
+    time: '30 sec / day', difficulty: '?',
+    why: 'Eyelash growth serum helps your natural lashes grow longer, thicker, and darker over time. Fuller lashes naturally frame your eyes, increase perceived eye size, and create stronger contrast without looking artificial.',
+    benefits: [
+      'Longer natural eyelashes', 'Thicker lash line', 'Darker-looking lashes',
+      'Better eye framing', 'Eyes appear larger', 'Improves eye contrast',
+      'Natural 24/7 enhancement', 'Lasting results with consistency',
+    ],
+    science: 'Most eyelash growth serums extend the growth phase of the eyelash cycle, allowing lashes to grow longer before naturally shedding. Over several weeks, this produces fuller, denser lashes that remain completely natural.',
+    usage: [
+      'Apply once every night after cleansing your face', 'Use on clean, dry eyelids only',
+      'Apply a thin line along the upper lash line', 'Allow serum to dry for 2–3 minutes',
+      'Do not apply to the lower lashes', 'Use consistently every night for best results',
+    ],
+    resultsTiming: 'First changes: 4–6 weeks', resultsDuration: 'Full results: 12–16 weeks',
+    resultsNote: 'Effects are heavily amplified with mascara.',
+    resultsImage: '/EYELASHRESULTS.png',
+    resultsImageCropped: true,
+  },
+  'eye-f-contacts': {
+    impactStars: 5, impactLabel: 'Very High Impact',
+    time: '10 sec / day', difficulty: 'Easy',
+    why: 'Colored contacts can dramatically enhance your eye appearance by increasing iris contrast and making your eyes stand out more. Choosing the right color for your complexion creates a stronger focal point and can instantly improve overall facial attractiveness.',
+    benefits: [
+      'Instantly changes eye color', 'Increases eye contrast', 'Makes eyes more noticeable',
+      'Enhances facial harmony', 'Improves photo appearance', 'Customizable to your style',
+      'Natural-looking with quality lenses', 'Immediate confidence boost',
+    ],
+    science: 'Eye color plays a major role in facial contrast. Increasing the contrast between your iris, sclera, skin tone, and eyelashes naturally draws more attention to your eyes, making them appear brighter, sharper, and more attractive.',
+    usage: [
+      'Wash your hands before handling lenses', 'Clean lenses before each use',
+      'Insert before applying makeup', 'Wear only for the recommended time',
+      'Remove before sleeping', 'Store in fresh contact solution after use',
+    ],
+    resultsTiming: 'Results: Immediately', resultsDuration: 'Duration: Varies',
+    resultsNote: "Results are instant and last until you take them out.",
+    resultsImage: '/CC%20RESULTS.jpg',
+  },
+  'eye-f-mascara': {
+    impactStars: 4, impactLabel: 'High Impact',
+    time: '30 sec / day', difficulty: 'Easy',
+    why: 'Mascara instantly makes your eyelashes appear longer, thicker, and darker. This creates stronger eye framing, increases perceived eye size, and boosts eye contrast, making your eyes stand out within seconds.',
+    benefits: [
+      'Longer-looking eyelashes', 'Thicker lash appearance', 'Darker lash line',
+      'Better eye framing', 'Eyes appear larger', 'Stronger eye contrast',
+      'Fast daily enhancement', 'Works in under a minute',
+    ],
+    science: 'Longer and darker eyelashes increase the visual boundary around the eyes, improving contrast and drawing attention to them. This simple enhancement can significantly improve overall eye definition with minimal effort.',
+    usage: [
+      'Curl lashes first if desired', 'Apply from the lash roots upward',
+      'Wiggle the wand while lifting', 'Add a second coat if needed',
+      'Allow each coat to dry briefly', 'Remove completely before bed',
+    ],
+    resultsTiming: 'Results: Immediately', resultsDuration: 'Duration: Until removed',
+    resultsNote: 'Will provide a more dramatic effect once eyelashes are grown out.',
+    resultsImage: '/EYELASHRESULTS.png',
+    resultsImageCropped: true,
+  },
+  'eye-f-concealer': {
+    impactStars: 4, impactLabel: 'High Impact',
+    time: '30 sec / day', difficulty: 'Easy',
+    why: 'Under-eye concealer immediately reduces the appearance of dark circles and discoloration, helping you look healthier, more awake, and well-rested. It creates a brighter under-eye area that significantly improves your overall facial appearance.',
+    benefits: [
+      'Hides dark circles', 'Brightens the under-eye area', 'More awake appearance',
+      'Healthier overall look', 'Smoother-looking skin', 'Better eye contrast',
+      'Great for photos and events', 'Immediate improvement',
+    ],
+    science: 'Dark circles create shadows beneath the eyes that the brain often associates with fatigue. Concealer reflects more light from this area, reducing visible shadows and creating a brighter, fresher appearance almost instantly.',
+    usage: [
+      'Apply a small amount under each eye',
+      'Blend gently with a sponge or finger', 'Build coverage only if needed',
+      'Remove completely before bed',
+    ],
+    resultsTiming: 'Results: Immediately', resultsDuration: 'Duration: 8–12 hours',
+    resultsNote: 'Under-eye concealer provides instant coverage and lasts throughout most of the day before needing to be removed or reapplied.',
+    resultsImage: '/UECR.webp',
+    resultsImageCropped: true,
+    resultsImagePos: { x: 50, y: 46, scale: 2.3 },
+  },
+  'brow-d-serum': {
+    impactStars: 4, impactLabel: 'High Impact',
+    time: '30 sec / day', difficulty: '?',
+    why: 'Minoxidil can stimulate eyebrow hair growth, helping sparse areas become fuller and denser over time. Thicker eyebrows improve eye framing, facial balance, and create a stronger, more masculine appearance.',
+    benefits: [
+      'Increases eyebrow density', 'Helps fill sparse areas', 'Promotes new hair growth',
+      'Creates fuller brows', 'Improves facial framing', 'More masculine appearance',
+      'Long-term natural results', 'Easy daily application',
+    ],
+    science: 'Minoxidil increases blood flow around hair follicles and extends the hair growth cycle. Over several months, this allows more eyebrow hairs to grow and existing hairs to become thicker and healthier.',
+    usage: [
+      'Apply once daily to clean eyebrows', 'Use a small amount on sparse areas',
+      'Spread evenly across each brow', 'Allow to dry completely',
+      'Avoid getting it in your eyes', 'Wash your hands after applying',
+    ],
+    resultsTiming: 'First changes: 6–8 weeks', resultsDuration: 'Full results: 4–6 months',
+    resultsNote: 'Consistent daily use is essential. Hair growth happens gradually, with the biggest improvements appearing after several months.',
+    resultsImage: '/EBR.webp',
+    resultsImagePos: { x: 50, y: 50, scale: 1.9 },
+  },
+  'brow-w-shape': {
+    impactStars: 3, impactLabel: 'Moderate Impact',
+    time: '~5 min / week', difficulty: '?',
+    why: 'Regular eyebrow shaping removes stray hairs and creates cleaner, more defined brows. A well-maintained shape improves symmetry, enhances your eye area, and makes your eyebrows appear sharper without looking unnatural.',
+    benefits: [
+      'Cleaner eyebrow shape', 'Better brow symmetry', 'Improves definition',
+      'Enhances eye framing', 'More polished appearance', 'Highlights natural brow shape',
+      'Fast weekly maintenance', 'Immediate visual improvement',
+    ],
+    science: 'Removing hairs outside your natural brow shape creates a cleaner outline that your brain perceives as more symmetrical. Even small adjustments can noticeably improve facial structure and eye framing.',
+    usage: [
+      'Shape brows once each week', 'Remove only obvious stray hairs',
+      'Follow your natural brow shape', 'Avoid over-plucking the top edge',
+      'Step back often to check symmetry', 'Finish by brushing brows into place',
+    ],
+    resultsTiming: 'Results: Immediately', resultsDuration: 'Duration: About 1 week',
+    resultsNote: 'Regular weekly maintenance keeps your eyebrows looking consistently clean and well-defined.',
+    hideResultsSection: true,
+  },
+  'brow-f-gel': {
+    impactStars: 4, impactLabel: 'High Impact',
+    time: '10 sec / day', difficulty: 'Easy',
+    why: 'Brow gel holds your eyebrow hairs in the ideal position throughout the day, creating a fuller, cleaner, and more structured appearance. It instantly improves eyebrow definition with almost no effort.',
+    benefits: [
+      'Holds brows in place', 'Fuller-looking eyebrows', 'Better definition',
+      'Cleaner appearance', 'Improves symmetry', 'Frames the eyes better',
+      'Natural-looking finish', 'Lasts all day',
+    ],
+    science: 'Keeping eyebrow hairs aligned in the same direction creates a more uniform shape and increases the appearance of density. This improves facial structure without changing your natural eyebrows.',
+    usage: [
+      'Brush brows upward first', 'Shape hairs toward the tail',
+      'Apply a light, even coat', 'Avoid using too much product',
+      'Let gel dry naturally', 'Reapply only if needed',
+    ],
+    resultsTiming: 'Results: Immediately', resultsDuration: 'Duration: 8–12 hours',
+    resultsNote: 'Brow gel provides an instant enhancement that lasts throughout the day until washed off.',
+    resultsImage: '/EBGR.jpg',
+    resultsImagePos: { x: 49, y: 60, scale: 1.0 },
+  },
+  'brow-f-pencil': {
+    impactStars: 4, impactLabel: 'High Impact',
+    time: '1 min / day', difficulty: 'Easy',
+    why: 'A brow pencil fills sparse areas and enhances eyebrow definition, making your brows appear fuller and more symmetrical. When applied correctly, it creates a stronger frame around your eyes while still looking natural.',
+    benefits: [
+      'Fills sparse areas', 'Improves eyebrow symmetry', 'Creates fuller brows',
+      'Better definition', 'Stronger eye framing', 'Natural-looking enhancement',
+      'Great for photos and events', 'Immediate improvement',
+    ],
+    science: 'Small gaps in the eyebrows reduce perceived density. Filling these spaces with hair-like strokes increases the appearance of fullness and symmetry, making the eyebrows look naturally stronger and more balanced.',
+    usage: [
+      'Use short, hair-like strokes', 'Fill only sparse areas',
+      'Follow your natural brow direction', 'Blend with a spoolie brush',
+      'Match your natural brow color', 'Finish with brow gel if desired',
+    ],
+    resultsTiming: 'Results: Immediately', resultsDuration: 'Duration: Until removed',
+    resultsNote: 'Brow pencil delivers an instant improvement that lasts all day and can be easily removed during your nighttime routine.',
+    resultsImage: '/EBMP.jpeg',
+    resultsImagePos: { x: 59, y: 99, scale: 1.0 },
+  },
+};
+
+// Map detected natural eye color (from /api/analyze-eye) to the enhancement
+// contact lens color that best matches it, for personalized recommendations.
+const CONTACT_COLOR_MAP = {
+  'Brown':       'Brown Enhancement Contacts',
+  'Dark Brown':  'Brown Enhancement Contacts',
+  'Hazel':       'Hazel Enhancement Contacts',
+  'Amber':       'Hazel Enhancement Contacts',
+  'Green':       'Green Enhancement Contacts',
+  'Blue':        'Blue Enhancement Contacts',
+  'Gray':        'Gray Enhancement Contacts',
+};
+
+// Reads the user's detected eye color (saved by the eye analysis flow in
+// glowai.html) and returns the matching contact lens recommendation, if known.
+function getRecommendedContacts() {
+  let ed = {};
+  try { ed = JSON.parse(localStorage.getItem('protocol_eye_results') || '{}'); } catch(e) {}
+  const detectedColor = ed.eyeColorName;
+  if (!detectedColor) return null;
+  const recommendation = CONTACT_COLOR_MAP[detectedColor];
+  if (!recommendation) return null;
+  return { detectedColor, hex: ed.eyeColorHex || '#9ca3af', recommendation };
+}
+
+// Personalize the "Colored Contacts" task name everywhere it's rendered (card list +
+// Learn More page) based on the user's detected eye color, e.g. "Brown Colored Contacts".
+(function personalizeContactsName() {
+  const rec = getRecommendedContacts();
+  if (rec && EYE_ALL_ITEMS['eye-f-contacts']) {
+    const colorWord = rec.recommendation.replace(' Enhancement Contacts', '');
+    EYE_ALL_ITEMS['eye-f-contacts'].name = `${colorWord} Colored Contacts`;
+  }
+})();
+
+// Resolve icon/name metadata for any task id across all categories (skin, eyes, brows, hair).
+function getTaskMeta(id) {
+  return EYE_ALL_ITEMS[id] || BROW_ALL_ITEMS[id] || SKIN_TASK_DATA[id]
+    || (id === 'hair-w-cut' ? { icon: '/FRINGEICON.png', name: 'Get Haircut' } : {});
+}
+
+// Auto-generate placeholder "Learn More" entries for every task that doesn't have
+// real content written yet, so every task gets the same detail page format.
+// Unknown fields are marked '?' until real copy is provided per-task.
+const ALL_TASK_IDS = [
+  ...Object.keys(SKIN_TASK_DATA),
+  ...Object.keys(EYE_ALL_ITEMS),
+  ...Object.keys(BROW_ALL_ITEMS),
+  'hair-w-cut',
+];
+ALL_TASK_IDS.forEach(id => {
+  if (TASK_DETAILS[id]) return; // already has real content written
+  const item = getTaskMeta(id);
+  TASK_DETAILS[id] = {
+    impactStars: '?', impactLabel: '?',
+    time: item.time || '?', difficulty: item.difficulty || '?',
+    why: '?', benefits: ['?'], science: '?',
+    usage: ['?'], resultsTiming: '?', resultsDuration: '?', resultsNote: '?',
+  };
+});
+
+let _tdCurrentId = null;
+
+function showLearnMore(id, name) {
+  if (TASK_DETAILS[id]) { showTaskDetail(id, name); return; }
+  alert(`${name || id}\n\nMore info coming soon.`);
+}
+
+function showTaskDetail(id, name) {
+  const d = TASK_DETAILS[id];
+  if (!d) return;
+  _tdCurrentId = id;
+
+  const item = getTaskMeta(id);
+  const icon = item.icon;
+  const stars = (typeof d.impactStars === 'number')
+    ? ('★'.repeat(d.impactStars) + '☆'.repeat(5 - d.impactStars))
+    : '?';
+  const contactsRec = (id === 'eye-f-contacts') ? getRecommendedContacts() : null;
+
+  const body = document.getElementById('td-body');
+  body.innerHTML = `
+    <div>
+      <div class="td-name">${name || item.name || id}</div>
+      <div class="td-pills-row">
+        <div class="td-impact-pill"><span class="td-stars">${stars}</span> ${d.impactLabel}</div>
+        <div class="td-meta-pill">${d.time}</div>
+      </div>
+      <div class="td-image-box">${renderIcon(icon)}</div>
+
+      ${contactsRec ? `
+      <div class="td-contacts-rec">
+        <div class="td-contacts-swatch" style="background:${contactsRec.hex};"></div>
+        <div>
+          <div class="td-contacts-rec-label">Recommended for your eye color</div>
+          <div class="td-contacts-rec-name">${contactsRec.recommendation}</div>
+        </div>
+      </div>` : ''}
+
+      <div class="td-section">
+        <div class="td-section-title">Why We Recommend This</div>
+        <div class="td-section-text">${d.why}</div>
+      </div>
+    </div>
+
+    <div class="td-right-col">
+      <div class="td-card">
+        <div class="td-card-title">Best Way To Use</div>
+        <ul class="td-list">${d.usage.map(u => `<li>${u}</li>`).join('')}</ul>
+      </div>
+      <div class="td-card">
+        <div class="td-card-title">When You'll Notice Results</div>
+        <div class="td-results-box">
+          <div class="td-results-now">${d.resultsTiming}</div>
+          <div class="td-results-duration">${d.resultsDuration}</div>
+        </div>
+        <div class="td-results-note">${d.resultsNote}</div>
+      </div>
+    </div>
+
+    <div class="td-section">
+      <div class="td-section-title">Benefits</div>
+      <ul class="td-benefits">${d.benefits.map(b => `<li><span class="ck">✓</span>${b}</li>`).join('')}</ul>
+    </div>
+    <div class="td-section">
+      <div class="td-section-title">The Science</div>
+      <div class="td-section-text">${d.science}</div>
+    </div>
+
+    ${d.hideResultsSection ? '' : `
+    <div class="td-card td-card-grow td-full-width">
+      <div class="td-card-title">Real Life Results</div>
+      <div class="td-results-image-box td-results-image-box-tall${d.resultsImageCropped ? ' td-results-image-box-cropped' : ''}${id === 'brow-d-serum' ? ' td-results-image-box-minoxidil' : ''}">
+        ${d.resultsImage ? `<img id="td-results-img" src="${d.resultsImage}" alt="Real life results">` : `<span class="td-results-image-placeholder">Image coming soon</span>`}
+      </div>
+    </div>`}`;
+
+  if (d.resultsImage) applyResultsImagePos();
+
+  const btn = document.getElementById('td-mark-complete-btn');
+  const isDone = productState[id] === 'have';
+  btn.classList.toggle('done', isDone);
+  btn.innerHTML = isDone
+    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg> Completed`
+    : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg> Mark Complete`;
+
+  _tdSavedScrollY = window.scrollY;
+  const tdPage = document.getElementById('taskDetailPage');
+  tdPage.style.display = 'block';
+  tdPage.scrollTop = 0; // scroll the overlay itself to top, not the page underneath
+}
+
+// Applies the locked-in crop/zoom for the "Real Life Results" image (set per-task
+// via resultsImagePos in TASK_DETAILS). No drag UI — these values are final.
+const DEFAULT_RESULTS_IMG_POS = { x: 49, y: 89, scale: 1.9 }; // fallback (eyelash/mascara crop)
+function applyResultsImagePos() {
+  const img = document.getElementById('td-results-img');
+  if (!img) return;
+  const d = TASK_DETAILS[_tdCurrentId] || {};
+  const pos = d.resultsImagePos || DEFAULT_RESULTS_IMG_POS;
+  img.style.objectPosition = `${pos.x}% ${pos.y}%`;
+  img.style.transformOrigin = `${pos.x}% ${pos.y}%`;
+  img.style.transform = `scale(${pos.scale})`;
+}
+
+let _tdSavedScrollY = 0;
+function hideTaskDetail() {
+  document.getElementById('taskDetailPage').style.display = 'none';
+  _tdCurrentId = null;
+  window.scrollTo(0, _tdSavedScrollY); // restore exactly where you were before opening Learn More
+}
+
+function completeTaskDetail() {
+  if (!_tdCurrentId) return;
+  setProductStatus(_tdCurrentId, 'have');
+  showTaskDetail(_tdCurrentId);
 }
 
 // Generate action HTML for a card without re-rendering the whole page
@@ -1715,7 +2280,7 @@ function updateSidebar() {
       if (!prods.length) return '<div style="font-size:10px;color:var(--muted);padding:4px 0;">No daily tasks yet.</div>';
       return prods.slice(0, 4).map(p => `
         <div class="tp-item">
-          <div class="tp-item-icon">${p.icon}</div>
+          <div class="tp-item-icon">${renderIcon(p.icon)}</div>
           <div class="tp-item-name">Apply ${p.name}</div>
           <button class="tp-remove" onclick="setProductStatus('${p.id}', null)">×</button>
         </div>`).join('') + (prods.length > 4 ? `<div class="tp-more">+${prods.length - 4} more</div>` : '');
@@ -1725,7 +2290,7 @@ function updateSidebar() {
       if (!prods.length) return '<div style="font-size:10px;color:var(--muted);padding:4px 0;">No purchase tasks yet.</div>';
       return prods.slice(0, 3).map(p => `
         <div class="tp-item">
-          <div class="tp-item-icon">${p.icon}</div>
+          <div class="tp-item-icon">${renderIcon(p.icon)}</div>
           <div style="flex:1;min-width:0;">
             <div class="tp-item-name">Purchase ${p.name}</div>
             <div style="font-size:9px;color:var(--muted);">Weekly · tap when bought</div>
@@ -1764,14 +2329,14 @@ function updateSidebar() {
       <div class="tp-group-label">☀️ Active Tasks</div>
       ${haveItems.length ? haveItems.slice(0,4).map(h => `
         <div class="tp-item">
-          <div class="tp-item-icon">${h.icon}</div>
+          <div class="tp-item-icon">${renderIcon(h.icon)}</div>
           <div class="tp-item-name">${h.name}</div>
           <button class="tp-remove" onclick="dismissTask('${h.id}')">×</button>
         </div>`).join('') + (haveItems.length > 4 ? `<div class="tp-more">+${haveItems.length - 4} more</div>` : '')
         : '<div style="font-size:10px;color:var(--muted);padding:4px 0;">No tasks added yet.</div>'}
       ${buyingItems.length ? `<div class="tp-group-label">📋 Purchasing</div>` + buyingItems.map(h => `
         <div class="tp-item">
-          <div class="tp-item-icon">${h.icon}</div>
+          <div class="tp-item-icon">${renderIcon(h.icon)}</div>
           <div style="flex:1;min-width:0;">
             <div class="tp-item-name">${h.name}</div>
           </div>
@@ -1799,7 +2364,7 @@ function updateSidebar() {
       <div class="tp-group-label">📅 Weekly Tasks</div>
       ${haveProds.length ? haveProds.map(h => `
         <div class="tp-item">
-          <div class="tp-item-icon">${h.icon}</div>
+          <div class="tp-item-icon">${renderIcon(h.icon)}</div>
           <div class="tp-item-name">${h.name}</div>
           <button class="tp-remove" onclick="dismissTask('${h.id}')">×</button>
         </div>`).join('')
@@ -1829,14 +2394,14 @@ function updateSidebar() {
       <div class="tp-group-label">☀️ Active Tasks</div>
       ${haveItems.length ? haveItems.slice(0,4).map(h => `
         <div class="tp-item">
-          <div class="tp-item-icon">${h.icon}</div>
+          <div class="tp-item-icon">${renderIcon(h.icon)}</div>
           <div class="tp-item-name">${h.name}</div>
           <button class="tp-remove" onclick="dismissTask('${h.id}')">×</button>
         </div>`).join('') + (haveItems.length > 4 ? `<div class="tp-more">+${haveItems.length - 4} more</div>` : '')
         : '<div style="font-size:10px;color:var(--muted);padding:4px 0;">No tasks added yet.</div>'}
       ${buyingItems.length ? `<div class="tp-group-label">📋 Purchasing</div>` + buyingItems.map(h => `
         <div class="tp-item">
-          <div class="tp-item-icon">${h.icon}</div>
+          <div class="tp-item-icon">${renderIcon(h.icon)}</div>
           <div style="flex:1;min-width:0;"><div class="tp-item-name">${h.name}</div></div>
           <button class="tp-bought-btn" onclick="setProductStatus('${h.id}','have')">✓ Got It</button>
         </div>`).join('') : ''}
@@ -1865,7 +2430,7 @@ function updateSidebar() {
       const shown = items.slice(0, max), more = items.length - max;
       let html = shown.map(i => `
         <div class="tp-item">
-          <div class="tp-item-icon">${i.icon}</div>
+          <div class="tp-item-icon">${renderIcon(i.icon)}</div>
           <div class="tp-item-name">${i.name}</div>
           <button class="tp-remove" onclick="toggleItem('${i.id}','x')">×</button>
         </div>`).join('');
@@ -2079,10 +2644,10 @@ function runEyeDiagnostic() {
 
     // Cycle status messages every 2s
     const statuses = [
-      'Reanalyzing...',
-      'Finding weaknesses...',
-      'Finding solutions...',
-      'Best solution found.',
+      'Analyzing...',
+      'Analyzing...',
+      'Analyzing...',
+      'Analyzing...',
     ];
     statuses.forEach((s, i) => setTimeout(() => { statusEl.textContent = s; }, i * 2000));
 
@@ -2600,7 +3165,7 @@ function showEyeInsight() {
       await reveal(wrap, 40);
       document.getElementById('ei-view-roadmap-btn').onclick = () => { window.location.href = '/roadmap'; };
 
-      ctaBtn.textContent = 'NEXT: FRAMING →';
+      ctaBtn.textContent = 'BUILD MY EYE ROADMAP →';
       ctaWrap.classList.add('on');
       scrollDown();
     }
@@ -2664,7 +3229,7 @@ function runHairDiagnostic() {
       }, 300 + i * 250);
     }
 
-    const statuses = ['Reanalyzing...', 'Finding weaknesses...', 'Finding solutions...', 'Best solution found.'];
+    const statuses = ['Analyzing...', 'Analyzing...', 'Analyzing...', 'Analyzing...'];
     statuses.forEach((s, i) => setTimeout(() => { statusEl.textContent = s; }, i * 2000));
 
     const readouts = [
@@ -2775,15 +3340,8 @@ function showHairInsight() {
     const thickness = hairData.thickness || 'Medium';
     const density   = hairData.density   || 'Medium';
     const overall    = hairData.hairScore != null ? parseFloat(hairData.hairScore) : 7.0;
-    // haircutFitScore is the primary driver of hair potential
-    const fitScore   = hairData.haircutFitScore != null ? parseFloat(hairData.haircutFitScore) : 5;
-    let   hairGain   = 0.5; // base: anyone can improve hair care
-    if      (fitScore <= 2) hairGain += 3.0;
-    else if (fitScore <= 4) hairGain += 2.0;
-    else if (fitScore <= 6) hairGain += 1.2;
-    else if (fitScore <= 8) hairGain += 0.6;
-    // 9-10: already optimal haircut, no additional gain
-    hairGain         = Math.round(hairGain * 10) / 10;
+    // Haircut potential gain is always +1.0 (matches hair-w-cut task value)
+    const hairGain   = 1.0;
     const potential  = Math.round(Math.min(10.0, overall + hairGain) * 10) / 10;
     const gain       = hairGain;
 
@@ -2945,10 +3503,10 @@ function runBrowDiagnostic() {
     }
 
     const statuses = [
-      'Reanalyzing...',
-      'Finding weaknesses...',
-      'Finding solutions...',
-      'Best solution found.',
+      'Analyzing...',
+      'Analyzing...',
+      'Analyzing...',
+      'Analyzing...',
     ];
     statuses.forEach((s, i) => setTimeout(() => { statusEl.textContent = s; }, i * 2000));
 
@@ -3648,7 +4206,7 @@ function runSkinDiagnostic() {
       }, 200 + i * 300);
     }
 
-    const statuses = ['Analyzing skin layer...', 'Detecting problem areas...', 'Mapping improvement zones...', 'Analysis complete.'];
+    const statuses = ['Analyzing...', 'Analyzing...', 'Analyzing...', 'Analyzing...'];
     statuses.forEach((s, i) => setTimeout(() => { statusEl.textContent = s; }, i * 2100));
 
     const readouts = [
@@ -3986,8 +4544,12 @@ function init() {
     document.getElementById('mainContent').classList.add('eyes-revealed');
 
     // Play the face-analyzing/diagnostic scan animation AND show the
-    // analysis/insight page every time the user opens "Improve Now"
-    // for a given area.
+    // analysis/insight page only the FIRST time the user opens "Improve Now"
+    // for a given area. On later visits, skip straight to the roadmap that
+    // was already rendered above (no scan, no insight overlay).
+    const seenKey = `protocol_improve_seen_${areaKey}`;
+    if (localStorage.getItem(seenKey)) return;
+    localStorage.setItem(seenKey, '1');
 
     // Skin — score-based roadmap + diagnostic + insight overlay
     if (areaKey === 'skin') {
@@ -4098,7 +4660,7 @@ function init() {
     </div>
     <div class="ediag-text">
       <div class="ediag-title">Analyzing Skin<span class="ediag-blink">_</span></div>
-      <div class="ediag-status-txt" id="sdiag-status">Analyzing skin layer...</div>
+      <div class="ediag-status-txt" id="sdiag-status">Analyzing...</div>
       <div class="ediag-readouts">
         <div class="ediag-readout" id="sr1"><span class="ediag-r-label">Acne Score</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="sr1f"></div></div><span class="ediag-r-val" id="sr1v">—</span></div>
         <div class="ediag-readout" id="sr2"><span class="ediag-r-label">Texture</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="sr2f"></div></div><span class="ediag-r-val" id="sr2v">—</span></div>
@@ -4180,9 +4742,11 @@ function init() {
 .prod-card { display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);transition:background .15s; }
 .prod-card:last-child { border-bottom:none; }
 .prod-card:hover { background:var(--bg2); }
-.prod-icon { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0; }
+.prod-icon { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden; }
 .prod-body { flex:1;min-width:0; }
 .prod-name { font-size:13px;font-weight:800;color:#fff;margin-bottom:3px; }
+.learn-more-btn { display:block;background:none;border:none;padding:0;margin:0 0 4px;font-size:11px;font-weight:600;color:#3b82f6;text-decoration:underline;cursor:pointer;font-family:inherit; }
+.learn-more-btn:hover { color:#60a5fa; }
 .prod-desc { font-size:11px;color:var(--muted2);line-height:1.4;margin-bottom:4px; }
 .prod-when { font-size:10px;color:var(--muted);display:flex;align-items:center;gap:4px;margin-bottom:3px; }
 .prod-goal-tag { display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-size:9px;color:var(--accent);background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.2);border-radius:20px;padding:2px 8px;font-weight:600; }
@@ -4777,7 +5341,7 @@ function init() {
     </div>
     <div class="ediag-text">
       <div class="ediag-title">Scanning Hair<span class="ediag-blink">_</span></div>
-      <div class="ediag-status-txt" id="hdiag-status">Detecting face shape...</div>
+      <div class="ediag-status-txt" id="hdiag-status">Analyzing...</div>
       <div class="ediag-readouts">
         <div class="ediag-readout" id="hr1"><span class="ediag-r-label">Texture</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="hr1f"></div></div><span class="ediag-r-val" id="hr1v">—</span></div>
         <div class="ediag-readout" id="hr2"><span class="ediag-r-label">Volume</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="hr2f"></div></div><span class="ediag-r-val" id="hr2v">—</span></div>
@@ -4859,7 +5423,7 @@ function init() {
     </div>
     <div class="ediag-text">
       <div class="ediag-title">Scanning Brows<span class="ediag-blink">_</span></div>
-      <div class="ediag-status-txt" id="bdiag-status">Detecting brow landmarks...</div>
+      <div class="ediag-status-txt" id="bdiag-status">Analyzing...</div>
       <div class="ediag-readouts">
         <div class="ediag-readout" id="br1"><span class="ediag-r-label">Arch Definition</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="br1f"></div></div><span class="ediag-r-val" id="br1v">—</span></div>
         <div class="ediag-readout" id="br2"><span class="ediag-r-label">Brow Height</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="br2f"></div></div><span class="ediag-r-val" id="br2v">—</span></div>
@@ -4945,7 +5509,7 @@ function init() {
     </div>
     <div class="ediag-text">
       <div class="ediag-title">Scanning Eyes<span class="ediag-blink">_</span></div>
-      <div class="ediag-status-txt" id="ediag-status">Detecting eye landmarks...</div>
+      <div class="ediag-status-txt" id="ediag-status">Analyzing...</div>
       <div class="ediag-readouts">
         <div class="ediag-readout" id="er1"><span class="ediag-r-label">Canthal Tilt</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="er1f"></div></div><span class="ediag-r-val" id="er1v">—</span></div>
         <div class="ediag-readout" id="er2"><span class="ediag-r-label">Eye Exposure</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="er2f"></div></div><span class="ediag-r-val" id="er2v">—</span></div>
@@ -4953,6 +5517,83 @@ function init() {
         <div class="ediag-readout" id="er4"><span class="ediag-r-label">Lash Line</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="er4f"></div></div><span class="ediag-r-val" id="er4v">—</span></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ── TASK DETAIL ("Learn More") PAGE ── -->
+<style>
+  #taskDetailPage { display:none; position:fixed; inset:0; z-index:900; background:#fff; color:#111827; overflow-y:auto; font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; }
+  .td-topbar { display:flex; align-items:center; justify-content:center; position:relative; padding:18px 16px; border-bottom:1px solid #eef0f3; }
+  .td-back { position:absolute; left:14px; display:flex; align-items:center; gap:4px; background:none; border:none; font-size:16px; font-weight:600; color:#111827; cursor:pointer; padding:6px; }
+  .td-topbar-title { font-size:17px; font-weight:800; }
+  .td-body { max-width:1040px; margin:0 auto; padding:28px 20px 100px; display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:760px) { .td-body { gap:14px; padding:16px 10px 110px; } }
+  .td-name { font-size:28px; font-weight:900; letter-spacing:-0.5px; margin-bottom:12px; }
+  .td-pills-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+  .td-impact-pill { display:inline-flex; align-items:center; gap:6px; background:#f1ecff; color:#7c5cff; font-size:13px; font-weight:700; padding:7px 14px; border-radius:20px; }
+  .td-impact-pill .td-stars { color:#7c5cff; letter-spacing:1px; }
+  .td-meta-pill { display:inline-flex; align-items:center; gap:6px; border:1px solid #e5e7eb; color:#374151; font-size:13px; font-weight:600; padding:7px 14px; border-radius:20px; }
+  .td-meta-pill.accent { color:#7c5cff; font-weight:800; border:none; background:#f1ecff; }
+  .td-image-box { width:100%; aspect-ratio:1/1; background:#f5f3ff; border-radius:20px; display:flex; align-items:center; justify-content:center; margin-bottom:28px; overflow:hidden; }
+  .td-image-box img { width:95%; height:95%; object-fit:contain; }
+  .td-section { padding:20px 0; border-bottom:1px solid #eef0f3; }
+  .td-section:last-child { border-bottom:none; }
+  .td-section-title { display:flex; align-items:center; gap:8px; font-size:16px; font-weight:800; margin-bottom:12px; }
+  .td-section-text { font-size:14px; line-height:1.7; color:#374151; }
+  .td-benefits { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
+  .td-benefits li { display:flex; align-items:flex-start; gap:10px; font-size:14px; color:#374151; }
+  .td-benefits li .ck { color:#7c5cff; font-weight:900; flex-shrink:0; }
+  .td-card { background:#fff; border:1px solid #eef0f3; border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 2px 10px rgba(17,24,39,0.04); }
+  .td-right-col { display:flex; flex-direction:column; justify-content:flex-end; height:100%; }
+  .td-right-col .td-card:first-child { margin-bottom:6px; }
+  .td-right-col .td-card:last-child { margin-bottom:0; }
+  .td-card-title { display:flex; align-items:center; gap:8px; font-size:15px; font-weight:800; margin-bottom:14px; }
+  .td-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:9px; }
+  .td-list li { font-size:13.5px; color:#374151; padding-left:14px; position:relative; line-height:1.5; }
+  .td-list li::before { content:'•'; position:absolute; left:0; color:#9ca3af; }
+  .td-results-box { background:#f5f3ff; border-radius:12px; padding:16px; text-align:center; margin-bottom:12px; }
+  .td-results-now { color:#7c5cff; font-weight:800; font-size:15px; display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:4px; }
+  .td-results-duration { font-size:13px; color:#6b7280; }
+  .td-results-note { font-size:12.5px; color:#6b7280; text-align:center; }
+  .td-product-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid #f1f1f4; }
+  .td-product-row:first-child { border-top:none; }
+  .td-product-avatar { width:40px; height:40px; border-radius:10px; background:#f1ecff; color:#7c5cff; font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .td-product-name { font-size:13.5px; font-weight:700; color:#111827; line-height:1.3; }
+  .td-product-badge { display:inline-block; margin-top:3px; font-size:10.5px; font-weight:700; color:#7c5cff; background:#f1ecff; padding:2px 8px; border-radius:8px; }
+  .td-product-chev { margin-left:auto; color:#9ca3af; }
+  .td-results-image-box { width:100%; aspect-ratio:4/3; background:#f5f3ff; border-radius:14px; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+  .td-results-image-box img { width:100%; height:100%; object-fit:cover; }
+  .td-results-image-box.td-results-image-box-cropped { aspect-ratio:auto; min-height:11px; max-height:11px; flex:none; }
+  .td-results-image-placeholder { font-size:13px; font-weight:600; color:#9b8fd9; }
+  .td-results-image-box-tall { aspect-ratio:auto; min-height:260px; }
+  .td-card-grow { flex:1; display:flex; flex-direction:column; }
+  .td-card-grow .td-results-image-box { flex:1; min-height:260px; }
+  .td-card-grow .td-results-image-box.td-results-image-box-cropped { flex:none; }
+  .td-full-width { grid-column: 1 / -1; }
+  @media (max-width:760px) {
+    .td-card-grow .td-results-image-box.td-results-image-box-minoxidil { flex:none; height:130px; min-height:130px; max-height:130px; }
+  }
+  .td-contacts-rec { display:flex; align-items:center; gap:12px; background:#f5f3ff; border-radius:14px; padding:14px 16px; margin-bottom:24px; }
+  .td-contacts-swatch { width:34px; height:34px; border-radius:50%; flex-shrink:0; border:2px solid #fff; box-shadow:0 0 0 1px rgba(124,92,255,0.3); }
+  .td-contacts-rec-label { font-size:11.5px; color:#7c5cff; font-weight:700; }
+  .td-contacts-rec-name { font-size:14.5px; color:#111827; font-weight:800; }
+  .td-body > div:last-child { display:flex; flex-direction:column; }
+  .td-bottom-bar { position:fixed; left:0; right:0; bottom:0; padding:16px 20px; background:#fff; border-top:1px solid #eef0f3; }
+  .td-mark-complete { width:100%; max-width:1040px; margin:0 auto; display:flex; align-items:center; justify-content:center; gap:8px; background:#7c5cff; color:#fff; border:none; border-radius:14px; padding:16px; font-size:15px; font-weight:800; cursor:pointer; }
+  .td-mark-complete:hover { opacity:0.9; }
+  .td-mark-complete.done { background:#22c55e; }
+</style>
+<div id="taskDetailPage">
+  <div class="td-topbar">
+    <button class="td-back" onclick="hideTaskDetail()">‹ Back</button>
+    <div class="td-topbar-title">Learn More</div>
+  </div>
+  <div class="td-body" id="td-body"></div>
+  <div class="td-bottom-bar">
+    <button class="td-mark-complete" id="td-mark-complete-btn" onclick="completeTaskDetail()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+      Mark Complete
+    </button>
   </div>
 </div>
 

@@ -105,15 +105,28 @@
     const mimeType    = match ? match[1] : 'image/jpeg';
     const imageBase64 = match ? match[2] : _originalDataUrl.split(',')[1];
 
+    // /api/simulate is a long pipeline (60-90+ seconds) — it returns a jobId immediately
+    // instead of holding the request open (which caused "load failed" on mobile from
+    // flaky cellular connections / proxy timeouts dropping long-idle requests). We start
+    // the job here, then poll /api/simulate-status until it's done.
     _simulatePromise = fetch('/api/simulate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imageBase64, mimeType })
-    }).then(async resp => {
-      const data = await resp.json();
-      if (!resp.ok || data.error) throw new Error(typeof data.error === 'object' ? (data.error.message || JSON.stringify(data.error)) : data.error);
-      if (!data.imageUrl) throw new Error('No image returned');
-      return data;
+    }).then(async startResp => {
+      const startData = await startResp.json();
+      if (!startResp.ok || startData.error) throw new Error(typeof startData.error === 'object' ? (startData.error.message || JSON.stringify(startData.error)) : startData.error);
+      const jobId = startData.jobId;
+      if (!jobId) throw new Error('No jobId returned from /api/simulate');
+
+      while (true) {
+        await new Promise(r => setTimeout(r, 3000));
+        const statusResp = await fetch(`/api/simulate-status?id=${jobId}`);
+        const statusData = await statusResp.json();
+        if (statusData.status === 'done') return statusData;
+        if (statusData.status === 'error') throw new Error(statusData.error || 'Generation failed');
+        // status === 'running' -> keep polling
+      }
     });
   }
 

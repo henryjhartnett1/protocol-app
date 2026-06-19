@@ -280,18 +280,18 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 // type: 'daily'|'weekly' (day 0=Sun..6=Sat)   tod: 'morning'|'day'|'night'
 const TASK_META = {
   // SKIN — daily
-  'ess-cleanser':       {icon:'🧴',name:'Cleanse Face',          desc:'Keep skin clean and clear',                         type:'daily', tod:'morning'},
-  'ess-cleanser-pm':    {icon:'🧴',name:'Cleanse Face',          desc:'Cleanse away the day before your night routine',    type:'daily', tod:'night'},
-  'ess-moisturizer':    {icon:'💧',name:'Morning Moisturizer',  desc:'Hydrate and protect your skin barrier',             type:'daily', tod:'morning'},
-  'ess-moisturizer-pm': {icon:'🌙',name:'Night Moisturizer',    desc:'Repair and replenish skin overnight',               type:'daily', tod:'night'},
-  'ess-sunscreen':      {icon:'☀️',name:'Apply SPF',            desc:'Protect skin from UV damage',                       type:'daily', tod:'morning'},
-  'g-retinol':       {icon:'⚗️',name:'Apply Retinol',         desc:'Apply retinol serum to clean skin at night',   type:'daily',  tod:'night'},
+  'ess-cleanser':       {icon:'/Cleanser.png',name:'Cleanse Face',          desc:'Keep skin clean and clear',                         type:'daily', tod:'morning'},
+  'ess-cleanser-pm':    {icon:'/Cleanser.png',name:'Cleanse Face',          desc:'Cleanse away the day before your night routine',    type:'daily', tod:'night'},
+  'ess-moisturizer':    {icon:'/MOISTURIZER.png',name:'Morning Moisturizer',  desc:'Hydrate and protect your skin barrier',             type:'daily', tod:'morning'},
+  'ess-moisturizer-pm': {icon:'/MOISTURIZER.png',name:'Night Moisturizer',    desc:'Repair and replenish skin overnight',               type:'daily', tod:'night'},
+  'ess-sunscreen':      {icon:'/SS.png',name:'Apply SPF',            desc:'Protect skin from UV damage',                       type:'daily', tod:'morning'},
+  'g-retinol':       {icon:'/RETINOL.png',name:'Apply Retinol',         desc:'Apply retinol serum to clean skin at night',   type:'daily',  tod:'night'},
   'g-benzoyl':       {icon:'🔬',name:'Benzoyl Peroxide',      desc:'Apply to active breakouts before bed',         type:'daily',  tod:'night'},
   'g-adapalene':     {icon:'⚗️',name:'Apply Adapalene',       desc:'Apply retinoid treatment at night',            type:'daily',  tod:'night'},
-  'g-vitc':          {icon:'🍊',name:'Vitamin C Serum',       desc:'Apply to face each morning under SPF',         type:'daily',  tod:'morning'},
-  'g-niacinamide':   {icon:'🌸',name:'Niacinamide Serum',     desc:'Apply to reduce redness and improve clarity',  type:'daily',  tod:'morning'},
-  'adv-ghkcu':       {icon:'⚗️',name:'GHK-Cu Peptide',        desc:'Apply copper peptide serum for skin quality',  type:'daily',  tod:'morning'},
-  'adv-collagen':    {icon:'🧬',name:'Collagen Peptides',     desc:'Take collagen supplement with your water',     type:'daily',  tod:'night'},
+  'g-vitc':          {icon:'/VCS.png',name:'Vitamin C Serum',       desc:'Apply to face each morning under SPF',         type:'daily',  tod:'morning'},
+  'g-niacinamide':   {icon:'/NI.png',name:'Niacinamide Serum',     desc:'Apply to reduce redness and improve clarity',  type:'daily',  tod:'morning'},
+  'adv-ghkcu':       {icon:'/GHKI.png',name:'GHK-Cu Peptide',        desc:'Apply copper peptide serum for skin quality',  type:'daily',  tod:'morning'},
+  'adv-ghkcu2':      {icon:'/MT2.png',name:'MT2 (Melanotan II)',     desc:'Apply/use MT2 peptide for a deeper, more even tan',  type:'daily',  tod:'morning'},
   'g-prescription':  {icon:'🏥',name:'Prescription Acne',    desc:'Apply prescription acne medication',           type:'daily',  tod:'night'},
   // SKIN — weekly
   'g-aha':           {icon:'✨',name:'Chemical Exfoliant',    desc:'Exfoliate for smoother and brighter skin',     type:'weekly', day:4, tod:'night'},
@@ -301,7 +301,6 @@ const TASK_META = {
   'eye-d-whitening': {icon:'💧',name:'Use Eye Drops',         desc:'Improve eye brightness and reduce redness',   type:'daily',  tod:'morning'},
   'eye-d-lash':      {icon:'✏️',name:'Lash Growth Serum',      desc:'Promote lash growth and thickness',           type:'daily',  tod:'night'},
   'eye-d-ice':       {icon:'🧊',name:'Ice Roll Eyes',         desc:'Reduce puffiness around the eyes',            type:'daily',  tod:'morning'},
-  'eye-d-hydration': {icon:'💦',name:'Eye Hydration',         desc:'Stay hydrated to keep eyes bright and clear', type:'daily',  tod:'day'},
   'eye-f-contacts':  {icon:'👁️',name:'Wear Contacts',         desc:'Put in your colored contacts',                type:'daily',  tod:'morning'},
   'eye-f-concealer': {icon:'💫',name:'Under Eye Concealer',   desc:'Apply concealer under eyes',                  type:'daily',  tod:'morning'},
   'eye-f-mascara':   {icon:'✏️',name:'Apply Mascara',         desc:'Apply mascara for lash definition',           type:'daily',  tod:'morning'},
@@ -336,7 +335,7 @@ const TASK_META = {
   'brow-a-mapping':  {icon:'📐',name:'Brow Mapping',          desc:'Follow your brow mapping routine',            type:'weekly', day:0, tod:'day'},
 
   // HAIR — weekly
-  'hair-w-cut':      {icon:'💈',name:'Haircut / Style',       desc:'Maintain your haircut and style',             type:'weekly', day:6, tod:'day'},
+  'hair-w-cut':      {icon:'/FRINGEICON.png',name:'Haircut / Style',       desc:'Maintain your haircut and style',             type:'weekly', day:6, tod:'day'},
 };
 
 // ── STATE ──────────────────────────────────────────────────────────────────
@@ -477,11 +476,11 @@ function resolveMeta(taskId) {
 
 // ── GROUP DEFINITIONS ──────────────────────────────────────────────────────
 const SKINCARE_IDS = {
-  morning: new Set(['ess-cleanser','ess-moisturizer','ess-sunscreen','g-vitc','g-niacinamide','adv-ghkcu','g-prescription']),
-  night:   new Set(['ess-cleanser','ess-cleanser-pm','ess-moisturizer-pm','g-retinol','g-benzoyl','g-adapalene','adv-collagen','g-prescription','g-aha','skin-microneedle']),
+  morning: new Set(['ess-cleanser','ess-moisturizer','ess-sunscreen','g-vitc','g-niacinamide','adv-ghkcu','adv-ghkcu2','g-prescription']),
+  night:   new Set(['ess-cleanser','ess-cleanser-pm','ess-moisturizer-pm','g-retinol','g-benzoyl','g-adapalene','g-prescription','g-aha','skin-microneedle']),
 };
 const EYE_IDS = new Set([
-  'eye-d-whitening','eye-d-ice','eye-d-hydration',
+  'eye-d-whitening','eye-d-ice',
   'eye-f-contacts','eye-f-concealer','eye-f-mascara','eye-f-waterline',
   'eye-a-contrast','eye-a-undereye','eye-a-framing','eye-a-brightness',
   'eye-w-brow','eye-w-puffiness',
