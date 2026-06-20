@@ -150,7 +150,7 @@ async function pcRunTask(feature, taskBody, label, version = 'v2.0') {
   const { json: createJson } = await pcPost(`/s2s/${version}/task/${feature}`, taskBody);
   const taskId = createJson?.data?.task_id;
   if (!taskId) throw new Error(`${label}: no task_id in response: ${JSON.stringify(createJson).slice(0,300)}`);
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 100; i++) {
     await new Promise(r => setTimeout(r, 3000));
     const { json: pollJson } = await pcGet(`/s2s/${version}/task/${feature}/${taskId}`);
     const status = pollJson?.data?.task_status || pollJson?.status;

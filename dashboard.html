@@ -382,88 +382,6 @@ header{
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SKIN SETUP MODAL — first visit only
-     Appears 2s after dashboard loads,
-     centered over the live dashboard.
-     ══════════════════════════════════════════ -->
-
-<!-- Backdrop -->
-<div id="obBackdrop" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);opacity:0;transition:opacity .35s;"></div>
-
-<!-- Modal card -->
-<div id="obModal" style="
-  display:none;position:fixed;z-index:801;
-  top:50%;left:50%;transform:translate(-50%,-48%) scale(0.97);
-  width:min(500px,calc(100vw - 32px));
-  background:#111;border:1px solid #2a2a2a;border-radius:18px;overflow:hidden;
-  box-shadow:0 32px 80px rgba(0,0,0,0.7);
-  opacity:0;transition:opacity .35s,transform .35s;
-">
-  <!-- Modal header -->
-  <div style="padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);"></div>
-      <span style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--accent);">SKIN SETUP</span>
-    </div>
-    <!-- progress dots -->
-    <div style="display:flex;gap:5px;" id="ob-dots-row">
-      <div class="ob-prog-dot active"></div>
-      <div class="ob-prog-dot"></div>
-    </div>
-  </div>
-
-  <!-- Step 1: Sleep time (free-text) -->
-  <div id="ob-wiz-1" class="ob-wiz-step ob-wiz-active" style="padding:24px 24px 20px;">
-    <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">What time do you usually fall asleep?</div>
-    <div style="font-size:11px;color:#6b7280;margin-bottom:16px;">This helps us time your skincare routine.</div>
-    <input id="ob-sleep-input" type="text" placeholder="e.g. 11:30 PM"
-      style="width:100%;padding:13px 16px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:10px;font-size:14px;font-weight:600;color:#fff;outline:none;transition:border-color .15s;"
-      onfocus="this.style.borderColor='rgba(163,230,53,0.5)'"
-      onblur="this.style.borderColor='#2a2a2a'"
-      onkeydown="if(event.key==='Enter')obWizNext()"/>
-  </div>
-
-  <!-- Step 2: 30 minutes -->
-  <div id="ob-wiz-2" class="ob-wiz-step" style="padding:24px 24px 20px;">
-    <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">Are you willing to spend 30 minutes per day for significantly better results?</div>
-    <div style="font-size:11px;color:#6b7280;margin-bottom:16px;">We'll keep it efficient either way.</div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <label class="wiz-radio-option"><input type="radio" name="ob-thirtymin" value="Yes"><span>Yes</span></label>
-      <label class="wiz-radio-option"><input type="radio" name="ob-thirtymin" value="No"><span>No</span></label>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <div style="padding:14px 24px 20px;border-top:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between;">
-    <span style="font-size:10px;color:#6b7280;" id="ob-step-label">Step 1 of 2</span>
-    <button id="ob-wiz-next" onclick="obWizNext()"
-      style="background:var(--accent);color:#000;border:none;padding:11px 24px;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s;">
-      Continue
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </button>
-  </div>
-</div>
-
-<style>
-/* Wizard step visibility */
-.ob-wiz-step{display:none;}
-.ob-wiz-step.ob-wiz-active{display:block;}
-.ob-prog-dot{width:6px;height:6px;border-radius:50%;background:#2a2a2a;transition:background .2s;}
-.ob-prog-dot.active{background:var(--accent);}
-
-/* Option styles */
-.wiz-goal-option{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0d0d0d;border:1px solid #242424;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#9ca3af;transition:all .15s;}
-.wiz-goal-option:has(input:checked){background:rgba(163,230,53,0.07);border-color:rgba(163,230,53,0.4);color:#fff;}
-.wiz-goal-option input{accent-color:var(--accent);width:14px;height:14px;}
-.wiz-radio-option{display:flex;align-items:center;gap:10px;padding:11px 14px;background:#0d0d0d;border:1px solid #242424;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#9ca3af;transition:all .15s;}
-.wiz-radio-option:has(input:checked){background:rgba(163,230,53,0.07);border-color:rgba(163,230,53,0.4);color:#fff;}
-.wiz-radio-option input{accent-color:var(--accent);width:14px;height:14px;}
-
-/* Shake on empty submit */
-@keyframes obShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-</style>
-
 <!-- LEVEL UP OVERLAY -->
 <div id="levelUpOverlay">
   <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;">
@@ -738,84 +656,6 @@ function finishLevelUp() {
   renderSidebar();
 }
 
-// ══════════════════════════════════════════
-// SKIN SETUP MODAL — first visit only
-// ══════════════════════════════════════════
-const OB_KEY = 'protocol_onboarding_done';
-let obWizCurrentStep = 1;
-const obWizAnswers   = {};
-
-function shakeEl(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.style.animation = 'none';
-  el.getBoundingClientRect();
-  el.style.animation = 'obShake .35s ease';
-  setTimeout(() => { el.style.animation = ''; }, 380);
-}
-
-function obWizNext() {
-  if (obWizCurrentStep === 1) {
-    const val = document.getElementById('ob-sleep-input').value.trim();
-    if (!val) { shakeEl('ob-wiz-1'); return; }
-    obWizAnswers.sleepTime = val;
-  } else if (obWizCurrentStep === 2) {
-    const sel = document.querySelector('input[name="ob-thirtymin"]:checked');
-    if (!sel) { shakeEl('ob-wiz-2'); return; }
-    obWizAnswers.thirtyMinutes = sel.value;
-    obSaveAndDismiss();
-    return;
-  }
-
-  document.getElementById('ob-wiz-' + obWizCurrentStep).classList.remove('ob-wiz-active');
-  obWizCurrentStep++;
-  document.getElementById('ob-wiz-' + obWizCurrentStep).classList.add('ob-wiz-active');
-  obSyncWizUI();
-}
-
-function obSyncWizUI() {
-  document.getElementById('ob-step-label').textContent = `Step ${obWizCurrentStep} of 2`;
-  const btn = document.getElementById('ob-wiz-next');
-  if (obWizCurrentStep === 2) {
-    btn.innerHTML = 'Finish <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-  } else {
-    btn.innerHTML = 'Continue <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-  }
-  document.querySelectorAll('#ob-dots-row .ob-prog-dot').forEach((d, i) => d.classList.toggle('active', i < obWizCurrentStep));
-}
-
-function obSaveAndDismiss() {
-  // Persist answers
-  localStorage.setItem(OB_KEY, '1');
-  localStorage.setItem('protocol_skin_answers', JSON.stringify(obWizAnswers));
-
-  // Dismiss modal
-  const modal    = document.getElementById('obModal');
-  const backdrop = document.getElementById('obBackdrop');
-  modal.style.opacity   = '0';
-  modal.style.transform = 'translate(-50%,-48%) scale(0.96)';
-  backdrop.style.opacity = '0';
-  setTimeout(() => {
-    modal.style.display    = 'none';
-    backdrop.style.display = 'none';
-  }, 360);
-}
-
-function openObModal() {
-  const modal    = document.getElementById('obModal');
-  const backdrop = document.getElementById('obBackdrop');
-  backdrop.style.display = 'block';
-  modal.style.display    = 'block';
-  // Trigger animation next frame
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      backdrop.style.opacity = '1';
-      modal.style.opacity    = '1';
-      modal.style.transform  = 'translate(-50%,-50%) scale(1)';
-    });
-  });
-}
-
 // ── SCAN DATA ──
 function renderScanData() {
   // ── Use pre-computed scores saved by glowai.html's results page ──────────
@@ -1019,12 +859,6 @@ window.addEventListener('load', () => {
   renderProfile();
   renderSidebar();
   renderScanData();
-
-  const onboardDone = localStorage.getItem(OB_KEY);
-  if (!onboardDone) {
-    // First visit — show modal after 2 seconds
-    setTimeout(openObModal, 2000);
-  }
 
   // Check for area completions from improve pages
   const justCompleted = localStorage.getItem('protocol_area_just_completed');
