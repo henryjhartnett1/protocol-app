@@ -45,9 +45,10 @@ const OPENAI_KEY        = process.env.OPENAI_API_KEY;
 const REPLICATE_KEY     = process.env.REPLICATE_API_KEY;
 const PERFECTCORP_KEY   = process.env.PERFECTCORP_API_KEY;
 const AILABTOOLS_KEY    = process.env.AILABTOOLS_API_KEY;
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const PORT = process.env.PORT || 3000;
 
-const missingKeys = Object.entries({ ANTHROPIC_API_KEY: API_KEY, OPENAI_API_KEY: OPENAI_KEY, REPLICATE_API_KEY: REPLICATE_KEY, PERFECTCORP_API_KEY: PERFECTCORP_KEY, AILABTOOLS_API_KEY: AILABTOOLS_KEY })
+const missingKeys = Object.entries({ ANTHROPIC_API_KEY: API_KEY, OPENAI_API_KEY: OPENAI_KEY, REPLICATE_API_KEY: REPLICATE_KEY, PERFECTCORP_API_KEY: PERFECTCORP_KEY, AILABTOOLS_API_KEY: AILABTOOLS_KEY, STRIPE_SECRET_KEY: STRIPE_SECRET_KEY })
   .filter(([, v]) => !v).map(([k]) => k);
 if (missingKeys.length) {
   console.warn(`\n⚠ Missing env vars: ${missingKeys.join(', ')}. Add them to a .env file (local) or your host's environment settings (production). Features needing these keys will fail until set.\n`);
@@ -161,17 +162,83 @@ async function pcRunTask(feature, taskBody, label, version = 'v2.0') {
   throw new Error(`${label} task timed out`);
 }
 
+// Quick single-word hair-color classification (Black / Dark Brown / Light Brown /
+// Dark Blonde / Light Blonde) used to pick which hair-transfer ref_file_id to use.
+// Defaults to 'Dark Brown' on any failure/ambiguity so the hair-transfer step never
+// breaks because of this check.
+function detectHairColor(imageBase64, mimeType) {
+  return new Promise((resolve) => {
+    try {
+      const payload = JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 10,
+        system: 'You classify a person\'s natural hair color from a photo. Respond with exactly one of these labels, exactly as written: "Black", "Dark Brown", "Light Brown", "Dark Blonde", "Light Blonde". If unsure, respond "Dark Brown".',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mimeType || 'image/jpeg', data: imageBase64 } },
+            { type: 'text', text: 'What is this person\'s natural hair color — Black, Dark Brown, Light Brown, Dark Blonde, or Light Blonde? Respond with just the label.' }
+          ]
+        }]
+      });
+      const options = {
+        hostname: 'api.anthropic.com',
+        path: '/v1/messages',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+          'anthropic-version': '2023-06-01',
+          'Content-Length': Buffer.byteLength(payload)
+        }
+      };
+      const apiReq = https.request(options, apiRes => {
+        let data = '';
+        apiRes.on('data', chunk => data += chunk);
+        apiRes.on('end', () => {
+          try {
+            const json = JSON.parse(data);
+            const text = (json?.content?.[0]?.text || '').trim().toLowerCase();
+            if (text.startsWith('black')) resolve('Black');
+            else if (text.startsWith('dark brown')) resolve('Dark Brown');
+            else if (text.startsWith('light brown')) resolve('Light Brown');
+            else if (text.startsWith('dark blonde')) resolve('Dark Blonde');
+            else if (text.startsWith('light blonde')) resolve('Light Blonde');
+            else resolve('Dark Brown');
+          } catch(e) { resolve('Dark Brown'); }
+        });
+      });
+      apiReq.on('error', () => resolve('Dark Brown'));
+      apiReq.write(payload);
+      apiReq.end();
+    } catch(e) { resolve('Dark Brown'); }
+  });
+}
+
+// Maps a detected hair color to the confirmed Perfect Corp hair-transfer ref_file_id.
+// "Dark Brown" and "Light Brown" confirmed from the user's real Playground requests.
+// Dark Blonde / Light Blonde are still pending their own confirmed ref_file_id values —
+// placeholder below points at the old generic "Blonde" id until then.
+const HAIR_COLOR_REF_FILE_ID = {
+  Black:       '53PguIgJCOXmA8oszYg7KO04IPRivsCJG4FrbO13ErwLbKfeLEmuXUa9yH4wuc2K', // confirmed
+  'Dark Brown':  'P4PD788/y2XqzuxNpSAIFVcIA8r1kWFpTZpMWRR45hgLbKfeLEmuXUa9yH4wuc2K', // confirmed
+  'Light Brown': 'b1OGmvPC9zR9AtQPXsaR/iIu4VVLpHMfxO9SMa/RTzELbKfeLEmuXUa9yH4wuc2K', // confirmed
+  'Dark Blonde': 'AyAcj6/p4kvYC3IoRgLXNwAXD9HYKIDQ/qZr8Tj/Aw4LbKfeLEmuXUa9yH4wuc2K', // placeholder (old "Blonde")
+  'Light Blonde': 'AyAcj6/p4kvYC3IoRgLXNwAXD9HYKIDQ/qZr8Tj/Aw4LbKfeLEmuXUa9yH4wuc2K', // placeholder (old "Blonde")
+};
+
 // Hairstyle button id -> Perfect Corp hair-transfer template_id.
-// NOTE: "male_wavy_undercut" and "male_tousled_cut" are confirmed (from the user's real
-// Playground requests). The rest are still placeholders pointing at male_wavy_undercut
-// until their real template_id values are confirmed the same way — swap them in as we get them.
+// NOTE: "male_wavy_undercut", "male_tousled_cut", and "all_buzz_cut" are confirmed (from
+// the user's real Playground requests). The rest are still placeholders pointing at
+// male_wavy_undercut until their real template_id values are confirmed the same way —
+// swap them in as we get them.
 const HAIR_TEMPLATE_MAP = {
   fringe:   'male_wavy_undercut',
   curtains: 'male_wavy_undercut',
   flow:     'male_wavy_undercut',
   sidepart: 'male_wavy_undercut',
   crop:     'male_wavy_undercut',
-  buzz:     'male_wavy_undercut',
+  buzz:     'all_buzz_cut',
   tousled:  'male_tousled_cut',
 };
 
@@ -190,20 +257,31 @@ function buildFaceReshapeTaskBody(fileId) {
     version: '1.0',
     source: 'yco',
     features: {
-      eye_size_left: 20,
-      eye_size_right: 20,
-      eye_width: 50,
+      eye_size_left: 10,
+      eye_size_right: 10,
+      eye_width: 0,
       eye_height: 25,
       eye_distance: 0,
-      eye_angle: -50,
-      face_reshape_left: -60,
-      face_reshape_right: -60,
-      chin_reshape_left: 0,
-      chin_reshape_right: 0,
-      chin_length: 75,
+      eye_angle: -80,
+      face_reshape_left: -50,
+      face_reshape_right: -50,
+      chin_reshape_left: -30,
+      chin_reshape_right: -30,
+      chin_length: 70,
       face_width: 0,
-      cheekbones: 20,
-      jaw: 0
+      cheekbones: 30,
+      jaw: 0,
+      lip_size: 25,
+      lip_width: 25,
+      lip_height_top: 25,
+      lip_height_bottom: 25,
+      lip_peak: 25,
+      nose_size: -30,
+      nose_lift: 0,
+      nose_bridge_width: 0,
+      nose_tip: 40,
+      nose_wing: -25,
+      nose_tip_width: -70
     },
     global: {
       skin_smooth_strength: 0,
@@ -217,50 +295,94 @@ function buildMakeupVtoTaskBody(fileId) {
     src_file_id: fileId,
     effects: [
       {
-        category: 'eyebrows',
-        // pattern.type: 'color' keeps the user's own eyebrow shape instead of applying
-        // one of Perfect Corp's preset shape templates — only color is changed. The API
-        // requires this `pattern` block even for color-only edits (confirmed via 400:
-        // "Object has missing required properties (['pattern'])").
-        pattern: { type: 'color' },
-        palettes: [
-          { color: '#301708', colorIntensity: 100, texture: 'matte' }
-        ]
-      },
-      {
-        category: 'eyelashes',
-        palettes: [
-          { color: '#000000', colorIntensity: 25 }
-        ],
-        pattern: {
-          name: 'Upper15'
-        }
-      },
-      {
+        // Confirmed from the user's real Playground request (concealer look).
+        // Listed BEFORE eyebrows so the heavy 100% coverage/glow foundation layer
+        // doesn't get applied on top of (and wash out) the eyebrows effect.
         category: 'foundation',
         palettes: [
           {
-            color: '#A06A4B',
-            colorIntensity: 50,
-            coverageIntensity: 50,
-            glowIntensity: 0
+            coverageIntensity: 100,
+            glowIntensity: 100,
+            color: '#C17E4C',
+            colorIntensity: 100
           }
         ]
       },
       {
-        category: 'concealer',
+        category: 'eyebrows',
+        pattern: {
+          type: 'shape',
+          name: 'Straight21',
+          curvature: -50,
+          thickness: 15,
+          definition: 10
+        },
         palettes: [
-          {
-            colorUnderEyeIntensity: 0,
-            coverageLevel: 0,
-            color: '#D6AA6A',
-            colorIntensity: 0
-          }
+          { color: '#301708', colorIntensity: 20, texture: 'matte' }
         ]
       }
     ],
     version: '1.0'
   };
+}
+
+// ── Stripe REST helper (no SDK dependency — npm install is blocked in this sandbox,
+// so we hit api.stripe.com directly over https, the same way pcPost/pcGet do above) ──
+// Stripe's API takes application/x-www-form-urlencoded bodies with bracket notation
+// for nested params (e.g. line_items[0][price_data][currency]=usd). flattenForStripe
+// converts a normal JS object into that flat [key, value] pair list.
+function flattenForStripe(obj, prefix) {
+  let pairs = [];
+  for (const key in obj) {
+    const value = obj[key];
+    if (value === null || value === undefined) continue;
+    const formKey = prefix ? `${prefix}[${key}]` : key;
+    if (Array.isArray(value)) {
+      value.forEach((v, i) => {
+        const arrKey = `${formKey}[${i}]`;
+        if (v !== null && typeof v === 'object') pairs = pairs.concat(flattenForStripe(v, arrKey));
+        else pairs.push([arrKey, v]);
+      });
+    } else if (typeof value === 'object') {
+      pairs = pairs.concat(flattenForStripe(value, formKey));
+    } else {
+      pairs.push([formKey, value]);
+    }
+  }
+  return pairs;
+}
+
+function stripePost(apiPath, paramsObj) {
+  return new Promise((resolve, reject) => {
+    if (!STRIPE_SECRET_KEY) { reject(new Error('STRIPE_SECRET_KEY not set')); return; }
+    const body = flattenForStripe(paramsObj)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+      .join('&');
+    const options = {
+      hostname: 'api.stripe.com',
+      path: '/v1/' + apiPath,
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + STRIPE_SECRET_KEY,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    };
+    const apiReq = https.request(options, apiRes => {
+      let data = '';
+      apiRes.on('data', c => data += c);
+      apiRes.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (json.error) reject(new Error(json.error.message || 'Stripe error'));
+          else resolve(json);
+        } catch(e) { reject(new Error('Stripe response parse error: ' + data.slice(0,300))); }
+      });
+    });
+    apiReq.on('error', reject);
+    apiReq.write(body);
+    apiReq.end();
+  });
 }
 
 const server = http.createServer((req, res) => {
@@ -784,6 +906,110 @@ If eyes not clearly visible, set certain to false. If eye color cannot be determ
             content: [
               { type: 'image', source: { type: 'base64', media_type: mimeType || 'image/jpeg', data: imageBase64 } },
               { type: 'text', text: 'Analyze the eyes in this photo and return the JSON.' }
+            ]
+          }]
+        });
+
+        const options = {
+          hostname: 'api.anthropic.com',
+          path: '/v1/messages',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEY,
+            'anthropic-version': '2023-06-01',
+            'Content-Length': Buffer.byteLength(payload)
+          }
+        };
+
+        const apiReq = https.request(options, apiRes => {
+          let data = '';
+          apiRes.on('data', chunk => data += chunk);
+          apiRes.on('end', () => {
+            res.writeHead(apiRes.statusCode, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end(data);
+          });
+        });
+        apiReq.on('error', err => {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: err.message }));
+        });
+        apiReq.write(payload);
+        apiReq.end();
+
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // ── Jaw analysis ──
+  if (req.method === 'POST' && req.url === '/api/analyze-jaw') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const { imageBase64, mimeType } = JSON.parse(body);
+
+        const payload = JSON.stringify({
+          model: 'claude-opus-4-5',
+          max_tokens: 800,
+          system: `You are an expert in male facial aesthetics scoring jawline attractiveness. Do NOT inflate scores.
+
+SCORE DISTRIBUTION — follow strictly:
+Bottom 10%: 0–3 | Bottom 30%: 3–5 | Average person: 5–6 | Top 30%: 6–8 | Top 10%: 8–9 | Top 1%: 9–10
+Most people score 5–6.5. Above 8 is uncommon. Above 9 is extremely rare.
+
+Score these 7 traits from 1–10:
+
+1. JAW WIDTH (20%): Compare bigonial width (distance between jaw angles) to bizygomatic width (cheekbone width). Higher ratio = wider, stronger jaw.
+1-2 Very narrow jaw | 3-4 Narrow jaw | 5-6 Average width | 7-8 Wide jaw | 9-10 Elite wide jaw
+
+2. JAW DEFINITION (20%): Contrast between jawline and neck, sharpness of jaw border, visibility of mandibular edge, soft tissue covering jaw. Higher edge contrast = better definition.
+1-2 Very soft/undefined | 3-4 Soft jawline | 5-6 Average definition | 7-8 Sharp definition | 9-10 Elite razor-sharp definition
+
+3. CHIN PROJECTION (15%): Horizontal projection of chin relative to lips, nose, and neck (side profile), or estimated prominence from shadowing/proportions (front view).
+1-2 Very recessed chin | 3-4 Recessed chin | 5-6 Average projection | 7-8 Strong projection | 9-10 Elite chin projection
+
+4. GONIAL ANGLE (15%): Angle formed by the ramus, jaw angle, and mandible. Closer to an ideal masculine angle (roughly 120-130°) scores higher.
+1-2 Very obtuse/rounded angle | 3-4 Rounded angle | 5-6 Average angle | 7-8 Masculine angle | 9-10 Elite masculine angle
+
+5. JAW SYMMETRY (10%): Left vs right jaw width, jaw angle, and chin centering.
+1-2 Very asymmetrical | 3-4 Noticeably asymmetrical | 5-6 Average | 7-8 Strong symmetry | 9-10 Near perfect symmetry
+
+6. NECK-JAW SEPARATION (10%): Cervicomental angle (angle between underside of chin and neck), visible separation between jaw and neck, neck fullness. Lower angle + clear separation = higher score.
+1-2 No separation/full neck | 3-4 Minimal separation | 5-6 Average separation | 7-8 Clean separation | 9-10 Elite separation
+
+7. FACIAL LEANNESS (10%): Buccal fullness, lower face fat, jaw visibility, under-chin fullness. Estimated from visible soft tissue, not body fat directly.
+1-2 Very full lower face | 3-4 Some fullness obscuring jaw | 5-6 Average | 7-8 Lean lower face | 9-10 Elite lean, bone structure visible
+
+OVERALL JAW SCORE:
+jawScore = (jawWidth×0.20)+(jawDefinition×0.20)+(chinProjection×0.15)+(gonialAngle×0.15)+(jawSymmetry×0.10)+(neckJawSeparation×0.10)+(facialLeanness×0.10)
+Round to one decimal.
+
+Do NOT calculate potential. Omit jawPotential and jawPotentialGain — computed client-side.
+
+Return ONLY this JSON, no markdown:
+{
+  "jawScore": 6.8,
+  "jawWidth": 7.0,
+  "jawDefinition": 6.5,
+  "chinProjection": 6.0,
+  "gonialAngle": 7.2,
+  "jawSymmetry": 7.5,
+  "neckJawSeparation": 6.0,
+  "facialLeanness": 6.5,
+  "certain": true
+}
+
+If the jaw/lower face is not clearly visible, set certain to false.`,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: mimeType || 'image/jpeg', data: imageBase64 } },
+              { type: 'text', text: 'Analyze the jawline in this photo and return the JSON.' }
             ]
           }]
         });
@@ -1352,6 +1578,14 @@ print(json.dumps({'eyes': result[:2], 'imgW': w, 'imgH': h}))
   // ── Serve dashboard.html ──
   if (req.method === 'GET' && (req.url === '/dashboard' || req.url === '/dashboard.html')) {
     const html = fs.readFileSync(path.join(__dirname, 'dashboard.html'), 'utf8');
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(html);
+    return;
+  }
+
+  // ── Serve profile.html ──
+  if (req.method === 'GET' && (req.url === '/profile' || req.url === '/profile.html')) {
+    const html = fs.readFileSync(path.join(__dirname, 'profile.html'), 'utf8');
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(html);
     return;
@@ -2101,15 +2335,49 @@ End with a "Daily Non-Negotiables" section (5 habits to do every single day).`;
       const { imageBase64, mimeType } = parsed;
 
       // ── 3-Month Potential image chains three confirmed Perfect Corp pipelines:
-      // 1) makeup-vto (eyebrows/eyelashes/foundation/concealer) on the original photo, then
-      // 2) face-reshape (eyes) run on THAT result, then 3) hair-transfer.
+      // 1) hair-transfer on the original photo, then 2) makeup-vto (eyebrows/
+      // eyelashes/foundation/concealer) on THAT result, then 3) face-reshape (eyes).
+      // Hair now runs FIRST — running makeup-vto's heavy foundation layer before
+      // hair-transfer was washing out the eyebrows in the final composite.
       const contentType = (mimeType || '').includes('png') ? 'image/png' : 'image/jpeg';
       const fileName = contentType === 'image/png' ? 'photo.png' : 'photo.jpg';
       const imgBuf = Buffer.from(imageBase64, 'base64');
 
-      // ── Step 1: makeup-vto (brows/lashes/foundation/concealer) on the original photo ──
-      console.log('[simulate:pc] uploading source photo for makeup-vto...');
-      const makeupFileId = await pcUploadFile('makeup-vto', imgBuf, contentType, fileName);
+      // ── Step 1: hair-transfer on the original photo ──
+      // Per the user's latest confirmed Playground request, this uses ref_file_id
+      // (a reference photo) instead of template_id/hair_color.
+      let afterHairBuf = imgBuf;
+      let afterHairContentType = contentType;
+
+      try {
+        console.log('[simulate:pc] uploading source photo for hair-transfer...');
+        const hairFileId = await pcUploadFile('hair-transfer', imgBuf, contentType, fileName, 'v2.1');
+        console.log('[simulate:pc] uploaded, file_id:', hairFileId);
+
+        // Confirmed from the user's real Playground requests: src_file_id + ref_file_id.
+        // ref_file_id points at the reference photo's own hair-transfer-uploaded file_id.
+        // Several confirmed reference photos exist — pick whichever matches the
+        // person's detected natural hair color (Black / Dark Brown / Light Brown /
+        // Dark Blonde / Light Blonde).
+        const detectedHairColor = await detectHairColor(imageBase64, mimeType);
+        const hairRefFileId = HAIR_COLOR_REF_FILE_ID[detectedHairColor];
+        console.log('[simulate:pc] detected hair color:', detectedHairColor, '-> ref_file_id:', hairRefFileId);
+        const hairTaskBody = { src_file_id: hairFileId, ref_file_id: hairRefFileId };
+        console.log('[simulate:pc] running hair-transfer task...');
+        const hairResultData = await pcRunTask('hair-transfer', hairTaskBody, 'hair-transfer', 'v2.1');
+        const hairResultUrl = hairResultData?.results?.url || hairResultData?.results?.output?.[0]?.url || hairResultData?.output?.[0] || hairResultData?.url;
+        if (!hairResultUrl) throw new Error('hair-transfer: no result url in: ' + JSON.stringify(hairResultData).slice(0,300));
+        afterHairBuf = await pcFetchBuf(hairResultUrl);
+        afterHairContentType = 'image/jpeg';
+      } catch (hairErr) {
+        // Don't let a hair-transfer failure kill the whole simulation — fall back to
+        // the original photo for the remaining steps rather than erroring out.
+        console.error('[simulate:pc] hair-transfer step failed, continuing without it:', hairErr.message);
+      }
+
+      // ── Step 2: makeup-vto (brows/lashes/foundation/concealer) on the hair-transfer result ──
+      console.log('[simulate:pc] uploading hair-transfer result for makeup-vto...');
+      const makeupFileId = await pcUploadFile('makeup-vto', afterHairBuf, afterHairContentType, 'hair-result.jpg');
       console.log('[simulate:pc] uploaded, file_id:', makeupFileId);
 
       const taskBody = buildMakeupVtoTaskBody(makeupFileId);
@@ -2119,7 +2387,7 @@ End with a "Daily Non-Negotiables" section (5 habits to do every single day).`;
       if (!resultUrl) throw new Error('makeup-vto: no result url in: ' + JSON.stringify(resultData).slice(0,300));
       const makeupBuf = await pcFetchBuf(resultUrl);
 
-      // ── Step 2: face-reshape (eyes) on the makeup-vto result ──
+      // ── Step 3: face-reshape (eyes) on the makeup-vto result ──
       console.log('[simulate:pc] uploading makeup-vto result for face-reshape (eyes)...');
       const eyesFileId = await pcUploadFile('face-reshape', makeupBuf, 'image/jpeg', 'makeup-result.jpg', 'v2.0');
       console.log('[simulate:pc] uploaded, file_id:', eyesFileId);
@@ -2129,37 +2397,7 @@ End with a "Daily Non-Negotiables" section (5 habits to do every single day).`;
       const eyesResultData = await pcRunTask('face-reshape', eyesTaskBody, 'face-reshape', 'v2.0');
       const eyesResultUrl = eyesResultData?.results?.url || eyesResultData?.results?.output?.[0]?.url || eyesResultData?.output?.[0] || eyesResultData?.url;
       if (!eyesResultUrl) throw new Error('face-reshape: no result url in: ' + JSON.stringify(eyesResultData).slice(0,300));
-      const eyesBuf = await pcFetchBuf(eyesResultUrl);
-
-      // ── Step 3: hair-transfer on the face-reshape result ──
-      // The UI promises "APPLYING HAIR IMPROVEMENTS..." but this step was previously
-      // missing entirely, so the simulated photo never actually changed the hair.
-      // Always uses the "wavy undercut" template per the user's instruction, same as
-      // the standalone hair-tryon endpoint, regardless of the recommended haircut text.
-      let finalBuf = eyesBuf;
-      const hairTemplateId = 'male_wavy_undercut';
-
-      try {
-        console.log('[simulate:pc] uploading face-reshape result for hair-transfer, template:', hairTemplateId);
-        const hairFileId = await pcUploadFile('hair-transfer', eyesBuf, 'image/jpeg', 'eyes-result.jpg', 'v2.1');
-        console.log('[simulate:pc] uploaded, file_id:', hairFileId);
-
-        // Confirmed from the user's real Playground request: template_id + hair_color:
-        // 'ref' works together in a single call — Perfect Corp uses src_file_id itself
-        // as the implicit color reference, so no separate ref_file_id/ref upload needed.
-        // (Passing template_id together with an explicit ref_file_id is rejected by the
-        // schema: "Should provide either 'ref_file_id' or 'template_id'".)
-        const hairTaskBody = { src_file_id: hairFileId, template_id: hairTemplateId, hair_color: 'ref' };
-        console.log('[simulate:pc] running hair-transfer task...');
-        const hairResultData = await pcRunTask('hair-transfer', hairTaskBody, 'hair-transfer', 'v2.1');
-        const hairResultUrl = hairResultData?.results?.url || hairResultData?.results?.output?.[0]?.url || hairResultData?.output?.[0] || hairResultData?.url;
-        if (!hairResultUrl) throw new Error('hair-transfer: no result url in: ' + JSON.stringify(hairResultData).slice(0,300));
-        finalBuf = await pcFetchBuf(hairResultUrl);
-      } catch (hairErr) {
-        // Don't let a hair-transfer failure kill the whole simulation — fall back to
-        // the brows/eyes-only result rather than erroring the entire request.
-        console.error('[simulate:pc] hair-transfer step failed, continuing without it:', hairErr.message);
-      }
+      const finalBuf = await pcFetchBuf(eyesResultUrl);
 
       const b64 = finalBuf.toString('base64');
       const imageUrl = `data:image/jpeg;base64,${b64}`;
@@ -2239,13 +2477,13 @@ End with a "Daily Non-Negotiables" section (5 habits to do every single day).`;
         const fileId = await pcUploadFile('hair-transfer', imgBuf, contentType, fileName, 'v2.1');
         console.log('[hair-tryon:pc] uploaded, file_id:', fileId);
 
-        const templateId = 'male_wavy_undercut';
-
-        // Confirmed from the user's real Playground request: template_id + hair_color:
-        // 'ref' works together in a single call — Perfect Corp uses src_file_id itself
-        // as the implicit color reference, so no separate ref_file_id/ref upload needed.
-        console.log('[hair-tryon:pc] running hair-transfer with template:', templateId);
-        const taskBody = { src_file_id: fileId, template_id: templateId, hair_color: 'ref' };
+        // Confirmed from the user's real Playground request: src_file_id + ref_file_id.
+        // Three confirmed reference photos exist — pick whichever matches the person's
+        // detected natural hair color (Black / Brown / Blonde).
+        const detectedHairColor = await detectHairColor(imageBase64, mimeType);
+        const hairRefFileId = HAIR_COLOR_REF_FILE_ID[detectedHairColor];
+        console.log('[hair-tryon:pc] detected hair color:', detectedHairColor, '-> ref_file_id:', hairRefFileId);
+        const taskBody = { src_file_id: fileId, ref_file_id: hairRefFileId };
         const resultData = await pcRunTask('hair-transfer', taskBody, 'hair-transfer', 'v2.1');
         const resultUrl = resultData?.results?.url || resultData?.results?.output?.[0]?.url || resultData?.output?.[0] || resultData?.url;
         if (!resultUrl) throw new Error('hair-transfer: no result url in: ' + JSON.stringify(resultData).slice(0,300));
@@ -2260,6 +2498,49 @@ End with a "Daily Non-Negotiables" section (5 habits to do every single day).`;
 
       } catch(e) {
         console.error('[hair-tryon] Error:', e.message);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // ── Stripe Checkout: $15/mo subscription with a 7-day free trial ──────────
+  // Creates a Stripe-hosted Checkout Session and hands the client back the URL
+  // to redirect to. No Stripe.js/publishable key needed for this flow — Stripe
+  // hosts the whole payment page. After payment (or trial start), Stripe
+  // redirects back to success_url.
+  if (req.method === 'POST' && req.url === '/api/create-checkout-session') {
+    const chunks = [];
+    req.on('data', c => chunks.push(c));
+    req.on('end', async () => {
+      try {
+        let body = {};
+        try { body = JSON.parse(Buffer.concat(chunks).toString() || '{}'); } catch(e) {}
+        const origin = req.headers.origin || `http://${req.headers.host}`;
+
+        const session = await stripePost('checkout/sessions', {
+          mode: 'subscription',
+          line_items: [
+            {
+              quantity: 1,
+              price_data: {
+                currency: 'usd',
+                unit_amount: 1500, // $15.00/mo
+                recurring: { interval: 'month' },
+                product_data: { name: 'Protocol Membership' }
+              }
+            }
+          ],
+          subscription_data: { trial_period_days: 7 },
+          success_url: `${origin}/dashboard?checkout=success`,
+          cancel_url: `${origin}${body.cancelPath || '/'}?checkout=cancelled`
+        });
+
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ url: session.url }));
+      } catch(e) {
+        console.error('[stripe] checkout session error:', e.message);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
       }

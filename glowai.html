@@ -77,6 +77,34 @@
 
     .upload-choose-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: auto; margin-bottom: 18px; padding: 4px; border: none; background: none; color: #3aa0ff; text-decoration: underline; font-size: 13px; font-weight: 700; letter-spacing: 0.3px; cursor: pointer; box-shadow: none; transition: opacity 0.15s; }
     .upload-choose-btn:hover { opacity: 0.75; }
+    .upload-howto-title { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #3aa0ff; margin-bottom: 6px; }
+    .upload-howto-text { font-size: 12.5px; color: var(--muted2); line-height: 1.6; }
+    .upload-howto-examples-btn { display: inline-block; margin-top: 9px; padding: 0; border: none; background: none; color: #3aa0ff; text-decoration: underline; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+    .upload-howto-examples-btn:hover { opacity: 0.8; }
+
+    /* Popup version — fixed over the top of the screen, hidden until shown via JS 2s after load. */
+    .upload-howto-popup {
+      position: fixed; top: 16px; left: 50%;
+      width: calc(100% - 32px); max-width: 380px;
+      background: var(--bg2); border: 1px solid #3aa0ff; border-radius: 12px;
+      padding: 16px 18px; text-align: left; z-index: 600;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      opacity: 0; pointer-events: none;
+      transform: translate(-50%, -16px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .upload-howto-popup.visible { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+    .upload-howto-popup-close {
+      position: absolute; top: 10px; right: 10px;
+      width: 22px; height: 22px; border: none; background: none;
+      color: var(--muted2); font-size: 13px; cursor: pointer; line-height: 1;
+    }
+    .upload-howto-popup-close:hover { color: #fff; }
+    .examples-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 99998; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .examples-modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 16px; max-width: 420px; width: 100%; max-height: 84vh; overflow-y: auto; padding: 22px 22px 24px; position: relative; }
+    .examples-modal-close { position: absolute; top: 14px; right: 14px; background: rgba(0,0,0,0.5); border: none; color: #fff; font-size: 16px; cursor: pointer; line-height: 1; padding: 6px 9px; border-radius: 50%; z-index: 2; }
+    .examples-modal-img { padding: 0; overflow: hidden; }
+    .examples-modal-photo { display: block; width: 100%; height: auto; border-radius: 16px; }
     .upload-footer-note { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 11px; color: var(--muted2); margin-top: 4px; padding-bottom: 56px; }
     .upload-footer-note svg { color: #3aa0ff; flex-shrink: 0; }
 
@@ -92,6 +120,8 @@
     .btn-run:disabled { opacity: 0.3; cursor: not-allowed; }
 
     .error-box { background: #110000; border: 1px solid #330000; padding: 12px 16px; font-size: 13px; color: #ff4444; display: none; margin-top: 10px; }
+    .photo-quality-warning { display: flex; align-items: flex-start; gap: 9px; background: #1a1400; border: 1px solid #4a3a00; border-radius: 10px; padding: 12px 16px; font-size: 12.5px; line-height: 1.5; color: #ffc24d; margin-top: 10px; }
+    .photo-quality-warning svg { flex-shrink: 0; margin-top: 1px; }
 
     /* PROGRESS */
     #loadingCard { display: none; }
@@ -415,6 +445,19 @@
     .skin-pro-tip-text { font-size: 12px; color: var(--muted2); line-height: 1.5; flex: 1; }
     .skin-conf-right { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted2); display: flex; align-items: center; gap: 6px; white-space: nowrap; margin-left: auto; }
 
+    /* BLUR LOAD OVERLAY — brief transition shown right after the analyze button is
+       clicked, before the detailed scan animation kicks in. */
+    #blurLoadOverlay { display: none; position: fixed; inset: 0; z-index: 1001; background: #000; flex-direction: column; align-items: center; justify-content: center; gap: 28px; }
+    #blurLoadOverlay.active { display: flex; }
+    .bl-wrap { position: relative; width: min(280px, 72vw); aspect-ratio: 3/4; border-radius: 16px; overflow: hidden; }
+    .bl-photo { width: 100%; height: 100%; object-fit: cover; display: block; filter: blur(22px) brightness(0.7); transform: scale(1.08); transition: filter 0.6s ease; }
+    .bl-photo.sharpening { filter: blur(0px) brightness(0.85); }
+    .bl-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.45)); }
+    .bl-text { text-align: center; }
+    .bl-title { font-size: 13px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--white); margin-bottom: 14px; }
+    .bl-progress-track { width: 220px; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; margin: 0 auto; }
+    .bl-progress-fill { height: 100%; width: 0%; background: #3aa0ff; box-shadow: 0 0 8px #3aa0ff; border-radius: 2px; transition: width 0.25s ease; }
+
     /* SCAN OVERLAY */
     #scanOverlay { display: none; position: fixed; inset: 0; z-index: 1000; background: #000; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
     #scanOverlay.active { display: flex; }
@@ -595,6 +638,15 @@
   <p class="upload-sub">AI-powered analysis. Personalized plan.<br>Your transformation starts with <span class="accent">one photo.</span></p>
 </div>
 
+<!-- ── "How to get the best results" popup — appears 2s after page load,    ── -->
+<!-- ── overlaid on top of the hero header, dismissible via the ✕.          ── -->
+<div class="upload-howto-popup" id="howToPopup">
+  <button class="upload-howto-popup-close" id="howToPopupClose" type="button" aria-label="Close">✕</button>
+  <div class="upload-howto-title">How to get the best results</div>
+  <div class="upload-howto-text">Upload your best front-facing photo. Professional, school, portrait, or group photos work best. Selfies will lead to inaccurate results.</div>
+  <button class="upload-howto-examples-btn" id="seeExamplesBtn" type="button">See examples</button>
+</div>
+
 <div class="proto-app-wrap">
 <!-- Side Nav -->
 <nav class="proto-sidenav" id="protoSidenav">
@@ -643,12 +695,16 @@
         <div class="upload-circle-content" id="uploadCircleContent">
           <svg class="upload-circle-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
           <div class="upload-circle-title">Upload Your Photo</div>
-          <div class="upload-circle-sub">Best results: a work, LinkedIn, or school photo<br>JPG, PNG or HEIC · Max 10MB</div>
+          <div class="upload-circle-sub">JPG, PNG or HEIC · Max 10MB</div>
         </div>
         <button class="preview-remove" id="removeBtn" style="display:none;">✕</button>
       </div>
     </div>
     <div class="error-box" id="errorBox"></div>
+    <div class="photo-quality-warning" id="photoQualityWarning" style="display:none;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+      <span id="photoQualityWarningText"></span>
+    </div>
 
     <div class="upload-features-row">
       <div class="upload-feature">
@@ -667,11 +723,7 @@
       </div>
     </div>
 
-    <button class="btn-run" id="choosePhotoBtn2" style="margin-top:0;margin-bottom:10px;background:linear-gradient(135deg,#3aa0ff,#2f7fe0);">📁 Upload a Photo (Recommended)</button>
-    <button class="upload-choose-btn" id="guidedCaptureBtn">
-      Don't have one? Take a guided selfie instead
-    </button>
-    <button class="btn-run" id="analyzeBtn" disabled>→ Analyze Face Shape</button>
+    <button class="btn-run" id="analyzeBtn" disabled>→ Analyze</button>
 
     <div class="upload-footer-note">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
@@ -2118,6 +2170,16 @@ function rerunSim() {
 </div>
 
 <!-- SCAN OVERLAY -->
+<div id="blurLoadOverlay">
+  <div class="bl-wrap">
+    <img class="bl-photo" id="blPhoto" src="" alt=""/>
+  </div>
+  <div class="bl-text">
+    <div class="bl-title">Preparing Your Analysis...</div>
+    <div class="bl-progress-track"><div class="bl-progress-fill" id="blProgressFill"></div></div>
+  </div>
+</div>
+
 <div id="scanOverlay">
   <div class="scan-wrap">
     <img class="scan-photo" id="scanPhoto" src="" alt=""/>
@@ -2280,20 +2342,45 @@ function rerunSim() {
   uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
   fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
 
-  const choosePhotoBtn2 = document.getElementById('choosePhotoBtn2');
-  if (choosePhotoBtn2) choosePhotoBtn2.addEventListener('click', () => fileInput.click());
+  // ── "How to get the best results" popup — shows 2s after page load, ──
+  // overlaid on top of the hero header, dismissible via its ✕.
+  const howToPopup = document.getElementById('howToPopup');
+  const howToPopupClose = document.getElementById('howToPopupClose');
+  if (howToPopup) {
+    setTimeout(() => howToPopup.classList.add('visible'), 2000);
+  }
+  if (howToPopupClose) {
+    howToPopupClose.addEventListener('click', () => howToPopup.classList.remove('visible'));
+  }
 
-  const guidedCaptureBtn = document.getElementById('guidedCaptureBtn');
-  if (guidedCaptureBtn) guidedCaptureBtn.addEventListener('click', () => openGuidedCapture(blob => handleFile(blob)));
+  // ── "See examples" modal — shows what makes a good vs. bad upload ──
+  const seeExamplesBtn = document.getElementById('seeExamplesBtn');
+  if (seeExamplesBtn) seeExamplesBtn.addEventListener('click', openExamplesModal);
+
+  function openExamplesModal() {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'examples-modal-backdrop';
+    backdrop.innerHTML = `
+      <div class="examples-modal examples-modal-img">
+        <button class="examples-modal-close" id="examplesModalClose">✕</button>
+        <img src="Ex.png" alt="Good vs. bad photo examples" class="examples-modal-photo"/>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+    backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+    document.getElementById('examplesModalClose').addEventListener('click', () => backdrop.remove());
+  }
 
   function handleFile(file) {
     if (!file.type.startsWith('image/')) { showError('Upload an image file.'); return; }
     if (file.size > 20 * 1024 * 1024) { showError('File must be under 20MB.'); return; }
     hideError();
+    hidePhotoQualityWarning();
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
       img.onload = () => {
+        const origW = img.width, origH = img.height;
         const MAX = 1024;
         let w = img.width, h = img.height;
         if (w > MAX || h > MAX) { if (w > h) { h = Math.round(h * MAX / w); w = MAX; } else { w = Math.round(w * MAX / h); h = MAX; } }
@@ -2312,7 +2399,7 @@ function rerunSim() {
         analyzeBtn.style.display = 'block';
 
         // Auto-detect the head and re-center it inside the circle
-        detectFaceAndCenter(canvas, w, h);
+        detectFaceAndCenter(canvas, w, h, origW, origH);
 
         // Eye brow crop
         const cropX = Math.round(w * 0.22), cropY = Math.round(h * 0.26);
@@ -2453,7 +2540,7 @@ function rerunSim() {
   // "foreground" (subject) pixels that differ from it, then uses a
   // skin-tone-weighted centroid of the upper portion of that box (the head)
   // to position the circular crop.
-  function detectFaceAndCenter(canvas, srcW, srcH) {
+  function detectFaceAndCenter(canvas, srcW, srcH, origW, origH) {
     try {
       const ctx = canvas.getContext('2d');
       const { data } = ctx.getImageData(0, 0, srcW, srcH);
@@ -2466,6 +2553,7 @@ function rerunSim() {
       let bgR = 0, bgG = 0, bgB = 0;
       corners.forEach(i => { bgR += data[i]; bgG += data[i + 1]; bgB += data[i + 2]; });
       bgR /= corners.length; bgG /= corners.length; bgB /= corners.length;
+      const bgLum = bgR * 0.299 + bgG * 0.587 + bgB * 0.114;
 
       const step = Math.max(2, Math.round(Math.min(srcW, srcH) / 180));
       const THRESHOLD = 38;
@@ -2487,7 +2575,11 @@ function rerunSim() {
         }
       }
 
-      if (!found) { previewImg.style.objectPosition = '50% 35%'; return; }
+      if (!found) {
+        previewImg.style.objectPosition = '50% 35%';
+        showPhotoQualityWarning(['no_face']);
+        return;
+      }
 
       // Sanity check: if the "subject" we found covers almost the entire
       // frame, the corner-sampled background color was unreliable (common
@@ -2536,7 +2628,11 @@ function rerunSim() {
         }
       }
 
-      if (!hFound) { previewImg.style.objectPosition = '50% 35%'; return; }
+      if (!hFound) {
+        previewImg.style.objectPosition = '50% 35%';
+        showPhotoQualityWarning(['no_face']);
+        return;
+      }
 
       const headCx = (hMinX + hMaxX) / 2;
       const headCy = (hMinY + hMaxY) / 2;
@@ -2547,10 +2643,85 @@ function rerunSim() {
       // be centered on the same point, not just the upload circle.
       window._headFace = { srcW, srcH, headCx, headCy };
       applyFacePosition(previewImg, srcW, srcH, headCx, headCy);
+
+      // ── Photo quality score ──
+      // Modeled on what well-performing "good" reference photos (work/school/
+      // portrait shots) have in common: a frontal, centered head that fills a
+      // moderate (not too close, not too far) portion of the frame, even
+      // front-on lighting (no strong backlight silhouette), reasonable
+      // resolution. Selfies tend to fail this on closeness and/or lighting.
+      let headSum = 0, headN = 0;
+      for (let y = hMinY; y <= hMaxY; y += step) {
+        for (let x = hMinX; x <= hMaxX; x += step) {
+          const i = idx(x, y);
+          headSum += data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+          headN++;
+        }
+      }
+      const headLum = headN ? headSum / headN : bgLum;
+
+      const headHeightFrac = (hMaxY - hMinY) / srcH;
+      const centerOffsetFrac = Math.abs(headCx - srcW / 2) / srcW;
+      const minResolution = Math.min(origW || srcW, origH || srcH);
+
+      const reasons = [];
+      let score = 100;
+
+      // Close-up is fine — a full, clearly visible face is actually ideal.
+      // Only penalize when the face is too small/far away to read clearly.
+      if (headHeightFrac < 0.22) { score -= 30; reasons.push('too_far'); }
+      else if (headHeightFrac < 0.30) { score -= 12; reasons.push('too_far'); }
+
+      if (centerOffsetFrac > 0.20) { score -= 25; reasons.push('off_center'); }
+      else if (centerOffsetFrac > 0.12) { score -= 15; reasons.push('off_center'); }
+
+      if (headLum < 60) { score -= 30; reasons.push('too_dark'); }
+      else if (headLum < 90) { score -= 12; reasons.push('too_dark'); }
+      else if (headLum > 215) { score -= 20; reasons.push('too_bright'); }
+
+      if (bgLum - headLum > 50) { score -= 25; reasons.push('backlit'); }
+
+      if (minResolution < 400) { score -= 20; reasons.push('low_res'); }
+
+      score = Math.max(0, Math.min(100, score));
+      window._photoQualityScore = score;
+
+      if (score < 60) {
+        showPhotoQualityWarning(reasons);
+      } else {
+        hidePhotoQualityWarning();
+      }
     } catch (err) {
       console.warn('Head detection failed:', err);
       previewImg.style.objectPosition = '50% 35%';
     }
+  }
+
+  const PHOTO_WARNING_MESSAGES = {
+    no_face: "We couldn't clearly detect a face in this photo.",
+    too_far: 'The face is too small in this photo — try one where the full face is clearly visible.',
+    off_center: 'The face is off to one side — try a more centered photo.',
+    too_dark: 'This photo is too dark for accurate results.',
+    too_bright: 'This photo is overexposed/too bright for accurate results.',
+    backlit: 'The lighting looks like it\'s coming from behind the subject.',
+    low_res: 'This photo is low resolution and may produce blurry results.',
+  };
+
+  function showPhotoQualityWarning(reasons) {
+    const box = document.getElementById('photoQualityWarning');
+    const textEl = document.getElementById('photoQualityWarningText');
+    if (!box || !textEl) return;
+    const seen = [...new Set(reasons)];
+    const detail = seen.map(r => PHOTO_WARNING_MESSAGES[r]).filter(Boolean).join(' ');
+    textEl.textContent = (detail || '') +
+      ' For best results, use a front-facing professional, school, portrait, or group photo.' +
+      ' This will most likely lead to inaccurate results.';
+    box.style.display = 'flex';
+  }
+
+  function hidePhotoQualityWarning() {
+    const box = document.getElementById('photoQualityWarning');
+    if (box) box.style.display = 'none';
   }
 
   // object-position: P% aligns the point at P% of the *image* with the
@@ -2606,6 +2777,8 @@ function rerunSim() {
     previewImg.style.objectPosition = '50% 35%';
     if (uploadCircleContent) uploadCircleContent.style.display = 'flex';
     removeBtn.style.display = 'none';
+    hidePhotoQualityWarning();
+    window._photoQualityScore = null;
     fileInput.value = '';
     analyzeBtn.disabled = true;
     goToSection('upload');
@@ -2623,6 +2796,37 @@ function rerunSim() {
   }
 
   let _scanProgressTimer = null;
+
+  // Blurred-photo loading transition — shown right after the user clicks the
+  // analyze button, before the detailed scan animation. Returns a promise
+  // that resolves once the bar fills and the overlay fades out.
+  function showBlurLoad() {
+    return new Promise(resolve => {
+      const overlay = document.getElementById('blurLoadOverlay');
+      const photoEl = document.getElementById('blPhoto');
+      const fillEl  = document.getElementById('blProgressFill');
+      photoEl.src = imageDisplayUrl || imageDataUrl || localStorage.getItem('protocol_photo') || '';
+      photoEl.classList.remove('sharpening');
+      fillEl.style.width = '0%';
+      overlay.classList.add('active');
+
+      // Fill the bar over ~1.4s, then slightly de-blur the photo as a "locking on" cue.
+      requestAnimationFrame(() => { fillEl.style.transition = 'width 1.4s ease'; fillEl.style.width = '100%'; });
+      setTimeout(() => photoEl.classList.add('sharpening'), 900);
+
+      setTimeout(() => {
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity 0.4s';
+        setTimeout(() => {
+          overlay.classList.remove('active');
+          overlay.style.opacity = '';
+          overlay.style.transition = '';
+          fillEl.style.transition = '';
+          resolve();
+        }, 400);
+      }, 1500);
+    });
+  }
 
   // Scan overlay
   // opts: { title, statuses, showReadouts, progressBar } — lets goToBestRoadmap() reuse this
@@ -2908,12 +3112,13 @@ function rerunSim() {
       const postBody = JSON.stringify({ imageBase64: base64, mimeType: 'image/jpeg' });
 
       // Fire all analyses in parallel
-      const [faceResp, browResp, eyeResp, skinResp, hairResp] = await Promise.all([
+      const [faceResp, browResp, eyeResp, skinResp, hairResp, jawResp] = await Promise.all([
         fetch('/api/analyze',      { method:'POST', headers:{'Content-Type':'application/json'}, body: postBody }),
         fetch('/api/analyze-brow', { method:'POST', headers:{'Content-Type':'application/json'}, body: postBody }),
         fetch('/api/analyze-eye',  { method:'POST', headers:{'Content-Type':'application/json'}, body: postBody }),
         fetch('/api/analyze-skin', { method:'POST', headers:{'Content-Type':'application/json'}, body: postBody }),
         fetch('/api/analyze-hair', { method:'POST', headers:{'Content-Type':'application/json'}, body: postBody }),
+        fetch('/api/analyze-jaw',  { method:'POST', headers:{'Content-Type':'application/json'}, body: postBody }),
       ]);
 
       if (!faceResp.ok) {
@@ -2939,12 +3144,13 @@ function rerunSim() {
         return JSON.parse(raw);
       };
 
-      const [faceResult, browResult, eyeResult, skinResult, hairResult] = await Promise.all([
+      const [faceResult, browResult, eyeResult, skinResult, hairResult, jawResult] = await Promise.all([
         parseJson(faceResp),
         browResp.ok  ? parseJson(browResp)  : Promise.resolve(null),
         eyeResp.ok   ? parseJson(eyeResp)   : Promise.resolve(null),
         skinResp.ok  ? parseJson(skinResp)  : Promise.resolve(null),
         hairResp.ok  ? parseJson(hairResp)  : Promise.resolve(null),
+        jawResp.ok   ? parseJson(jawResp)   : Promise.resolve(null),
       ]);
 
       setProgress(100, 'Done.');
@@ -2958,6 +3164,7 @@ function rerunSim() {
         window._eyeResults  = eyeResult;
         window._skinResults = skinResult;
         window._hairResults = hairResult;
+        window._jawResults  = jawResult;
 
         // Persist photo for dashboard + improve pages
         if (imageDisplayUrl) localStorage.setItem('protocol_photo', imageDisplayUrl);
@@ -2968,6 +3175,7 @@ function rerunSim() {
         if (eyeResult  && eyeResult.certain  !== false) renderEyeResult(eyeResult);
         if (skinResult && skinResult.certain  !== false) renderSkinResult(skinResult);
         if (hairResult && hairResult.certain  !== false) saveHairResults(hairResult);
+        if (jawResult  && jawResult.certain  !== false) saveJawResults(jawResult);
 
         // Show results page
         const heroEl = document.querySelector('.hero');
@@ -3990,6 +4198,19 @@ function rerunSim() {
     }));
   }
 
+  function saveJawResults(j) {
+    localStorage.setItem('protocol_jaw_results', JSON.stringify({
+      jawScore:           j.jawScore,
+      jawWidth:            j.jawWidth,
+      jawDefinition:        j.jawDefinition,
+      chinProjection:       j.chinProjection,
+      gonialAngle:          j.gonialAngle,
+      jawSymmetry:          j.jawSymmetry,
+      neckJawSeparation:    j.neckJawSeparation,
+      facialLeanness:       j.facialLeanness,
+    }));
+  }
+
   function unlockAllSections() {
     _unlockedSections = new Set(SECTION_ORDER);
     updateSideNav();
@@ -4280,18 +4501,72 @@ async function goToBestRoadmap() {
   const ctaBtn = document.querySelector('.rp-cta-btn');
   if (ctaBtn) ctaBtn.disabled = true;
 
+  // Cover the screen with the loading overlay IMMEDIATELY on click — the
+  // previous page must never be visible again after this point, including
+  // while we wait on the real generation to finish.
+  overlay.style.display = 'flex';
+  document.getElementById('toLoadingSection').style.display = 'block';
+  document.getElementById('toResultSection').style.display = 'none';
+  const toScanImg = document.getElementById('toScanImg');
+  if (toScanImg) toScanImg.src = photoDataUrl;
+
+  const toBar = document.getElementById('toBar');
+  const toStatus = document.getElementById('toStatus');
+  const steps = ['toS1', 'toS2', 'toS3', 'toS4'].map(id => document.getElementById(id));
+  const stepLabels = ['SCANNING', 'MAPPING ZONES', 'APPLYING CHANGES', 'FINALIZING'];
+  steps.forEach(s => s && s.classList.remove('active', 'done'));
+  if (steps[0]) steps[0].classList.add('active');
+  if (toStatus) toStatus.textContent = stepLabels[0];
+  if (toBar) { toBar.style.transition = 'none'; toBar.style.width = '0%'; }
+
+  // The bar's actual completion is tied to the real pipeline finishing — it eases
+  // toward 90% while we wait, and a minimum 3s display time keeps it from looking
+  // glitchy on the rare run where the background job already finished instantly.
+  const MIN_DURATION_MS = 3000;
+  const startTime = Date.now();
+  let pct = 0;
+  let stepIdx = 0;
+  const barTimer = setInterval(() => {
+    pct += (90 - pct) * 0.04;
+    if (toBar) { toBar.style.transition = 'width 0.6s ease'; toBar.style.width = Math.min(pct, 90) + '%'; }
+    const elapsed = Date.now() - startTime;
+    const nextStepIdx = Math.min(steps.length - 1, Math.floor(elapsed / 4000));
+    if (nextStepIdx > stepIdx) {
+      if (steps[stepIdx]) { steps[stepIdx].classList.remove('active'); steps[stepIdx].classList.add('done'); }
+      stepIdx = nextStepIdx;
+      if (steps[stepIdx]) steps[stepIdx].classList.add('active');
+      if (toStatus) toStatus.textContent = stepLabels[stepIdx];
+    }
+  }, 250);
+
   try {
     const data = await (_simulatePromise || kickOffSimulate(rawB64, mimeType));
+
+    // Enforce the 3s minimum so an already-finished job doesn't flash through.
+    const elapsed = Date.now() - startTime;
+    if (elapsed < MIN_DURATION_MS) {
+      await new Promise(r => setTimeout(r, MIN_DURATION_MS - elapsed));
+    }
+
+    clearInterval(barTimer);
+    if (toBar) { toBar.style.transition = 'width 0.4s ease'; toBar.style.width = '100%'; }
+    if (toStatus) toStatus.textContent = 'DONE';
+    steps.forEach(s => { if (s) { s.classList.remove('active'); s.classList.add('done'); } });
+
     const resultSrc = data.imageUrl;
     localStorage.setItem('transformedPhoto', resultSrc);
 
-    overlay.style.display = 'flex';
     document.getElementById('toBeforeImg').src = photoDataUrl;
     document.getElementById('toAfterImg').src  = resultSrc;
+
+    // Brief pause so the 100%/DONE state is visible before switching sections.
+    await new Promise(r => setTimeout(r, 300));
     document.getElementById('toLoadingSection').style.display = 'none';
     document.getElementById('toResultSection').style.display  = 'block';
 
   } catch(e) {
+    clearInterval(barTimer);
+    overlay.style.display = 'none';
     alert('Error: ' + e.message);
   } finally {
     if (ctaBtn) ctaBtn.disabled = false;
@@ -4363,17 +4638,31 @@ function _legacyGoToBestRoadmap() {
     <div class="to-anim" style="font-size:9px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:#3aa0ff;margin-bottom:12px;">Your Transformation</div>
     <div class="to-anim" style="font-size:28px;font-weight:900;letter-spacing:-0.5px;margin-bottom:8px;">This Is What's Possible.</div>
     <div class="to-anim" style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:28px;">Based on your facial structure — achievable in 90 days.</div>
-    <div class="to-photos" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px;">
-      <div style="position:relative;">
-        <img id="toBeforeImg" src="" style="width:100%;display:block;"/>
-        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.75);font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;padding:8px;text-align:center;color:#fff;">NOW</div>
+    <div class="to-photos" id="toCompare" style="position:relative;width:100%;margin-bottom:28px;user-select:none;touch-action:none;cursor:ew-resize;">
+      <img id="toAfterImg" src="" draggable="false" ondragstart="return false;" style="width:100%;display:block;-webkit-user-drag:none;user-select:none;pointer-events:none;"/>
+      <img id="toBeforeImg" src="" draggable="false" ondragstart="return false;" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;clip-path:inset(0 50% 0 0);-webkit-user-drag:none;user-select:none;pointer-events:none;"/>
+      <div id="toSliderHandle" style="position:absolute;top:0;left:50%;height:100%;width:2px;background:#fff;box-shadow:0 0 8px rgba(0,0,0,0.6);transform:translateX(-1px);pointer-events:none;">
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;gap:1px;box-shadow:0 2px 10px rgba(0,0,0,0.4);">
+          <svg width="9" height="14" viewBox="0 0 9 14" fill="none" stroke="#000" stroke-width="2"><polyline points="8 1 1 7 8 13"/></svg>
+          <svg width="9" height="14" viewBox="0 0 9 14" fill="none" stroke="#000" stroke-width="2"><polyline points="1 1 8 7 1 13"/></svg>
+        </div>
       </div>
-      <div style="position:relative;">
-        <img id="toAfterImg" src="" style="width:100%;display:block;"/>
-        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.75);font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;padding:8px;text-align:center;color:#3aa0ff;">90 DAYS</div>
-      </div>
+      <div style="position:absolute;bottom:0;left:0;background:rgba(0,0,0,0.75);font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;padding:8px 14px;color:#fff;pointer-events:none;">NOW</div>
+      <div style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,0.75);font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;padding:8px 14px;color:#3aa0ff;pointer-events:none;">90 DAYS</div>
     </div>
-    <button class="to-cta" onclick="window.location.href='/dashboard'" style="width:100%;padding:20px;background:#3aa0ff;color:#000;border:none;font-size:11px;font-weight:900;letter-spacing:4px;text-transform:uppercase;cursor:pointer;">Build My Roadmap →</button>
+    <button class="to-cta" onclick="openPaywall()" style="width:100%;padding:20px;background:#3aa0ff;color:#000;border:none;font-size:11px;font-weight:900;letter-spacing:4px;text-transform:uppercase;cursor:pointer;">Build My Roadmap →</button>
+  </div>
+</div>
+
+<!-- ── Paywall ── -->
+<div id="paywallOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;align-items:center;justify-content:center;padding:24px;">
+  <div style="width:100%;max-width:380px;background:#0c0c0c;border:1px solid rgba(58,160,255,0.3);padding:32px 28px;text-align:center;">
+    <div style="font-size:9px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:#3aa0ff;margin-bottom:10px;">Unlock Your Roadmap</div>
+    <div style="font-size:22px;font-weight:900;letter-spacing:-0.3px;margin-bottom:6px;">7 Days Free</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:24px;">Then $15/month. Cancel anytime during your trial and you won't be charged.</div>
+    <button id="paywallSubmitBtn" onclick="startCheckout()" style="width:100%;padding:18px;background:#3aa0ff;color:#000;border:none;font-size:11px;font-weight:900;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-bottom:12px;">Start Free Trial →</button>
+    <div id="paywallError" style="display:none;color:#ff5a5a;font-size:12px;margin-bottom:10px;"></div>
+    <div onclick="closePaywall()" style="font-size:11px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;">Not now</div>
   </div>
 </div>
 
@@ -4383,5 +4672,84 @@ function _legacyGoToBestRoadmap() {
 .to-step.active { color:#fff; }
 .to-step.done { color:#3aa0ff;opacity:0.7; }
 </style>
+
+<script>
+// ── Before/After compare slider ───────────────────────────────────────────
+(function() {
+  const container = document.getElementById('toCompare');
+  const handle = document.getElementById('toSliderHandle');
+  const beforeImg = document.getElementById('toBeforeImg');
+  if (!container || !handle || !beforeImg) return;
+
+  let dragging = false;
+
+  function setPosition(clientX) {
+    const rect = container.getBoundingClientRect();
+    let pct = ((clientX - rect.left) / rect.width) * 100;
+    pct = Math.max(0, Math.min(100, pct));
+    handle.style.left = pct + '%';
+    beforeImg.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+  }
+
+  function onDown(e) {
+    e.preventDefault();
+    dragging = true;
+    setPosition(e.touches ? e.touches[0].clientX : e.clientX);
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    e.preventDefault();
+    setPosition(e.touches ? e.touches[0].clientX : e.clientX);
+  }
+  function onUp() { dragging = false; }
+
+  container.addEventListener('mousedown', onDown);
+  container.addEventListener('touchstart', onDown, { passive: false });
+  container.addEventListener('dragstart', e => e.preventDefault());
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('mouseup', onUp);
+  window.addEventListener('touchend', onUp);
+})();
+
+// ── Paywall temporarily disabled for testing ──────────────────────────────
+// Flip back to true to re-enable the Stripe paywall popup on "Build My
+// Roadmap →". Nothing else needs to change — openPaywall() just bypasses
+// straight to the dashboard while this is false.
+const PAYWALL_ENABLED = false;
+
+function openPaywall() {
+  if (!PAYWALL_ENABLED) { window.location.href = '/dashboard'; return; }
+  const el = document.getElementById('paywallOverlay');
+  if (el) el.style.display = 'flex';
+}
+function closePaywall() {
+  const el = document.getElementById('paywallOverlay');
+  if (el) el.style.display = 'none';
+}
+
+async function startCheckout() {
+  const btn = document.getElementById('paywallSubmitBtn');
+  const errEl = document.getElementById('paywallError');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'LOADING...';
+  try {
+    const resp = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || 'Could not start checkout');
+    window.location.href = data.url;
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Start Free Trial →';
+  }
+}
+</script>
 </body>
 </html>

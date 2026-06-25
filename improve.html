@@ -37,13 +37,11 @@ header{
 .page-title{font-size:15px;font-weight:800;color:#fff;text-align:center;letter-spacing:-0.3px;}
 .header-right{display:flex;align-items:center;gap:12px;justify-content:flex-end;}
 .streak-badge{display:flex;align-items:center;gap:5px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--gold);}
-.notif-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border2);background:var(--bg1);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;}
-.notif-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);}
 .avatar{width:32px;height:32px;border-radius:50%;background:var(--bg2);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--muted2);cursor:pointer;}
 
 /* ── LAYOUT ── */
 .layout{
-  position:fixed;top:52px;left:0;right:0;bottom:72px;
+  position:fixed;top:52px;left:0;right:0;bottom:0;
   display:grid;grid-template-columns:1fr 300px;overflow:hidden;
 }
 .main{overflow-y:auto;padding:16px 16px 120px;}
@@ -54,6 +52,7 @@ header{
 
 /* ── BOTTOM BAR ── */
 .bottom-bar{
+  display:none;
   position:fixed;bottom:0;left:0;right:0;z-index:200;
   background:#0a0a0a;border-top:1px solid var(--border);
   padding:10px 20px;
@@ -192,7 +191,7 @@ header{
   .page-title { font-size: 13px; }
   .header-right { gap: 8px; }
   .streak-badge { padding: 3px 8px; font-size: 10px; }
-  .notif-btn, .avatar { width: 28px; height: 28px; }
+  .avatar { width: 28px; height: 28px; }
 
   .layout { display: block; position: fixed; top: 52px; left: 0; right: 0; bottom: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .main { overflow-y: visible; padding: 14px 14px 140px; }
@@ -225,12 +224,8 @@ header{
   </div>
   <div class="page-title" id="pageTitle">Loading...</div>
   <div class="header-right">
-    <div class="streak-badge">🔥 <span>17 Day Streak</span></div>
-    <div class="notif-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <div class="notif-dot"></div>
-    </div>
-    <div class="avatar">H</div>
+    <div class="streak-badge">🔥 <span id="streakText">0 Day Streak</span></div>
+    <div class="avatar" id="headerAvatar" onclick="window.location.href='/profile'" style="cursor:pointer;overflow:hidden;">H</div>
   </div>
 </header>
 
@@ -286,7 +281,7 @@ header{
     </div>
 
     <!-- Plan Summary -->
-    <div class="sb-section">
+    <div class="sb-section" style="display:none;">
       <div class="sb-title">Your Plan Summary</div>
       <div class="plan-summary">
         <div class="plan-row">
@@ -326,7 +321,7 @@ header{
     </div>
 
     <!-- Tasks Preview -->
-    <div class="sb-section">
+    <div class="sb-section" style="display:none;">
       <div class="sb-title">Your Tasks Preview</div>
       <div class="tasks-preview">
         <div class="tasks-preview-sub">These tasks will be added to your plan.</div>
@@ -465,6 +460,18 @@ const AREAS = {
     ],
     monthly: [],
   },
+  jaw: {
+    title: 'Jaw',
+    badge: 'Moderate', badgeClass: 'badge-mid',
+    desc: 'Your jawline has strong natural structure with room to sharpen definition further.',
+    current: 6.0, potential: 7.8, gain: 0.5,
+    currentBarW: 60, potentialBarW: 78,
+    currentBarColor: '#f59e0b', potentialBarColor: '#a3e635',
+    progressNote: 'Targeted lifestyle changes and grooming can meaningfully sharpen your jawline.',
+    imgBg: 'linear-gradient(135deg,#1a1a1a,#2a2a2a)',
+    imgContent: `<img src="/JAW.png" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;">`,
+    daily: [], dailyTip: null, weekly: [], monthly: [],
+  },
   jawline: {
     title: 'Jawline',
     badge: 'Moderate', badgeClass: 'badge-mid',
@@ -527,7 +534,7 @@ const AREAS = {
 const TASK_VALUES = {
   // ── SKIN ──
   // Foundation (always recommended)
-  'ess-cleanser':    0.25, 'ess-cleanser-pm': 0.25, 'ess-moisturizer': 0.25, 'ess-moisturizer-pm': 0.25, 'ess-sunscreen': 0.25,
+  'ess-cleanser-pm': 0.25, 'ess-moisturizer': 0.25, 'ess-moisturizer-pm': 0.25, 'ess-sunscreen': 0.25,
   // Acne (conditional on acneScore)
   'g-benzoyl':       0.75, 'g-adapalene':    1.00,  'g-prescription': 2.00,
   // Texture (conditional on textureScore)
@@ -556,13 +563,20 @@ const TASK_VALUES = {
   'brow-a-styling':   0,    'brow-a-tail':    0,
   // ── HAIR ──
   'hair-w-cut': 1.00,
+  // ── JAW ──
+  'jaw-d-water': 0.10, 'jaw-d-sodium': 0.10,
+  'jaw-w-cardio': 0.40, 'jaw-w-gum': 0.30,
+  'jaw-f-beard': 0.30, 'jaw-f-contour': 0.25, 'jaw-f-posture-photo': 0.10,
+  'jaw-a-filler': 0.50, 'jaw-a-submental': 0.50, 'jaw-a-skin': 0.30,
+  'jaw-d-kshami': 0.30, 'jaw-d-chintucks': 0.20, 'jaw-d-neckcurls': 0.45,
+  'jaw-d-lymphatic': 0.20, 'jaw-d-sugar': 0, 'jaw-a-igf1': 0.90,
 };
 
 // Canonical section membership — which task IDs belong to which section.
 // Potential = sum of all task values in the section.
 const SECTION_TASK_IDS = {
   // skin is populated dynamically by buildSkinRoadmap() based on user scores
-  skin:  ['ess-cleanser','ess-cleanser-pm','ess-moisturizer','ess-moisturizer-pm','ess-sunscreen'],
+  skin:  ['ess-cleanser-pm','ess-moisturizer','ess-moisturizer-pm','ess-sunscreen'],
   eyes:  ['eye-d-whitening','eye-d-lash','eye-d-ice',
           'eye-w-puffiness',
           'eye-f-contacts','eye-f-concealer','eye-f-mascara','eye-f-waterline',
@@ -574,6 +588,10 @@ const SECTION_TASK_IDS = {
           'brow-a-design','brow-a-lamination','brow-a-mapping',
           'brow-a-styling','brow-a-tail'],
   hair:  ['hair-w-cut'],
+  jaw:   ['jaw-d-water','jaw-d-sodium',
+          'jaw-w-cardio','jaw-w-gum',
+          'jaw-f-beard','jaw-f-contour','jaw-f-posture-photo',
+          'jaw-a-filler','jaw-a-submental','jaw-a-skin'],
 };
 
 // Total potential for a section = sum of all its task values.
@@ -598,7 +616,7 @@ const productState = (() => {
 
 // ── SKIN PRODUCT DATA ──
 const SKIN_ESSENTIALS = [
-  { id:'ess-cleanser',    icon:'/Cleanser.png', name:'Cleanser',        desc:'Removes dirt, oil, and impurities without stripping your skin barrier.', when:'AM + PM' },
+  { id:'ess-cleanser-pm', icon:'/Cleanser.png', name:'Cleanser (PM)',   desc:'Cleanse away the day before your night routine.', when:'Every PM' },
   { id:'ess-moisturizer', icon:'/MOISTURIZER.png', name:'Moisturizer',     desc:'Keeps skin hydrated and supports barrier repair. Non-negotiable daily step.', when:'AM + PM' },
   { id:'ess-sunscreen',   icon:'/SS.png', name:'Sunscreen SPF 50+', desc:'Prevents UV damage, dark spots, and premature aging. Most impactful product you can use.', when:'Every AM' },
 ];
@@ -624,7 +642,6 @@ const SKIN_ADVANCED = {
 
 // Full product metadata for score-based skin roadmap
 const SKIN_TASK_DATA = {
-  'ess-cleanser':       { icon:'/Cleanser.png', name:'Cleanser (AM)',               desc:'Removes dirt, oil, and impurities. Start every morning with a clean base.', category:'foundation' },
   'ess-cleanser-pm':    { icon:'/Cleanser.png', name:'Cleanser (PM)',               desc:'Cleanse away the day before your night routine. Never skip this step.', category:'foundation' },
   'ess-moisturizer':    { icon:'/MOISTURIZER.png', name:'Morning Moisturizer',        desc:'Hydrates and supports barrier repair. Apply after cleanser every morning.', category:'foundation' },
   'ess-moisturizer-pm': { icon:'/MOISTURIZER.png', name:'Night Moisturizer',          desc:'Repair and replenish skin overnight. Heavier formula for nighttime recovery.', category:'foundation' },
@@ -651,9 +668,9 @@ const IMPROVE_ALL_PRODUCTS = [
 // ── EYES DATA ──
 // All possible eye items (for productState ID stability)
 const EYE_ALL_ITEMS = {
-  'eye-d-whitening':  { id:'eye-d-whitening',  icon:'/EYEWHITENINGDROPS.png', name:'Eye Whitening Drops',     type:'daily'   },
-  'eye-d-lash':       { id:'eye-d-lash',        icon:'/LASHSERUM.png', name:'Eyelash Growth Serum',     type:'daily'   },
-  'eye-d-ice':        { id:'eye-d-ice',         icon:'🧊', name:'Ice Water Face Dunk',      type:'daily'   },
+  'eye-d-whitening':  { id:'eye-d-whitening',  icon:'/EYEWHITENINGDROPS.png', name:'Eye Whitening Drops',     type:'daily', buyOption:true },
+  'eye-d-lash':       { id:'eye-d-lash',        icon:'/LASHSERUM.png', name:'Eyelash Growth Serum',     type:'daily', buyOption:true },
+  'eye-d-ice':        { id:'eye-d-ice',         icon:'/ICFWD.png', name:'Ice Water Face Dunk',      type:'daily'   },
   'eye-w-puffiness':  { id:'eye-w-puffiness',   icon:'🔍', name:'Puffiness Check',          type:'weekly'  },
   'eye-f-contacts':   { id:'eye-f-contacts',    icon:'/CC.png', name:'Colored Contacts',         type:'instant', difficulty:'Easy', time:'10 sec'  },
   'eye-f-concealer':  { id:'eye-f-concealer',   icon:'/UEC.png', name:'Under-Eye Concealer',      type:'instant', difficulty:'Easy', time:'30 sec'  },
@@ -741,10 +758,149 @@ function getEyeRoadmapAllIds() {
   return [...roadmap.daily, ...roadmap.weekly, ...roadmap.instant, ...roadmap.advanced];
 }
 
+// ── JAW DATA ──
+// All possible jaw items (for productState ID stability)
+const JAW_ALL_ITEMS = {
+  'jaw-d-water':         { id:'jaw-d-water',         icon:'💧', name:'Hydration (3L Water)',              type:'daily'   },
+  'jaw-d-sodium':        { id:'jaw-d-sodium',         icon:'🧂', name:'Low Sodium Diet',                  type:'daily'   },
+  'jaw-w-cardio':        { id:'jaw-w-cardio',         icon:'🏃', name:'Cardio / Fat Loss Training',       type:'weekly'  },
+  'jaw-w-gum':           { id:'jaw-w-gum',            icon:'🦷', name:'Mastic Gum Chewing',                type:'weekly'  },
+  'jaw-f-beard':         { id:'jaw-f-beard',          icon:'🧔', name:'Beard Shaping for Jaw Framing',     type:'instant', difficulty:'Easy', time:'10 min' },
+  'jaw-f-contour':       { id:'jaw-f-contour',        icon:'✂️', name:'Sideburn Taper / Contour Grooming', type:'instant', difficulty:'Easy', time:'10 min' },
+  'jaw-f-posture-photo': { id:'jaw-f-posture-photo',  icon:'📸', name:'Chin-Forward Posture in Photos',    type:'instant', difficulty:'Easy', time:'5 sec'  },
+  'jaw-a-filler':        { id:'jaw-a-filler',         icon:'💉', name:'Jawline / Chin Filler',             type:'advanced'},
+  'jaw-a-submental':     { id:'jaw-a-submental',      icon:'🏥', name:'Submental Fat Reduction',           type:'advanced'},
+  'jaw-a-skin':          { id:'jaw-a-skin',           icon:'🧬', name:'Retinoid Skin Tightening',         type:'advanced'},
+  'jaw-d-kshami':        { id:'jaw-d-kshami',         icon:'/KSHAMI.png', name:'K-Shami D-BLOAT',         type:'daily', buyOption:true },
+  'jaw-d-chintucks':     { id:'jaw-d-chintucks',      icon:'/CT.png', name:'Chin Tucks',                  type:'daily' },
+  'jaw-d-neckcurls':     { id:'jaw-d-neckcurls',      icon:'/NC.png', name:'Neck Curls',                  type:'daily' },
+  'jaw-d-lymphatic':     { id:'jaw-d-lymphatic',      icon:'/LD.png', name:'Lymphatic Drainage',          type:'daily' },
+  'jaw-d-sugar':         { id:'jaw-d-sugar',          icon:'/sugar.png', name:'500-1000g of Sugar',       type:'daily' },
+  'jaw-a-igf1':          { id:'jaw-a-igf1',           icon:'/igf.png', name:'IGF-1',                      type:'advanced', buyOption:true },
+};
+
+// ── JAW ROADMAP TEMPLATES ──
+const JAW_ROADMAP_DATA = {
+  jawWidth: {
+    goal: 'Make your naturally wide jaw structure stand out even more.',
+    daily:    ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   ['jaw-w-cardio'],
+    instant:  ['jaw-f-beard','jaw-f-contour'],
+    advanced: ['jaw-a-skin','jaw-a-igf1'],
+  },
+  jawDefinition: {
+    goal: 'Sharpen the natural separation between your jaw and the rest of your face.',
+    daily:    ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   ['jaw-w-cardio'],
+    instant:  ['jaw-f-contour'],
+    advanced: ['jaw-a-skin','jaw-a-submental','jaw-a-igf1'],
+  },
+  chinProjection: {
+    goal: 'Maintain and highlight your strong chin projection.',
+    daily:    ['jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   [],
+    instant:  ['jaw-f-posture-photo','jaw-f-beard'],
+    advanced: ['jaw-a-filler','jaw-a-igf1'],
+  },
+  gonialAngle: {
+    goal: 'Make your masculine jaw angle even more noticeable.',
+    daily:    ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   ['jaw-w-cardio','jaw-w-gum'],
+    instant:  ['jaw-f-contour','jaw-f-beard'],
+    advanced: ['jaw-a-skin','jaw-a-igf1'],
+  },
+  jawSymmetry: {
+    goal: 'Preserve your balanced jawline while increasing overall definition.',
+    daily:    ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   [],
+    instant:  [],
+    advanced: ['jaw-a-igf1'],
+  },
+  neckJawSeparation: {
+    goal: 'Maximize the clean separation between your jaw and neck.',
+    daily:    ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   ['jaw-w-cardio'],
+    instant:  ['jaw-f-contour'],
+    advanced: ['jaw-a-submental','jaw-a-igf1'],
+  },
+  facialLeanness: {
+    goal: 'Maintain your lean lower face so your natural bone structure keeps showing through.',
+    daily:    ['jaw-d-sodium','jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   ['jaw-w-cardio','jaw-w-gum'],
+    instant:  [],
+    advanced: ['jaw-a-skin','jaw-a-igf1'],
+  },
+};
+
+// Returns { strengthKey, roadmap } based on saved jaw data
+function getJawRoadmap() {
+  let jd = {};
+  try { jd = JSON.parse(localStorage.getItem('protocol_jaw_results') || '{}'); } catch(e) {}
+  const PRIORITY = ['jawWidth','jawDefinition','chinProjection','gonialAngle','jawSymmetry','neckJawSeparation','facialLeanness'];
+  let strengthKey = 'jawWidth', bestScore = -1;
+  PRIORITY.forEach(k => {
+    const s = parseFloat(jd[k] ?? 0);
+    if (s > bestScore) { strengthKey = k; bestScore = s; }
+  });
+  return { strengthKey, roadmap: JAW_ROADMAP_DATA[strengthKey] };
+}
+
+// Returns flat list of all item IDs in the current jaw roadmap
+function getJawRoadmapAllIds() {
+  const { roadmap } = getJawRoadmap();
+  return [...roadmap.daily, ...roadmap.weekly, ...roadmap.instant, ...roadmap.advanced];
+}
+
+// ── JAW STRENGTH TEMPLATES ──
+const JAW_STRENGTH_TEMPLATES = {
+  jawWidth: {
+    title: 'Wide Jaw',
+    whyValuable: 'Your jaw maintains strong horizontal width relative to your facial structure, creating a broader and more masculine lower face. We\'ll build every enhancement around this natural advantage.',
+    howAmplify: 'Because your jaw already has strong width, the goal is to make that width more noticeable. We will focus on increasing jaw mass while debloating to emphasize your wide jaw.',
+    idealJawArea: 'Your ideal jaw area would look broad, strong, and clearly defined, with your natural width becoming one of the most noticeable structural features of your face.',
+  },
+  jawDefinition: {
+    title: 'Sharp Jaw Definition',
+    whyValuable: 'Your jawline separates cleanly from your neck, giving your lower face a sharper and more structured appearance. Our roadmap focuses on maximizing this definition.',
+    howAmplify: 'Since your jaw already separates cleanly, the goal is to keep that edge sharp and protect it from being softened. We will focus on increasing jaw mass while debloating to emphasize your sharp jaw definition.',
+    idealJawArea: 'Your ideal jaw area would look razor-sharp and structured, with a jawline that reads instantly even at a glance.',
+  },
+  chinProjection: {
+    title: 'Strong Chin Projection',
+    whyValuable: 'Your chin projects well relative to the rest of your face, improving facial balance and strengthening your side profile. We\'ll use this as the foundation for your transformation.',
+    howAmplify: 'Because your chin already projects well, the goal is to make sure posture and grooming habits don\'t undercut that advantage. We will focus on increasing jaw mass while debloating to emphasize your strong chin projection.',
+    idealJawArea: 'Your ideal jaw area would have a confident, forward chin that anchors a strong, balanced side profile.',
+  },
+  gonialAngle: {
+    title: 'Masculine Jaw Angle',
+    whyValuable: 'Your jaw angle creates a strong transition between the side and lower jaw, giving your face a more structured appearance. The roadmap is designed to enhance this feature even further.',
+    howAmplify: 'Since your jaw angle is already strong, the goal is to remove anything that\'s hiding it. We will focus on increasing jaw mass while debloating to emphasize your masculine jaw angle.',
+    idealJawArea: 'Your ideal jaw area would show a clear, masculine angle at the corner of the jaw that gives your whole face more structure.',
+  },
+  jawSymmetry: {
+    title: 'Jaw Symmetry',
+    whyValuable: 'Both sides of your jaw are well balanced, creating a naturally harmonious lower face. Every recommendation is designed to preserve and enhance this symmetry.',
+    howAmplify: 'Because your jaw is already balanced side to side, the goal is to protect that symmetry while building definition. We will focus on increasing jaw mass while debloating to emphasize your jaw symmetry.',
+    idealJawArea: 'Your ideal jaw area would look clean, even, and balanced, with definition that reads the same on both sides.',
+  },
+  neckJawSeparation: {
+    title: 'Strong Neck-Jaw Separation',
+    whyValuable: 'Your jaw maintains a clean separation from your neck, making your jawline appear sharper and more defined. We\'ll build on this advantage throughout your roadmap.',
+    howAmplify: 'Since your neck and jaw already separate cleanly, the goal is to keep that gap from closing. We will focus on increasing jaw mass while debloating to emphasize your neck-jaw separation.',
+    idealJawArea: 'Your ideal jaw area would show a clean, open angle between your jaw and neck that makes your whole profile look sharper.',
+  },
+  facialLeanness: {
+    title: 'Lean Lower Face',
+    whyValuable: 'Your lower face has relatively little soft tissue covering the jaw, allowing your natural bone structure to show through. Our roadmap focuses on maximizing this naturally defined appearance.',
+    howAmplify: 'Because your lower face is already lean, the goal is to maintain that leanness so your bone structure keeps showing through. We will focus on increasing jaw mass while debloating to emphasize your lean lower face.',
+    idealJawArea: 'Your ideal jaw area would stay lean enough that your natural bone structure remains the most visible feature of your lower face.',
+  },
+};
+
 // ── BROWS DATA ──
 // All possible brow items (for productState ID stability)
 const BROW_ALL_ITEMS = {
-  'brow-d-serum':     { id:'brow-d-serum',     icon:'/MINOXIDIL.png', name:'Apply Minixodil',     type:'daily'   },
+  'brow-d-serum':     { id:'brow-d-serum',     icon:'/MINOXIDIL.png', name:'Apply Minixodil',     type:'daily', buyOption:true },
   'brow-w-shape':     { id:'brow-w-shape',      icon:'/SHAPECLEANUP.png', name:'Shape Cleanup',             type:'weekly'  },
   'brow-w-strays':    { id:'brow-w-strays',     icon:'🪮', name:'Stray Hair Removal',         type:'weekly'  },
   'brow-w-edge':      { id:'brow-w-edge',       icon:'✂️', name:'Edge Cleanup',               type:'weekly'  },
@@ -912,24 +1068,27 @@ const areaKey = params.get('area') || localStorage.getItem('protocol_current_are
     if ([a,t,e,g].some(isNaN)) return null;
     return Math.round((a*0.50+t*0.20+e*0.15+g*0.15)*10)/10;
   }
-  function _overall(eye,brow,skin,hair) {
-    const parts=[[eye,0.35],[skin,0.30],[hair,0.20],[brow,0.15]].filter(([v])=>v!=null);
+  // Weights mirror the original eye/skin/hair/brow split (0.35/0.30/0.20/0.15)
+  // scaled down by 20% to make room for jaw at 0.20 (matches dashboard.html).
+  function _overall(eye,brow,skin,hair,jaw) {
+    const parts=[[eye,0.28],[skin,0.24],[jaw,0.20],[hair,0.16],[brow,0.12]].filter(([v])=>v!=null);
     if (!parts.length) return null;
     const tw=parts.reduce((s,[,w])=>s+w,0);
     return Math.round(parts.reduce((s,[v,w])=>s+v*w,0)/tw*10)/10;
   }
-  function _overallGain(eyeG,skinG,hairG,browG) {
-    const parts=[[eyeG,0.35],[skinG,0.30],[hairG,0.20],[browG,0.15]].filter(([v])=>v!=null);
+  function _overallGain(eyeG,skinG,hairG,browG,jawG) {
+    const parts=[[eyeG,0.28],[skinG,0.24],[jawG,0.20],[hairG,0.16],[browG,0.12]].filter(([v])=>v!=null);
     if (!parts.length) return null;
     const tw=parts.reduce((s,[,w])=>s+w,0);
     return Math.round(parts.reduce((s,[v,w])=>s+v*w,0)/tw*10)/10;
   }
 
-  let ed={},bd={},sd={},hd={};
+  let ed={},bd={},sd={},hd={},jd={};
   try { ed = JSON.parse(localStorage.getItem('protocol_eye_results')  || '{}'); } catch(e){}
   try { bd = JSON.parse(localStorage.getItem('protocol_brow_results') || '{}'); } catch(e){}
   try { sd = JSON.parse(localStorage.getItem('protocol_skin_results') || '{}'); } catch(e){}
   try { hd = JSON.parse(localStorage.getItem('protocol_hair_results') || '{}'); } catch(e){}
+  try { jd = JSON.parse(localStorage.getItem('protocol_jaw_results')  || '{}'); } catch(e){}
 
   // Section current scores
   const eyeC  = ed.eyeScore  != null ? parseFloat(ed.eyeScore)
@@ -941,6 +1100,8 @@ const areaKey = params.get('area') || localStorage.getItem('protocol_current_are
   const hairC = hd.haircutFitScore != null ? parseFloat(hd.haircutFitScore)
                : (hd.hairScore != null ? parseFloat(hd.hairScore)
                : (_hairHasData ? 5 : null));
+  const jawC = jd.jawScore != null ? parseFloat(jd.jawScore)
+               : _avg([jd.jawWidth,jd.jawDefinition,jd.chinProjection,jd.gonialAngle,jd.jawSymmetry,jd.neckJawSeparation,jd.facialLeanness]);
 
   // Section gains (use stored values if computed by glowai)
   const eyeG  = ed.eyePotentialGain  != null ? parseFloat(ed.eyePotentialGain)  : null;
@@ -952,10 +1113,21 @@ const areaKey = params.get('area') || localStorage.getItem('protocol_current_are
     if(hairC<=2) g+=3.0; else if(hairC<=4) g+=2.0; else if(hairC<=6) g+=1.2; else if(hairC<=8) g+=0.6;
     hairG = Math.round(g*10)/10;
   }
+  // Jaw potential is NOT a tiered/measurement-based estimate like the other
+  // areas above — it's the sum of fixed contributions from every task in the
+  // user's actual jaw roadmap (same "Potential = Current + sum(roadmap tasks)"
+  // pattern used by the sidebar Earned/Total potential bar).
+  let   jawG = null;
+  if (jawC != null) {
+    const _jawRoadmapIds = (typeof getJawRoadmapAllIds === 'function') ? getJawRoadmapAllIds() : [];
+    const _jawSum = _jawRoadmapIds.reduce((sum, id) => sum + (TASK_VALUES[id] || 0), 0);
+    jawG = Math.round(Math.min(10 - jawC, _jawSum) * 10) / 10;
+    if (jawG < 0) jawG = 0;
+  }
 
   // Overall
-  const overallC = _overall(eyeC, browC, skinC, hairC);
-  const overallG = _overallGain(eyeG, skinG, hairG, browG);
+  const overallC = _overall(eyeC, browC, skinC, hairC, jawC);
+  const overallG = _overallGain(eyeG, skinG, hairG, browG, jawG);
   const overallP = (overallC!=null && overallG!=null) ? Math.round(Math.min(10,overallC+overallG)*10)/10 : null;
 
   function applyTo(key, cur, pot) {
@@ -974,6 +1146,7 @@ const areaKey = params.get('area') || localStorage.getItem('protocol_current_are
   if (browC != null) applyTo('brows', browC, browC + (browG ?? 0));
   if (skinC != null) applyTo('skin',  skinC, skinC + (skinG ?? 0));
   if (hairC != null) applyTo('hair',  hairC, hairC + (hairG ?? 0));
+  if (jawC  != null) applyTo('jaw',   jawC,  jawC  + (jawG  ?? 0));
   // overall area if it exists
   if (overallC != null) applyTo('overall', overallC, overallP ?? overallC);
 })();
@@ -1091,7 +1264,7 @@ function buildSkinRoadmap() {
   const tone    = parseFloat(sd.toneEvenness ?? 10);
   const glow    = parseFloat(sd.skinGlow     ?? 10);
 
-  const tasks = ['ess-cleanser','ess-cleanser-pm','ess-moisturizer','ess-moisturizer-pm','ess-sunscreen'];
+  const tasks = ['ess-cleanser-pm','ess-moisturizer','ess-moisturizer-pm','ess-sunscreen'];
   if (acne    <= 7) tasks.push('g-benzoyl');
   if (acne    <= 6) tasks.push('g-adapalene');
   if (acne    <= 4) tasks.push('g-prescription');
@@ -1194,9 +1367,16 @@ function renderEyes() {
     const h = EYE_ALL_ITEMS[id];
     if (!h) return '';
     const s = productState[id];
-    const action = s === 'have'
-      ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
-      : `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${id}','have')">+ Add to Daily</button><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    let action;
+    if (h.buyOption) {
+      action = (s === 'have' || s === 'buying')
+        ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
+        : `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">I Have This</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Need To Buy</button></div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    } else {
+      action = s === 'have'
+        ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
+        : `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${id}','have')">+ Add to Daily</button><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    }
     return `
       <div class="prod-card" data-task-id="${id}" data-card-type="daily-habit">
         <div class="prod-icon" style="background:${iconBg(h.icon)};">${renderIcon(h.icon)}</div>
@@ -1315,6 +1495,174 @@ function renderEyes() {
   `;
 }
 
+function renderJaw() {
+  // Initialize productState for all possible jaw items
+  Object.keys(JAW_ALL_ITEMS).forEach(id => { if (!(id in productState)) productState[id] = null; });
+
+  const { strengthKey, roadmap } = getJawRoadmap();
+
+  // Update section membership so getSectionPotential()/calcEarnedGain() reflect
+  // this user's actual roadmap (same pattern as buildSkinRoadmap() for skin).
+  SECTION_TASK_IDS.jaw = [...roadmap.daily, ...roadmap.weekly, ...roadmap.instant, ...roadmap.advanced];
+
+  const JAW_STRENGTH_LABELS = {
+    jawWidth:          'Jaw Width',
+    jawDefinition:     'Jaw Definition',
+    chinProjection:    'Chin Projection',
+    gonialAngle:       'Gonial Angle',
+    jawSymmetry:       'Jaw Symmetry',
+    neckJawSeparation: 'Neck-Jaw Separation',
+    facialLeanness:    'Facial Leanness',
+  };
+
+  function dailyCard(id) {
+    const h = JAW_ALL_ITEMS[id];
+    if (!h) return '';
+    const s = productState[id];
+    let action;
+    if (h.buyOption) {
+      action = (s === 'have' || s === 'buying')
+        ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
+        : `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">I Have This</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Need To Buy</button></div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    } else {
+      action = s === 'have'
+        ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
+        : `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${id}','have')">+ Add to Daily</button><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    }
+    return `
+      <div class="prod-card" data-task-id="${id}" data-card-type="daily-habit">
+        <div class="prod-icon" style="background:${iconBg(h.icon)};">${renderIcon(h.icon)}</div>
+        <div class="prod-body">
+          <div class="prod-name">${h.name}</div>
+          ${learnMoreBtn(id, h.name)}
+        </div>
+        <div class="prod-action">${action}</div>
+      </div>`;
+  }
+
+  function weeklyCard(id) {
+    const h = JAW_ALL_ITEMS[id];
+    if (!h) return '';
+    const s = productState[id];
+    const action = s === 'have'
+      ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Weekly</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
+      : `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${id}','have')">+ Add to Weekly</button><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    return `
+      <div class="prod-card" data-task-id="${id}" data-card-type="weekly-habit">
+        <div class="prod-icon" style="background:${iconBg(h.icon)};">${renderIcon(h.icon)}</div>
+        <div class="prod-body">
+          <div class="prod-name">${h.name}</div>
+          ${learnMoreBtn(id, h.name)}
+        </div>
+        <div class="prod-action">${action}</div>
+      </div>`;
+  }
+
+  function instantCard(id) {
+    const f = JAW_ALL_ITEMS[id];
+    if (!f) return '';
+    const s = productState[id];
+    let action;
+    if (s === 'have')
+      action = `<div class="own-status-wrap"><div class="own-status own-have">✓ Apply Daily</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    else if (s === 'buying')
+      action = `<div class="own-status-wrap"><div class="own-status own-buying">📋 Purchasing</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    else
+      action = `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">I Have This</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Need To Buy</button></div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    return `
+      <div class="prod-card" data-task-id="${id}" data-card-type="instant-fix">
+        <div class="prod-icon" style="background:rgba(245,158,11,0.12);">${renderIcon(f.icon)}</div>
+        <div class="prod-body">
+          <div class="prod-name">${f.name}</div>
+          ${learnMoreBtn(id, f.name)}
+          ${f.difficulty ? `<div class="frauds-meta" style="margin-top:4px;"><div class="frauds-meta-row"><span class="frauds-meta-label">Time</span><span class="frauds-meta-val">${f.time}</span></div></div>` : ''}
+        </div>
+        <div class="prod-action">${action}</div>
+      </div>`;
+  }
+
+  function advancedCard(id) {
+    const a = JAW_ALL_ITEMS[id];
+    if (!a) return '';
+    const s = productState[id];
+    let action;
+    if (a.buyOption) {
+      action = (s === 'have' || s === 'buying')
+        ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
+        : `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">I Have This</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Need To Buy</button></div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    } else if (s === 'have')
+      action = `<div class="own-status-wrap"><div class="own-status own-have">✓ Unlocked</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    else if (s === 'buying')
+      action = `<div class="own-status-wrap"><div class="own-status own-buying">📋 In Progress</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    else
+      action = `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">Unlock</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Learn More</button></div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    return `
+      <div class="prod-card" data-task-id="${id}" data-card-type="advanced-upgrade">
+        <div class="prod-icon" style="background:rgba(99,102,241,0.12);">${renderIcon(a.icon)}</div>
+        <div class="prod-body">
+          <div class="prod-name">${a.name}</div>
+          ${learnMoreBtn(id, a.name)}
+        </div>
+        <div class="prod-action">${action}</div>
+      </div>`;
+  }
+
+  return `
+    <div class="eye-intro-card">
+      <span style="font-size:22px;flex-shrink:0;">🦷</span>
+      <div>
+        <div class="eye-intro-title">Amplifying your ${JAW_STRENGTH_LABELS[strengthKey]}.</div>
+        <div class="eye-intro-sub">${roadmap.goal} Every recommendation below was chosen specifically for your strongest jaw feature.</div>
+      </div>
+    </div>
+
+    <div class="prod-section">
+      <div class="prod-section-header">
+        <div class="prod-section-left">
+          <span class="prod-section-icon">☀️</span>
+          <span class="prod-section-title">Daily Tasks</span>
+        </div>
+        <span class="prod-section-sub">Free. No products needed.</span>
+      </div>
+      <div class="prod-list">${roadmap.daily.map(dailyCard).join('')}</div>
+    </div>
+
+    <div class="prod-section">
+      <div class="prod-section-header">
+        <div class="prod-section-left">
+          <span class="prod-section-icon">📅</span>
+          <span class="prod-section-title">Weekly Tasks</span>
+        </div>
+      </div>
+      <div class="prod-list">${roadmap.weekly.map(weeklyCard).join('')}</div>
+    </div>
+
+    ${roadmap.instant.length ? `
+    <div class="prod-section frauds-section">
+      <div class="prod-section-header" style="background:rgba(245,158,11,0.07);border-bottom-color:rgba(245,158,11,0.2);">
+        <div class="prod-section-left">
+          <span class="prod-section-icon">🪄</span>
+          <span class="prod-section-title" style="color:var(--gold);">INSTANT BOOSTS</span>
+        </div>
+        <span class="frauds-badge">Instant Results</span>
+      </div>
+      <div class="prod-list">${roadmap.instant.map(instantCard).join('')}</div>
+    </div>
+    ` : ''}
+
+    <div class="prod-section">
+      <div class="prod-section-header">
+        <div class="prod-section-left">
+          <span class="prod-section-icon">🧬</span>
+          <span class="prod-section-title">Advanced</span>
+        </div>
+      </div>
+      <div class="prod-list">${roadmap.advanced.map(advancedCard).join('')}</div>
+    </div>
+
+  `;
+}
+
 function renderHair() {
   const hairWeekly = getHairWeekly();
   hairWeekly.forEach(h => { if (!(h.id in productState)) productState[h.id] = null; });
@@ -1377,9 +1725,16 @@ function renderBrows() {
   function dailyCard(id) {
     const h = BROW_ALL_ITEMS[id]; if (!h) return '';
     const s = productState[id];
-    const action = s === 'have'
-      ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
-      : `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${id}','have')">+ Add to Daily</button><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    let action;
+    if (h.buyOption) {
+      action = (s === 'have' || s === 'buying')
+        ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
+        : `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">I Have This</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Need To Buy</button></div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    } else {
+      action = s === 'have'
+        ? `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`
+        : `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${id}','have')">+ Add to Daily</button><button class="own-undo" onclick="dismissTask('${id}')">×</button></div>`;
+    }
     return `<div class="prod-card" data-task-id="${id}" data-card-type="daily-habit"><div class="prod-icon" style="background:${iconBg(h.icon)};">${renderIcon(h.icon)}</div><div class="prod-body"><div class="prod-name">${h.name}</div>${learnMoreBtn(id, h.name)}</div><div class="prod-action">${action}</div></div>`;
   }
 
@@ -1497,6 +1852,11 @@ function render() {
       `Add your haircut task to your plan and unlock your hair potential.`;
     main.innerHTML = heroHTML() + renderHair();
     updateHeroGain();
+  } else if (areaKey === 'jaw') {
+    document.getElementById('bottom-sub').textContent =
+      `Add habits and boosts to your plan and unlock your jaw potential.`;
+    main.innerHTML = heroHTML() + renderJaw();
+    updateHeroGain();
   } else {
     const totalItems = area.daily.length + area.weekly.length + area.monthly.length;
     document.getElementById('bottom-sub').textContent =
@@ -1597,25 +1957,6 @@ function learnMoreBtn(id, name) {
 // Rich "Learn More" detail content, keyed by task id. Tasks not yet in here fall
 // back to a simple alert (see showLearnMore below) until their content is written.
 const TASK_DETAILS = {
-  'ess-cleanser': {
-    impactStars: 4, impactLabel: 'High Impact',
-    time: '30 sec / day', difficulty: 'Easy',
-    why: 'A morning cleanser removes oil, sweat, and bacteria that build up overnight. Starting the day with clean skin allows your other skincare products to absorb better and helps keep your complexion clearer throughout the day.',
-    benefits: [
-      'Removes excess oil', 'Prevents clogged pores', 'Helps reduce acne',
-      'Fresher appearance', 'Improves product absorption', 'Healthier-looking skin',
-      'Removes overnight buildup', 'Better skin texture',
-    ],
-    science: 'A gentle cleanser removes excess sebum, dead skin cells, and bacteria without damaging the skin barrier. This reduces pore congestion and creates the ideal foundation for the rest of your skincare routine.',
-    usage: [
-      'Wet your face with lukewarm water', 'Massage cleanser for 30–60 seconds',
-      'Focus on oily areas', 'Rinse thoroughly',
-      'Pat dry with a clean towel', 'Apply moisturizer immediately afterward',
-    ],
-    resultsTiming: 'Results: Cleaner skin immediately', resultsDuration: 'Best results: 2–4 weeks',
-    resultsNote: 'Cleaner skin immediately. Best results after 2–4 weeks of consistent use.',
-    hideResultsSection: true,
-  },
   'ess-moisturizer': {
     impactStars: 5, impactLabel: 'Very High Impact',
     time: '20 sec / day', difficulty: 'Easy',
@@ -1733,6 +2074,137 @@ const TASK_DETAILS = {
     resultsImage: '/FRINGERL.jpg',
     resultsImagePos: { x: 50, y: 50, scale: 1.00 },
   },
+  'jaw-d-kshami': {
+    impactStars: 4, impactLabel: 'High Impact',
+    time: 'Daily (morning)', difficulty: 'Easy',
+    why: 'K-Shami D-Bloat is a supplement designed to temporarily reduce facial water retention. Less water under the skin allows your jawline, cheekbones, and facial angles to appear sharper.',
+    benefits: [
+      'Reduces facial water retention', 'Sharper-looking jawline', 'More defined cheekbones',
+      'Works without changing body fat', 'Fast-acting', 'Good before events or photos',
+    ],
+    science: 'Many people hold excess water due to high sodium intake, poor hydration, stress, or carbohydrate fluctuations. Reducing this water can noticeably improve facial definition without changing body fat.',
+    usage: [
+      'Take one serving in the morning or before important events', 'Follow the label instructions',
+      'Drink plenty of water throughout the day to maximize the effect',
+    ],
+    resultsTiming: '1–3 hours: Less puffy', resultsDuration: 'Same day: Sharper jawline & cheekbones',
+    resultsNote: 'Works best alongside good hydration and a lower-sodium diet.',
+    mistakes: [
+      "Don't rely on it every day.",
+      "Don't use it as a substitute for proper hydration.",
+      'Avoid taking more than the recommended dose.',
+    ],
+    hideResultsSection: true,
+  },
+  'jaw-d-chintucks': {
+    impactStars: 3, impactLabel: 'Moderate Impact',
+    time: '~2 min/day', difficulty: 'Easy',
+    why: 'Chin tucks strengthen the deep neck flexor muscles and improve head posture. Better posture can improve the appearance of your jaw and reduce the look of a recessed chin.',
+    benefits: [
+      'Strengthens deep neck flexors', 'Improves head posture', 'Reduces recessed-chin look',
+      'Cleaner neck angle', 'Stronger facial profile', 'No equipment needed',
+    ],
+    science: 'Forward head posture compresses the neck and softens the jawline. Chin tucks help align the head over the spine, creating a cleaner neck angle and stronger facial profile.',
+    usage: [
+      'Keep your head level and gently pull your chin straight backward without looking down',
+      'Hold for 5 seconds', 'Repeat 10–20 times',
+    ],
+    resultsTiming: '1–2 weeks: Better posture awareness', resultsDuration: '1–2 months: Noticeable neck position change',
+    resultsNote: 'Improved side profile if performed consistently for 3+ months.',
+    mistakes: [
+      "Don't tilt your head downward.",
+      'Avoid shrugging your shoulders.',
+      'Use slow, controlled movements.',
+    ],
+    hideResultsSection: true,
+  },
+  'jaw-d-neckcurls': {
+    impactStars: 4, impactLabel: 'High Impact',
+    time: '5 min/day', difficulty: 'Moderate',
+    why: 'Neck curls strengthen the muscles underneath your jaw and throughout the front of your neck.',
+    benefits: [
+      'Strengthens under-jaw muscles', 'Thicker neck over time', 'More visible jaw-to-neck separation',
+      'Improves masculine facial proportions', 'Builds neck endurance', 'No equipment beyond a bench',
+    ],
+    science: 'A stronger neck creates more visible separation between the jaw and neck while improving overall neck thickness and masculine facial proportions.',
+    usage: [
+      'Lie on a bench with your head hanging off the edge', 'Slowly tuck your chin toward your chest, then lower under control',
+      'Perform 2–3 sets of 15–25 reps',
+    ],
+    resultsTiming: '2–4 weeks: Increased neck endurance', resultsDuration: '2–3 months: Noticeably thicker neck',
+    resultsNote: 'Better jaw-to-neck definition long-term.',
+    mistakes: [
+      "Don't use momentum.",
+      'Never jerk your neck.',
+      'Keep movements slow and controlled.',
+    ],
+    hideResultsSection: true,
+  },
+  'jaw-d-lymphatic': {
+    impactStars: 3, impactLabel: 'Moderate Impact',
+    time: '3–5 min/day', difficulty: 'Easy',
+    why: 'Lymphatic drainage is a gentle facial massage that helps move excess fluid away from the face.',
+    benefits: [
+      'Reduces facial puffiness', 'Sharper facial contours', 'Quick and easy to do daily',
+      'No products required', 'Relaxing', 'Helps maintain definition over time',
+    ],
+    science: 'The lymphatic system removes excess fluid and waste products. Improving drainage can temporarily reduce facial puffiness and sharpen facial contours.',
+    usage: [
+      'Using light pressure, massage from the center of the face outward toward the ears and down the neck',
+      'Continue for 3–5 minutes',
+    ],
+    resultsTiming: 'Immediately: Slight reduction in puffiness', resultsDuration: '15–30 minutes: More defined appearance',
+    resultsNote: 'Consistent use helps maintain a less puffy appearance.',
+    mistakes: [
+      "Don't press too hard.",
+      'Always massage toward lymph nodes.',
+      'Stay hydrated afterward.',
+    ],
+    hideResultsSection: true,
+  },
+  'jaw-d-sugar': {
+    impactStars: 1, impactLabel: 'Low Impact',
+    time: 'As prescribed', difficulty: 'Medical Supervision Required',
+    why: 'This is a carbohydrate-loading protocol sometimes discussed alongside IGF-1 use to increase insulin levels after administration.',
+    benefits: [
+      'Theoretical link to nutrient transport into tissues', 'Only relevant alongside a prescribed IGF-1 protocol',
+      'No proven cosmetic benefit on its own',
+    ],
+    science: 'The idea is that insulin may influence how nutrients are transported into tissues. However, there is very limited human evidence that consuming very large amounts of sugar meaningfully improves jaw growth or facial bone development.',
+    usage: [
+      'Only follow this protocol if specifically prescribed by a qualified medical professional as part of a legitimate treatment plan',
+      'For most people, consuming 500–1000 grams of sugar is not recommended',
+    ],
+    resultsTiming: 'No high-quality evidence', resultsDuration: 'Not reliable in healthy individuals',
+    resultsNote: 'There is no high-quality evidence showing this protocol reliably improves jaw structure in healthy individuals.',
+    mistakes: [
+      "Don't attempt this without medical supervision.",
+      'Extremely high sugar intake can cause nausea, gastrointestinal distress, and large blood sugar spikes.',
+      'More sugar does not necessarily produce better results.',
+    ],
+    hideResultsSection: true,
+  },
+  'jaw-a-igf1': {
+    impactStars: 5, impactLabel: 'Very High Impact',
+    time: 'As prescribed', difficulty: 'Medical Supervision Required',
+    why: 'IGF-1 (Insulin-like Growth Factor 1) is a naturally occurring hormone involved in growth and tissue development. Prescription IGF-1 medications exist for specific medical conditions and should only be used under medical supervision.',
+    benefits: [
+      'Plays a role in bone and soft tissue growth during normal development', 'Available only through prescription for approved medical conditions',
+      'No strong evidence of selective cosmetic jaw growth in healthy adults',
+    ],
+    science: 'IGF-1 influences growth and repair throughout the body. During normal development it plays an important role in bone and soft tissue growth. However, there is no strong evidence that using IGF-1 as a healthy adult will selectively increase jaw size or create reliable cosmetic facial changes.',
+    usage: [
+      'Only use IGF-1 if it has been prescribed and monitored by a licensed healthcare professional for an approved medical reason',
+    ],
+    resultsTiming: 'Uncertain', resultsDuration: 'Not well supported by clinical evidence',
+    resultsNote: 'For cosmetic jaw enhancement in healthy individuals, expected results are uncertain and not well supported by clinical evidence.',
+    mistakes: [
+      'Never self-prescribe or obtain IGF-1 from unregulated sources.',
+      'Using growth-factor drugs without medical supervision can carry serious health risks.',
+      'More is not better — higher doses increase risk without proven cosmetic benefit.',
+    ],
+    hideResultsSection: true,
+  },
   'adv-ghkcu': {
     impactStars: 5, impactLabel: 'Very High Impact',
     time: '20 sec / day', difficulty: '?',
@@ -1772,6 +2244,23 @@ const TASK_DETAILS = {
     resultsNote: 'Noticeable tan within 2–4 weeks. Results vary depending on your natural skin tone, UV exposure, and consistency. Most users begin noticing increased pigmentation within the first week.',
     resultsImage: '/MT2RL.jpg',
     resultsImagePos: { x: 50, y: 50, scale: 1.00 },
+  },
+  'eye-d-ice': {
+    impactStars: 3, impactLabel: 'Moderate Impact',
+    time: '< 1 min', difficulty: 'Easy',
+    why: "Ice water face dunking is one of the fastest ways to temporarily reduce facial puffiness. It's free, takes less than a minute, and can make your jawline, cheekbones, and under-eye area appear noticeably sharper before school, work, photos, or events.",
+    benefits: [
+      'Reduces facial puffiness', 'Sharpens jawline appearance', 'Improves cheekbone definition',
+      'Refreshes tired-looking eyes', 'Takes less than 1 minute', 'Completely free',
+    ],
+    science: 'Cold water causes blood vessels to constrict (vasoconstriction), which temporarily reduces inflammation and fluid buildup in the face. This makes your facial features appear leaner and more defined until normal blood flow returns.',
+    usage: [
+      'Fill a bowl with cold water and ice.', 'Dunk your face for 10–30 seconds.',
+      'Repeat 2–3 times.', 'Use first thing in the morning or before important events for the best results.',
+    ],
+    resultsTiming: 'Immediately: Puffiness begins reducing', resultsDuration: 'Peak: 5–15 min · Fades: 1–3 hrs',
+    resultsNote: 'Reduced facial puffiness begins within minutes. Your jawline and cheekbones appear sharpest at the 5–15 minute mark, and the effect gradually fades over 1–3 hours as your face warms back up.',
+    hideResultsSection: true,
   },
   'eye-d-whitening': {
     impactStars: 5, impactLabel: 'Very High Impact',
@@ -1998,7 +2487,7 @@ function getRecommendedContacts() {
 
 // Resolve icon/name metadata for any task id across all categories (skin, eyes, brows, hair).
 function getTaskMeta(id) {
-  return EYE_ALL_ITEMS[id] || BROW_ALL_ITEMS[id] || SKIN_TASK_DATA[id]
+  return EYE_ALL_ITEMS[id] || BROW_ALL_ITEMS[id] || SKIN_TASK_DATA[id] || JAW_ALL_ITEMS[id]
     || (id === 'hair-w-cut' ? { icon: '/FRINGEICON.png', name: 'Get Haircut' } : {});
 }
 
@@ -2079,6 +2568,11 @@ function showTaskDetail(id, name) {
         </div>
         <div class="td-results-note">${d.resultsNote}</div>
       </div>
+      ${d.mistakes ? `
+      <div class="td-card">
+        <div class="td-card-title">Mistakes to Avoid</div>
+        <ul class="td-list">${d.mistakes.map(m => `<li>${m}</li>`).join('')}</ul>
+      </div>` : ''}
     </div>
 
     <div class="td-section">
@@ -2149,6 +2643,11 @@ function getActionHtml(id, cardType) {
     return `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">I Already Have This</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Need To Buy</button></div>${x}</div>`;
   }
   if (cardType === 'daily-habit') {
+    const meta = getTaskMeta(id);
+    if (meta && meta.buyOption) {
+      if (s === 'have' || s === 'buying') return `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div>${x}</div>`;
+      return `<div class="own-status-wrap"><div class="own-btns"><button class="own-btn own-btn-have" onclick="setProductStatus('${id}','have')">I Have This</button><button class="own-btn own-btn-buy" onclick="setProductStatus('${id}','buying')">Need To Buy</button></div>${x}</div>`;
+    }
     if (s === 'have') return `<div class="own-status-wrap"><div class="own-status own-have">✓ Added Daily</div>${x}</div>`;
     return `<div class="own-status-wrap"><button class="own-btn own-btn-have habit-add-btn" onclick="setProductStatus('${id}','have')">+ Add to Daily</button>${x}</div>`;
   }
@@ -2190,9 +2689,80 @@ function savePlanState() {
   localStorage.setItem('protocol_plan_state', JSON.stringify(productState));
 }
 
+// Shared app state (level/xp/streak) — same localStorage key + schema as
+// dashboard.html / tasks.html, so marking something "have" here also feeds
+// XP into the same level system instead of being a dead end.
+const DEFAULT_STATE = {
+  level: 1, xp: 0, xpForLevel: 50,
+  streak: 0, lastActiveDate: null, lastCompleteDateKey: '',
+  completedAreas: [], onboardingDone: false,
+};
+function loadState() {
+  try {
+    const s = localStorage.getItem('protocol_state');
+    return s ? { ...DEFAULT_STATE, ...JSON.parse(s) } : { ...DEFAULT_STATE };
+  } catch(e) { return { ...DEFAULT_STATE }; }
+}
+function saveSharedState() { localStorage.setItem('protocol_state', JSON.stringify(sharedState)); }
+let sharedState = loadState();
+
+// XP required to clear each level: 50, 100, 200, 400, 500, 600, 700, 800,
+// 900, 1000 — then stays at 1000 for every level after that. Mirrored in
+// dashboard.html and tasks.html so leveling stays in sync everywhere.
+const XP_LEVEL_TABLE = [50, 100, 200, 400, 500, 600, 700, 800, 900, 1000];
+function xpNeeded(level) { return XP_LEVEL_TABLE[level - 1] || 1000; }
+
+function addXP(amount) {
+  const fromLevel = sharedState.level;
+  sharedState.xp += amount;
+  while (sharedState.xp >= sharedState.xpForLevel) {
+    sharedState.xp -= sharedState.xpForLevel;
+    sharedState.level++;
+    sharedState.xpForLevel = xpNeeded(sharedState.level);
+  }
+  saveSharedState();
+  return { leveledUp: sharedState.level > fromLevel, fromLevel, toLevel: sharedState.level };
+}
+
+function showLevelUpToast(toLevel) {
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:9999;background:#161616;border:1px solid #a3e635;color:#a3e635;font-weight:800;font-size:13px;padding:10px 18px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,0.4);opacity:0;transition:all .35s ease;white-space:nowrap;';
+  toast.textContent = '🎉 Level Up! You\'re now Level ' + toLevel;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; });
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(-20px)';
+    setTimeout(() => toast.remove(), 350);
+  }, 2200);
+}
+
 function setProductStatus(id, status) {
+  const wasHave = productState[id] === 'have';
   productState[id] = status;
   savePlanState();
+
+  // Award XP through the shared engine when a task is newly marked "have" —
+  // this is what lets working through Improve tasks actually level you up,
+  // same as completing tasks on the Tasks page.
+  if (status === 'have' && !wasHave) {
+    const xpResult = addXP(10);
+    if (xpResult.leveledUp) showLevelUpToast(xpResult.toLevel);
+  }
+  // Adding "Get Haircut" to the weekly plan kicks off a separate recurring
+  // reminder: "Book Haircut Appointment" shows up on tasks.html the very
+  // next day, then again every 3 weeks on that same day-of-week. We anchor
+  // that recurrence off the date the task was added.
+  if (id === 'hair-w-cut') {
+    if (status === 'have' && !wasHave) {
+      try {
+        const anchor = new Date(); anchor.setHours(0,0,0,0);
+        localStorage.setItem('protocol_haircut_anchor', anchor.toISOString());
+      } catch(e){}
+    } else if (status !== 'have') {
+      try { localStorage.removeItem('protocol_haircut_anchor'); } catch(e){}
+    }
+  }
   const card = document.querySelector(`[data-task-id="${id}"]`);
   if (card) {
     card.querySelector('.prod-action').innerHTML = getActionHtml(id, card.dataset.cardType);
@@ -2208,6 +2778,9 @@ function dismissTask(id) {
   }
   productState[id] = null;
   savePlanState();
+  if (id === 'hair-w-cut') {
+    try { localStorage.removeItem('protocol_haircut_anchor'); } catch(e){}
+  }
   const card = document.querySelector(`[data-task-id="${id}"]`);
   if (card) card.remove();
   refreshCounters();
@@ -2235,7 +2808,16 @@ function addAll() {
   } else if (areaKey === 'brows') {
     getBrowRoadmapAllIds().forEach(id => productState[id] = 'have');
   } else if (areaKey === 'hair') {
+    const _hadCut = productState['hair-w-cut'] === 'have';
     getHairWeekly().forEach(h => productState[h.id] = 'have');
+    if (!_hadCut) {
+      try {
+        const anchor = new Date(); anchor.setHours(0,0,0,0);
+        localStorage.setItem('protocol_haircut_anchor', anchor.toISOString());
+      } catch(e){}
+    }
+  } else if (areaKey === 'jaw') {
+    getJawRoadmapAllIds().forEach(id => productState[id] = 'have');
   } else {
     [...area.daily, ...area.weekly, ...area.monthly].forEach(item => { added[item.id] = true; });
   }
@@ -2369,6 +2951,44 @@ function updateSidebar() {
           <button class="tp-remove" onclick="dismissTask('${h.id}')">×</button>
         </div>`).join('')
         : '<div style="font-size:10px;color:var(--muted);padding:4px 0;">No weekly tasks yet.</div>'}
+    `;
+  } else if (areaKey === 'jaw') {
+    const { roadmap: jr } = getJawRoadmap();
+    const allJawIds = [...jr.daily, ...jr.weekly, ...jr.instant, ...jr.advanced];
+    const allJawItems = allJawIds.map(id => JAW_ALL_ITEMS[id]).filter(Boolean);
+    const haveItems   = allJawItems.filter(h => productState[h.id] === 'have');
+    const buyingItems = allJawItems.filter(h => productState[h.id] === 'buying');
+    const total    = haveItems.length + buyingItems.length;
+    const maxItems = allJawItems.length;
+
+    document.getElementById('sb-daily-count').textContent   = haveItems.length;
+    document.getElementById('sb-weekly-count').textContent  = buyingItems.length;
+    document.getElementById('sb-monthly-count').textContent = 0;
+    document.getElementById('sb-total-count').textContent   = total;
+    document.getElementById('sb-time').textContent          = haveItems.length + ' min';
+
+    const conf = maxItems ? Math.round((total / maxItems) * 90) : 0;
+    document.getElementById('sb-confidence').textContent     = conf + '%';
+    document.getElementById('sb-confidence-bar').style.width = conf + '%';
+    document.getElementById('sb-great-start').style.display  = total >= 2 ? 'flex' : 'none';
+
+    document.getElementById('sb-tasks-list').innerHTML = `
+      <div class="tp-group-label">☀️ Active Tasks</div>
+      ${haveItems.length ? haveItems.slice(0,4).map(h => `
+        <div class="tp-item">
+          <div class="tp-item-icon">${renderIcon(h.icon)}</div>
+          <div class="tp-item-name">${h.name}</div>
+          <button class="tp-remove" onclick="dismissTask('${h.id}')">×</button>
+        </div>`).join('') + (haveItems.length > 4 ? `<div class="tp-more">+${haveItems.length - 4} more</div>` : '')
+        : '<div style="font-size:10px;color:var(--muted);padding:4px 0;">No tasks added yet.</div>'}
+      ${buyingItems.length ? `<div class="tp-group-label">📋 Purchasing</div>` + buyingItems.map(h => `
+        <div class="tp-item">
+          <div class="tp-item-icon">${renderIcon(h.icon)}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="tp-item-name">${h.name}</div>
+          </div>
+          <button class="tp-bought-btn" onclick="setProductStatus('${h.id}','have')">✓ Got It</button>
+        </div>`).join('') : ''}
     `;
   } else if (areaKey === 'brows') {
     const { roadmap: br } = getBrowRoadmap();
@@ -3184,6 +3804,350 @@ function showEyeInsight() {
       if (eiStep === 1) {
         eiStep = 2;
         runDetails();
+        return;
+      }
+      page.style.transition = 'opacity .4s';
+      page.style.opacity = '0';
+      setTimeout(() => { page.style.display = 'none'; }, 420);
+    };
+  });
+}
+
+// ── JAW DIAGNOSTIC SEQUENCE ──
+function runJawDiagnostic() {
+  return new Promise(resolve => {
+    const overlay  = document.getElementById('jawDiagOverlay');
+    const statusEl = document.getElementById('jdiag-status');
+    const dotsEl   = document.getElementById('jdiag-dots');
+
+    overlay.style.display = 'flex';
+    dotsEl.innerHTML = '';
+
+    let jawData = {};
+    try { jawData = JSON.parse(localStorage.getItem('protocol_jaw_results') || '{}'); } catch(e) {}
+
+    function pct(v) { const n = parseFloat(v); return isNaN(n) ? 55 : Math.round(n/10*100); }
+    function tierLabel(v) {
+      const n = parseFloat(v);
+      if (isNaN(n)) return 'avg';
+      if (n >= 8) return 'strong';
+      if (n >= 6) return 'good';
+      if (n >= 4) return 'avg';
+      return 'mild';
+    }
+
+    for (let i = 0; i < 7; i++) {
+      setTimeout(() => {
+        const d = document.createElement('div');
+        d.className = 'ediag-sdot';
+        d.style.left = (15 + Math.random() * 70) + '%';
+        d.style.top  = (20 + Math.random() * 60) + '%';
+        d.style.animationDelay = (Math.random() * 0.3) + 's';
+        dotsEl.appendChild(d);
+      }, 300 + i * 250);
+    }
+
+    const statuses = ['Analyzing...', 'Analyzing...', 'Analyzing...', 'Analyzing...'];
+    statuses.forEach((s, i) => setTimeout(() => { statusEl.textContent = s; }, i * 2000));
+
+    const readouts = [
+      { id:'jr1', fill:'jr1f', val:'jr1v', pct: pct(jawData.jawWidth),       label: tierLabel(jawData.jawWidth)       },
+      { id:'jr2', fill:'jr2f', val:'jr2v', pct: pct(jawData.jawDefinition),  label: tierLabel(jawData.jawDefinition)  },
+      { id:'jr3', fill:'jr3f', val:'jr3v', pct: pct(jawData.gonialAngle),    label: tierLabel(jawData.gonialAngle)    },
+      { id:'jr4', fill:'jr4f', val:'jr4v', pct: pct(jawData.facialLeanness), label: tierLabel(jawData.facialLeanness) },
+    ];
+    readouts.forEach((r, i) => {
+      setTimeout(() => {
+        document.getElementById(r.id).classList.add('on');
+        setTimeout(() => {
+          document.getElementById(r.fill).style.width = r.pct + '%';
+          document.getElementById(r.val).textContent = r.label;
+        }, 80);
+      }, 800 + i * 420);
+    });
+
+    setTimeout(() => {
+      overlay.style.transition = 'opacity .45s';
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        overlay.style.opacity = '1';
+        overlay.style.transition = '';
+        resolve();
+      }, 460);
+    }, 8500);
+  });
+}
+
+// ── JAW INSIGHT PAGE ──
+function showJawInsight() {
+  return new Promise(resolve => {
+    const page    = document.getElementById('jawInsightPage');
+    const content = document.getElementById('ji-content');
+    const ctaWrap = document.getElementById('ji-cta-wrap');
+
+    content.innerHTML = '';
+    ctaWrap.classList.remove('on');
+
+    let jd = {};
+    try { jd = JSON.parse(localStorage.getItem('protocol_jaw_results') || '{}'); } catch(e) {}
+
+    const fmt = n => (typeof n === 'number') ? n.toFixed(1) : (n || '—');
+    const _avgJaw = arr => { const n = arr.map(parseFloat).filter(v => !isNaN(v)); return n.length ? n.reduce((a,b)=>a+b,0)/n.length : null; };
+    const overall = parseFloat(jd.jawScore ?? _avgJaw([jd.jawWidth,jd.jawDefinition,jd.chinProjection,jd.gonialAngle,jd.jawSymmetry,jd.neckJawSeparation,jd.facialLeanness]) ?? 6.0);
+    let _gain = 0.5;
+    if      (overall <= 2) _gain += 3.0;
+    else if (overall <= 4) _gain += 2.0;
+    else if (overall <= 6) _gain += 1.2;
+    else if (overall <= 8) _gain += 0.6;
+    _gain = Math.round(_gain * 10) / 10;
+    const potential = Math.round(Math.min(10.0, overall + _gain) * 10) / 10;
+    const gain      = _gain;
+    const curRank   = eyeRank(overall);
+    const potRank   = eyeRank(potential);
+
+    document.getElementById('ji-overall-score').textContent   = fmt(overall);
+    document.getElementById('ji-overall-score').style.color   = curRank.color;
+    document.getElementById('ji-potential-score').textContent = fmt(potential);
+    document.getElementById('ji-gain-val').textContent        = '+' + fmt(gain);
+
+    page.style.display = 'block';
+    setTimeout(() => { page.style.opacity = '1'; }, 20);
+
+    function wait(ms)  { return new Promise(r => setTimeout(r, ms)); }
+    function scrollDown() { /* disabled: keep viewport in place while sections reveal */ }
+    function reveal(el, delay) {
+      return new Promise(r => setTimeout(() => { el.classList.add('on'); scrollDown(); r(); }, delay || 60));
+    }
+
+    // ── Determine biggest strength from 7 foundational jaw metrics ──
+    const STRENGTH_PRIORITY = ['jawWidth','jawDefinition','chinProjection','gonialAngle','jawSymmetry','neckJawSeparation','facialLeanness'];
+    let strengthKey = 'jawWidth';
+    let strengthScore = -1;
+    STRENGTH_PRIORITY.forEach(k => {
+      const s = parseFloat(jd[k] ?? 0);
+      if (s > strengthScore) { strengthKey = k; strengthScore = s; }
+    });
+    const template   = JAW_STRENGTH_TEMPLATES[strengthKey];
+    const strengthRank = eyeRank(strengthScore > 0 ? strengthScore : 7);
+
+    async function run() {
+      await wait(350);
+
+      // ── SECTION 0/1: FOUNDATION CARD — biggest strength ──
+      const s1 = document.createElement('div');
+      s1.className = 'bi-found-card';
+      s1.innerHTML = `
+        <div class="bi-found-tag">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
+          FOUNDATION
+        </div>
+        <div class="bi-found-sub">Your Greatest Strength</div>
+        <div class="bi-found-title">${template.title}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="font-size:22px;font-weight:900;color:${strengthRank.color};line-height:1;">${strengthScore > 0 ? strengthScore.toFixed(1) : '—'}</div>
+          <div style="font-size:12px;color:#4b5563;">/ 10</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${strengthRank.color};margin-left:2px;">${strengthRank.label}</div>
+        </div>
+        <div class="bi-found-text">${template.whyValuable}</div>
+        <div class="bi-found-tip">
+          <div class="bi-found-tip-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+          </div>
+          <div>
+            <div class="bi-found-tip-title">This is your foundation.</div>
+            <div class="bi-found-tip-text">We'll build every enhancement around your natural advantage.</div>
+          </div>
+        </div>`;
+      content.appendChild(s1);
+      await reveal(s1, 40);
+      await wait(300);
+
+      // ── SECTION 5: SCORE PROGRESSION ──
+      const s5 = document.createElement('div');
+      s5.className = 'bi-narrative';
+      s5.innerHTML = `
+        <div class="bi-narrative-label" style="color:#a3e635;">YOUR JAW POTENTIAL</div>
+        <div class="bi-narrative-sub">Score Progression</div>
+        <div class="bi-score-bar-wrap">
+          <div class="bi-score-track">
+            <div class="bi-score-track-label" style="color:#4b5563;">Now</div>
+            <div class="bi-score-track-bar"><div class="bi-score-track-fill" id="jiNowBar" style="background:${curRank.color}"></div></div>
+            <div class="bi-score-track-num" style="color:${curRank.color}">${fmt(overall)}</div>
+          </div>
+          <div class="bi-score-track">
+            <div class="bi-score-track-label" style="color:#a3e635;">Goal</div>
+            <div class="bi-score-track-bar"><div class="bi-score-track-fill" id="jiGoalBar" style="background:#a3e635"></div></div>
+            <div class="bi-score-track-num" style="color:#a3e635">${fmt(potential)}</div>
+          </div>
+        </div>`;
+      content.appendChild(s5);
+      await reveal(s5, 60);
+      await wait(100);
+      document.getElementById('jiNowBar').style.width  = (overall  / 10 * 100) + '%';
+      document.getElementById('jiGoalBar').style.width = (potential / 10 * 100) + '%';
+      await wait(400);
+
+      ctaWrap.classList.add('on');
+      scrollDown();
+    }
+
+    async function runAmplify() {
+      content.classList.add('ei-fade-out');
+      ctaWrap.classList.remove('on');
+      await wait(350);
+      content.classList.remove('ei-fade-out');
+      content.innerHTML = '';
+      await wait(250);
+
+      const a1 = document.createElement('div');
+      a1.className = 'bi-found-card';
+      a1.innerHTML = `
+        <div class="bi-found-tag" style="color:#60a5fa;background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.25);">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          AMPLIFY
+        </div>
+        <div class="bi-found-sub">How We Enhance It</div>
+        <div class="bi-found-title" style="color:#60a5fa;">${template.title}</div>
+        <div class="bi-found-text">${template.howAmplify}</div>`;
+      content.appendChild(a1);
+      await reveal(a1, 40);
+      await wait(300);
+
+      const a2 = document.createElement('div');
+      a2.className = 'bi-found-card';
+      a2.innerHTML = `
+        <div class="bi-found-tag">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
+          YOUR GOAL
+        </div>
+        <div class="bi-found-sub">Your Ideal Jaw Area</div>
+        <div class="bi-found-text">${template.idealJawArea}</div>
+        <div class="bi-found-tip">
+          <div class="bi-found-tip-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+          </div>
+          <div>
+            <div class="bi-found-tip-title">Built on what already works.</div>
+            <div class="bi-found-tip-text">This look isn't a different face — it's your ${template.title.toLowerCase()}, fully realized.</div>
+          </div>
+        </div>`;
+      content.appendChild(a2);
+      await reveal(a2, 60);
+      await wait(300);
+
+      ctaBtn.textContent = 'BUILD MY JAW ROADMAP →';
+      ctaWrap.classList.add('on');
+      scrollDown();
+    }
+
+    async function runDetails() {
+      content.classList.add('ei-fade-out');
+      ctaWrap.classList.remove('on');
+      await wait(350);
+      content.classList.remove('ei-fade-out');
+      content.innerHTML = '';
+      await wait(250);
+
+      const sections = [
+        {
+          key: 'definition', tag: 'FOUNDATION', tagColor: '#60a5fa',
+          iconBg: 'rgba(96,165,250,.12)', iconColor: '#60a5fa',
+          icon: '<path d="M7 3H4v3M17 3h3v3M4 17v3h3M20 17v3h-3"/>',
+          title: 'Definition',
+          desc: 'Retinoid skin tightening and consistent hydration sharpen the line between your jaw and neck.',
+          full: 'Retinoid skin tightening and consistent hydration sharpen the line between your jaw and neck. Reducing sodium intake also helps minimize water retention that can soften your jawline\'s edge.',
+          impact: 'STRONG', impactColor: '#60a5fa', dots: 4, foundation: true,
+        },
+        {
+          key: 'leanness', tag: 'ENHANCEMENT', tagColor: '#a3e635',
+          iconBg: 'rgba(163,230,53,.12)', iconColor: '#a3e635',
+          icon: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+          title: 'Leanness',
+          desc: 'Cardio and fat-loss training reduce facial fat covering your jaw, exposing your underlying structure.',
+          full: 'Cardio and fat-loss training reduce facial fat covering your jaw, exposing your underlying bone structure. Briefly: a lower-sodium diet and consistent hydration both help keep your face from looking puffy on top of that.',
+          impact: 'GOOD', impactColor: '#a3e635', dots: 3,
+        },
+        {
+          key: 'posture', tag: 'ENHANCEMENT', tagColor: '#f59e0b',
+          iconBg: 'rgba(245,158,11,.12)', iconColor: '#f59e0b',
+          icon: '<path d="M2 12c2-5 6-7 10-7s8 2 10 7c-2 5-6 7-10 7s-8-2-10-7z"/><circle cx="12" cy="12" r="3"/>',
+          title: 'Posture',
+          desc: 'Chin-tuck exercises and proper tongue posture strengthen the muscles that support your jawline.',
+          full: 'Chin-tuck exercises and proper tongue posture (mewing) strengthen the muscles that support your jawline and neck. Briefly: getting 8 hours of sleep keeps cortisol-related facial bloat from masking your progress.',
+          impact: 'AVERAGE', impactColor: '#f59e0b', dots: 2,
+        },
+        {
+          key: 'framing', tag: 'ENHANCEMENT', tagColor: '#a78bfa',
+          iconBg: 'rgba(167,139,250,.12)', iconColor: '#a78bfa',
+          icon: '<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/>',
+          title: 'Framing',
+          desc: 'Beard shaping and sideburn tapering create the illusion of a stronger, sharper jaw structure.',
+          full: 'Beard shaping and sideburn tapering create the illusion of a stronger, sharper jaw structure almost instantly. Watch out for frauds like heavy contouring in photos — it doesn\'t change anything underneath and only shows up in flattering light.',
+          impact: 'AVERAGE', impactColor: '#a78bfa', dots: 2,
+        },
+      ];
+
+      const dotsHtml = (n, color) => Array.from({length:5}, (_,i) =>
+        `<div class="bi-rm-dot" style="${i < n ? `background:${color};` : ''}"></div>`).join('');
+
+      const wrap = document.createElement('div');
+      wrap.className = 'bi-rm-wrap';
+      wrap.innerHTML = `
+        <div class="bi-rm-hint">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+          We've analyzed your jaw across key areas to build your roadmap.
+        </div>
+        ${sections.map(sec => `
+          <div class="bi-rm-card${sec.foundation ? ' foundation' : ''}" data-key="${sec.key}">
+            <div class="bi-rm-icon" style="background:${sec.iconBg};color:${sec.iconColor};">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${sec.icon}</svg>
+            </div>
+            <div>
+              <div class="bi-rm-tag" style="color:${sec.tagColor};">${sec.tag}</div>
+              <div class="bi-rm-title">${sec.title}</div>
+              <div class="bi-rm-desc">${sec.desc}</div>
+            </div>
+            <div class="bi-rm-right">
+              <div class="bi-rm-impact">
+                <div class="bi-rm-impact-badge" style="color:${sec.impactColor};background:${sec.iconBg};">${sec.impact}</div>
+                <div class="bi-rm-impact-label">Impact</div>
+                <div class="bi-rm-dots">${dotsHtml(sec.dots, sec.impactColor)}</div>
+              </div>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${sec.impactColor}" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </div>
+          </div>`).join('')}
+        <div class="bi-rm-tip">
+          <div class="bi-rm-tip-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/></svg>
+          </div>
+          <div>
+            <div class="bi-rm-tip-title">Your roadmap is personalized for you.</div>
+            <div class="bi-rm-tip-text">We'll guide you step by step to maximize your jaw potential and build your best version.</div>
+            <button class="bi-rm-view-btn" id="ji-view-roadmap-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4l-6 2v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>
+              View Full Roadmap
+            </button>
+          </div>
+        </div>`;
+      content.appendChild(wrap);
+      await reveal(wrap, 40);
+      document.getElementById('ji-view-roadmap-btn').onclick = () => { window.location.href = '/roadmap'; };
+
+      ctaBtn.textContent = 'BUILD MY JAW ROADMAP →';
+      ctaWrap.classList.add('on');
+      scrollDown();
+    }
+
+    run();
+
+    let jiStep = 0;
+    const ctaBtn = document.getElementById('ji-cta-btn');
+    ctaBtn.textContent = 'NEXT →';
+    ctaBtn.onclick = () => {
+      if (jiStep === 0) {
+        jiStep = 1;
+        runAmplify();
         return;
       }
       page.style.transition = 'opacity .4s';
@@ -4366,35 +5330,16 @@ function showSkinInsight() {
       await reveal(cardsGrid, 40);
       await wait(500);
 
-      // ── SECTION 2: AI NARRATIVE (skeleton while loading) ──
+      // ── SECTION 2: CURRENT SKIN ANALYSIS ──
+      // Shown instantly with rule-based copy — no network wait, no skeleton flash.
+      let aiData = {};
       const s2 = document.createElement('div');
       s2.className = 'bi-narrative';
-      const skelly = document.createElement('div');
-      skelly.innerHTML = `
-        <div class="bi-narrative-label" style="color:#22d3ee;">WHY YOUR SKIN SCORES WHAT IT DOES</div>
-        <div class="bi-pulse-line" style="width:90%"></div>
-        <div class="bi-pulse-line" style="width:100%"></div>
-        <div class="bi-pulse-line" style="width:75%"></div>
-        <div class="bi-pulse-line"></div>`;
-      s2.appendChild(skelly);
-      content.appendChild(s2);
-      await reveal(s2, 40);
-
-      const aiPromise = fetch('/api/skin-insight', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ ...sd, skinScore: overall, skinPotential: potential }),
-      }).then(r => r.json()).then(raw => {
-        const txt = raw.content?.[0]?.text || '';
-        const m = txt.match(/\{[\s\S]*\}/);
-        return m ? JSON.parse(m[0]) : {};
-      }).catch(() => ({}));
-
-      // Wait for AI then fill section 2 (CURRENT SKIN ANALYSIS)
-      const aiData = await aiPromise;
       s2.innerHTML = `
         <div class="bi-narrative-label" style="color:#22d3ee;">CURRENT SKIN ANALYSIS</div>
         <div class="bi-narrative-text">${aiData.whyThisScore || 'Your skin score reflects a combination of strong traits and specific areas where targeted improvement would have the most visual impact.'}</div>`;
+      content.appendChild(s2);
+      await reveal(s2, 40);
 
       // ── SECTION 3: YOUR IDEAL SKIN ──
       await wait(200);
@@ -4528,20 +5473,60 @@ function init() {
     document.querySelectorAll('.ediag-scan-photo').forEach(img => { img.src = _scanPhoto; });
   }
 
+  // Real streak, read from the same shared state dashboard/tasks write to.
+  try {
+    const _state = JSON.parse(localStorage.getItem('protocol_state') || '{}');
+    const _streakEl = document.getElementById('streakText');
+    if (_streakEl) _streakEl.textContent = (_state.streak || 0) + ' Day Streak';
+  } catch(e) {}
+
+  // Header avatar — match the dashboard's avatar (real uploaded photo if present).
+  if (_scanPhoto) {
+    const _avatarEl = document.getElementById('headerAvatar');
+    if (_avatarEl) {
+      _avatarEl.innerHTML = '';
+      const _img = document.createElement('img');
+      _img.src = _scanPhoto;
+      _img.style.width = '100%';
+      _img.style.height = '100%';
+      _img.style.objectFit = 'cover';
+      _img.style.display = 'block';
+      _avatarEl.appendChild(_img);
+    }
+  }
+
   {
     // Hide all overlays that may have been left open
-    ['skinInsightPage','eyeInsightPage','browInsightPage','hairInsightPage',
-     'skinDiagOverlay','eyeDiagOverlay','browDiagOverlay','hairDiagOverlay',
+    ['skinInsightPage','eyeInsightPage','browInsightPage','hairInsightPage','jawInsightPage',
+     'skinDiagOverlay','eyeDiagOverlay','browDiagOverlay','hairDiagOverlay','jawDiagOverlay',
      'siTraitDetail'].forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.style.display = 'none'; el.style.opacity = '1'; }
     });
     // Build skin roadmap before render so SECTION_TASK_IDS.skin is populated correctly
     if (areaKey === 'skin') buildSkinRoadmap();
+    // Same for jaw — SECTION_TASK_IDS.jaw must reflect this user's actual
+    // roadmap before render() computes the sidebar Earned/Total potential.
+    if (areaKey === 'jaw') {
+      const { roadmap } = getJawRoadmap();
+      SECTION_TASK_IDS.jaw = [...roadmap.daily, ...roadmap.weekly, ...roadmap.instant, ...roadmap.advanced];
+    }
 
     // Always render the roadmap first so content is ready under the overlays
     render();
     document.getElementById('mainContent').classList.add('eyes-revealed');
+
+    // Coming from "Your Face Areas" on the dashboard: show the exact same
+    // analysis/insight overlay used by Improve Now, but skip the
+    // diagnostic scan animation entirely and show it every time (no
+    // first-visit-only gating).
+    if (params.get('showAnalysis') === '1') {
+      if (areaKey === 'skin')  { showSkinInsight();  return; }
+      if (areaKey === 'eyes')  { showEyeInsight();   return; }
+      if (areaKey === 'brows') { showBrowInsight();  return; }
+      if (areaKey === 'hair')  { showHairInsight();  return; }
+      if (areaKey === 'jaw')   { showJawInsight();   return; }
+    }
 
     // Play the face-analyzing/diagnostic scan animation AND show the
     // analysis/insight page only the FIRST time the user opens "Improve Now"
@@ -4569,6 +5554,11 @@ function init() {
     // Hair
     if (areaKey === 'hair') {
       runHairDiagnostic().then(() => { showHairInsight(); });
+      return;
+    }
+    // Jaw
+    if (areaKey === 'jaw') {
+      runJawDiagnostic().then(() => { showJawInsight(); });
       return;
     }
   }
@@ -4796,7 +5786,7 @@ function init() {
 .tp-bought-btn:hover { background:rgba(163,230,53,0.2); }
 
 /* ── EYE DIAGNOSTIC ── */
-#eyeDiagOverlay { background:#000; }
+#eyeDiagOverlay, #jawDiagOverlay { background:#000; }
 .ediag-wrap { display:flex;flex-direction:column;align-items:center;gap:28px;width:100%;max-width:480px;padding:0 28px; }
 .ediag-scan-wrap { position:relative;width:min(260px,72vw);aspect-ratio:1; }
 .ediag-scan-photo { width:100%;height:100%;object-fit:cover;display:block;filter:brightness(0.5) contrast(1.15); }
@@ -4826,7 +5816,7 @@ function init() {
 .ediag-r-fill { position:absolute;top:0;left:0;height:100%;background:#3b82f6;width:0%;transition:width 1.2s ease; }
 .ediag-r-val { font-size:10px;font-weight:700;color:#60a5fa;font-family:monospace;white-space:nowrap; }
 /* ── SKIN / EYE / BROW INSIGHT PAGES ── */
-#skinInsightPage, #eyeInsightPage, #browInsightPage {
+#skinInsightPage, #eyeInsightPage, #browInsightPage, #jawInsightPage {
   background:#000;overflow-y:auto;-webkit-overflow-scrolling:touch;
   opacity:0;transition:opacity .4s;
 }
@@ -5515,6 +6505,60 @@ function init() {
         <div class="ediag-readout" id="er2"><span class="ediag-r-label">Eye Exposure</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="er2f"></div></div><span class="ediag-r-val" id="er2v">—</span></div>
         <div class="ediag-readout" id="er3"><span class="ediag-r-label">Under-Eye Area</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="er3f"></div></div><span class="ediag-r-val" id="er3v">—</span></div>
         <div class="ediag-readout" id="er4"><span class="ediag-r-label">Lash Line</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="er4f"></div></div><span class="ediag-r-val" id="er4v">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── JAW INSIGHT PAGE ── -->
+<div id="jawInsightPage" style="display:none;position:fixed;inset:0;z-index:600;">
+  <div class="ei-wrap">
+    <div class="ei-header">
+      <div class="ei-complete-label">JAW ANALYSIS</div>
+      <div class="bi-stats-row">
+        <div class="bi-stat-cell">
+          <div class="bi-stat-tag">Current Jaw Rating</div>
+          <div class="bi-stat-num" id="ji-overall-score" style="color:#fff;">—</div>
+          <div class="bi-stat-sub">/ 10</div>
+        </div>
+        <div class="bi-stat-cell">
+          <div class="bi-stat-tag">Potential Jaw Rating</div>
+          <div class="bi-stat-num" id="ji-potential-score" style="color:#a3e635;">—</div>
+          <div class="bi-stat-sub">/ 10</div>
+        </div>
+        <div class="bi-stat-cell">
+          <div class="bi-stat-tag">Potential Gain</div>
+          <div class="bi-stat-num" id="ji-gain-val" style="color:#a3e635;">—</div>
+          <div class="bi-stat-sub">Points</div>
+        </div>
+      </div>
+    </div>
+    <div id="ji-content" class="ei-content" style="gap:0;padding-top:0;"></div>
+    <div class="ei-cta-wrap" id="ji-cta-wrap">
+      <button class="ei-cta-btn" id="ji-cta-btn">NEXT →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── JAW DIAGNOSTIC OVERLAY ── -->
+<div id="jawDiagOverlay" style="display:none;position:fixed;inset:0;z-index:700;align-items:center;justify-content:center;flex-direction:column;">
+  <div class="ediag-wrap">
+    <div class="ediag-scan-wrap">
+      <img class="ediag-scan-photo" src="" alt=""/>
+      <div class="ediag-scan-grid"></div>
+      <div class="ediag-scan-line"></div>
+      <div class="ediag-corners"></div>
+      <div class="ediag-corners-br"></div>
+      <div id="jdiag-dots"></div>
+    </div>
+    <div class="ediag-text">
+      <div class="ediag-title">Scanning Jaw<span class="ediag-blink">_</span></div>
+      <div class="ediag-status-txt" id="jdiag-status">Analyzing...</div>
+      <div class="ediag-readouts">
+        <div class="ediag-readout" id="jr1"><span class="ediag-r-label">Jaw Width</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="jr1f"></div></div><span class="ediag-r-val" id="jr1v">—</span></div>
+        <div class="ediag-readout" id="jr2"><span class="ediag-r-label">Jaw Definition</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="jr2f"></div></div><span class="ediag-r-val" id="jr2v">—</span></div>
+        <div class="ediag-readout" id="jr3"><span class="ediag-r-label">Gonial Angle</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="jr3f"></div></div><span class="ediag-r-val" id="jr3v">—</span></div>
+        <div class="ediag-readout" id="jr4"><span class="ediag-r-label">Facial Leanness</span><div class="ediag-r-bar"><div class="ediag-r-fill" id="jr4f"></div></div><span class="ediag-r-val" id="jr4v">—</span></div>
       </div>
     </div>
   </div>

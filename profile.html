@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Profile — Potential</title>
+<style>
+:root{--bg:#0f0f0f;--bg1:#161616;--bg2:#1c1c1c;--bg3:#222;--border:#2a2a2a;--border2:#333;--accent:#a3e635;--accent-dim:rgba(163,230,53,0.15);--accent-glow:rgba(163,230,53,0.3);--text:#f0f0f0;--muted:#6b7280;--muted2:#9ca3af;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;padding-bottom:76px;}
+
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50;}
+.header-title{font-size:16px;font-weight:700;}
+.back-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;color:var(--muted2);}
+.back-btn:hover{background:var(--bg2);}
+
+.profile-hero{display:flex;flex-direction:column;align-items:center;padding:32px 20px 24px;}
+.avatar-big{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#374151,#4b5563);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:var(--muted2);border:2px solid var(--border2);overflow:hidden;}
+.avatar-big img{width:100%;height:100%;object-fit:cover;display:block;}
+.profile-name{margin-top:14px;font-size:18px;font-weight:700;color:var(--text);}
+.profile-email{margin-top:2px;font-size:13px;color:var(--muted);}
+
+.stats-row{display:flex;gap:10px;padding:0 16px;margin-bottom:24px;}
+.stat-card{flex:1;background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.stat-val{font-size:18px;font-weight:800;color:var(--accent);}
+.stat-label{font-size:11px;color:var(--muted2);text-align:center;}
+
+.settings-group{margin:0 16px 20px;}
+.group-label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin:0 4px 8px;}
+.group-card{background:var(--bg1);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.settings-row{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s;}
+.settings-row:last-child{border-bottom:none;}
+.settings-row:hover{background:var(--bg2);}
+.row-icon{width:32px;height:32px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.row-label{flex:1;font-size:14px;font-weight:600;color:var(--text);}
+.row-chevron{color:var(--muted);}
+
+.app-version{text-align:center;color:var(--muted);font-size:11px;margin-top:24px;}
+
+/* Identical box model to dashboard.html / tasks.html's bottom-nav so the row
+   doesn't visibly shift width/position when navigating between pages. */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:56px;background:var(--bg);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:100;}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 16px;flex:1;}
+.nav-item svg{opacity:0.4;}
+.nav-item span{font-size:10px;font-weight:600;letter-spacing:0.5px;color:var(--muted);text-transform:capitalize;}
+.nav-item.active svg{opacity:1;}
+.nav-item.active span{color:var(--accent);}
+.nav-item.active svg path,.nav-item.active svg rect,.nav-item.active svg circle,.nav-item.active svg polyline,.nav-item.active svg line{stroke:var(--accent);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="back-btn" onclick="window.location.href='/dashboard'">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+  </div>
+  <div class="header-title">Profile</div>
+  <div style="width:32px;"></div>
+</header>
+
+<div class="profile-hero">
+  <div class="avatar-big" id="avatarBig">H</div>
+  <div class="profile-name" id="profileName">Henry</div>
+  <div class="profile-email" id="profileEmail">henryjhartnett@icloud.com</div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-val" id="statLevel">1</div>
+    <div class="stat-label">Level</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val" id="statStreak">0</div>
+    <div class="stat-label">Day Streak</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val" id="statScore">—</div>
+    <div class="stat-label">Overall Score</div>
+  </div>
+</div>
+
+<div class="settings-group">
+  <div class="group-label">Account</div>
+  <div class="group-card">
+    <div class="settings-row" onclick="retakePhoto()">
+      <div class="row-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+      <div class="row-label">Retake Photo</div>
+      <svg class="row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="settings-row" onclick="alert('Payment settings coming soon')">
+      <div class="row-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <div class="row-label">Payment</div>
+      <svg class="row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+  </div>
+</div>
+
+<div class="app-version">Potential v1.0</div>
+
+<div class="bottom-nav">
+  <div class="nav-item" onclick="window.location.href='/dashboard'">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Dashboard</span>
+  </div>
+  <div class="nav-item" onclick="window.location.href='/tasks'">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span>Tasks</span>
+  </div>
+  <div class="nav-item active">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profile</span>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ── State (level/xp/streak) ──
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem('protocol_state') || '{}'); } catch(e){}
+  document.getElementById('statLevel').textContent = state.level != null ? state.level : 1;
+  document.getElementById('statStreak').textContent = state.streak != null ? state.streak : 0;
+
+  // ── Avatar: use the user's actual uploaded photo if we have one ──
+  const photo = localStorage.getItem('protocol_photo');
+  if (photo) {
+    const avatarEl = document.getElementById('avatarBig');
+    avatarEl.textContent = '';
+    const img = document.createElement('img');
+    img.src = photo;
+    avatarEl.appendChild(img);
+  }
+
+  // ── Overall score: recompute from all 5 areas (incl. Jaw) so this always ──
+  // matches the dashboard's "Overall Face Score" — the cached snapshot from
+  // glowai.html predates Jaw and never includes it, so we don't trust
+  // cs.overallC on its own.
+  let cs = {};
+  try { cs = JSON.parse(localStorage.getItem('protocol_computed_scores') || '{}'); } catch(e){}
+  const pv = k => (cs[k] != null ? parseFloat(cs[k]) : null);
+  function avg(arr) {
+    const n = arr.map(parseFloat).filter(v => !isNaN(v));
+    return n.length ? Math.round(n.reduce((a,b)=>a+b,0)/n.length*10)/10 : null;
+  }
+  let eyeC = pv('eyeC'), browC = pv('browC'), skinC = pv('skinC'), hairC = pv('hairC'), jawC = pv('jawC');
+  if (eyeC == null) {
+    let ed={}; try { ed = JSON.parse(localStorage.getItem('protocol_eye_results') || '{}'); } catch(e){}
+    eyeC = ed.eyeScore != null ? parseFloat(ed.eyeScore)
+           : avg([ed.canthalTilt,ed.eyeShape,ed.eyeExposure,ed.upperEyelidExposure,ed.eyeDepth,ed.eyeSpacing,ed.eyeSymmetry]);
+  }
+  if (browC == null) {
+    let bd={}; try { bd = JSON.parse(localStorage.getItem('protocol_brow_results') || '{}'); } catch(e){}
+    browC = bd.eyebrowScore != null ? parseFloat(bd.eyebrowScore)
+            : avg([bd.eyebrowFraming,bd.eyebrowShape,bd.eyebrowPosition,bd.eyebrowThickness,bd.eyebrowDensity,bd.eyebrowLength]);
+  }
+  if (skinC == null) {
+    let sd={}; try { sd = JSON.parse(localStorage.getItem('protocol_skin_results') || '{}'); } catch(e){}
+    if (sd.skinScore != null) skinC = parseFloat(sd.skinScore);
+    else {
+      const a=parseFloat(sd.acneScore),t=parseFloat(sd.textureScore),e=parseFloat(sd.toneEvenness),n=parseFloat(sd.tanScore),g=parseFloat(sd.skinGlow);
+      if (![a,t,e,n,g].some(isNaN)) skinC = Math.round((a*0.40+t*0.15+e*0.15+n*0.15+g*0.15)*10)/10;
+    }
+  }
+  if (hairC == null) {
+    let hd={}; try { hd = JSON.parse(localStorage.getItem('protocol_hair_results') || '{}'); } catch(e){}
+    const _hasHair = Object.keys(hd).length > 0;
+    hairC = hd.haircutFitScore != null ? parseFloat(hd.haircutFitScore)
+            : (hd.hairScore != null ? parseFloat(hd.hairScore) : (_hasHair ? 5 : null));
+  }
+  if (jawC == null) {
+    let jd={}; try { jd = JSON.parse(localStorage.getItem('protocol_jaw_results') || '{}'); } catch(e){}
+    jawC = jd.jawScore != null ? parseFloat(jd.jawScore)
+           : avg([jd.jawWidth,jd.jawDefinition,jd.chinProjection,jd.gonialAngle,jd.jawSymmetry,jd.neckJawSeparation,jd.facialLeanness]);
+  }
+  function weightedAvg(parts) {
+    const valid = parts.filter(([v]) => v != null);
+    if (!valid.length) return null;
+    const tw = valid.reduce((s,[,w]) => s + w, 0);
+    return Math.round(valid.reduce((s,[v,w]) => s + v * w, 0) / tw * 10) / 10;
+  }
+  const AREA_W = { eye: 0.28, skin: 0.24, jaw: 0.20, hair: 0.16, brow: 0.12 };
+  const overallC = weightedAvg([[eyeC,AREA_W.eye],[skinC,AREA_W.skin],[jawC,AREA_W.jaw],[hairC,AREA_W.hair],[browC,AREA_W.brow]]);
+  if (overallC != null) {
+    document.getElementById('statScore').textContent = overallC.toFixed(1);
+  }
+
+  function retakePhoto(){
+    if (!confirm('Are you sure you want to retake your photo? This will restart your analysis from the very beginning.')) return;
+    try {
+      Object.keys(localStorage).forEach(k => { if (k.indexOf('protocol_') === 0) localStorage.removeItem(k); });
+    } catch(e) {}
+    window.location.href = '/';
+  }
+  window.retakePhoto = retakePhoto;
+})();
+</script>
+
+</body>
+</html>

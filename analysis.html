@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Face Analysis — Protocol</title>
+<style>
+  :root{
+    --bg:#0f0f0f;--bg1:#161616;--bg2:#1c1c1c;--bg3:#222;
+    --border:#2a2a2a;--border2:#333;
+    --accent:#a3e635;--accent-dim:rgba(163,230,53,0.15);--accent-glow:rgba(163,230,53,0.3);
+    --text:#f0f0f0;--muted:#6b7280;--muted2:#9ca3af;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:60px;}
+  .wrap{max-width:480px;margin:0 auto;padding:0 16px;}
+
+  .ea-header{display:flex;align-items:center;gap:12px;padding:18px 16px 10px;max-width:480px;margin:0 auto;}
+  .ea-back{width:34px;height:34px;border-radius:50%;border:1px solid var(--border2);background:var(--bg1);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+  .ea-header-label{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--muted2);text-transform:uppercase;}
+
+  .ea-hero{padding:18px 0 6px;text-align:center;}
+  .ea-hero-title{font-size:42px;font-weight:900;letter-spacing:1px;color:var(--text);line-height:1;}
+  .ea-hero-tag{margin-top:8px;font-size:13px;color:var(--muted2);line-height:1.5;}
+
+  .ea-photo-card{position:relative;margin:20px 0;border-radius:18px;overflow:hidden;background:var(--bg2);border:1px solid var(--border2);aspect-ratio:4/3;}
+  .ea-photo-card img{width:100%;height:100%;object-fit:cover;display:block;}
+  .ea-photo-card.empty{display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);text-align:center;padding:20px;}
+  .ea-callout{position:absolute;display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;color:#fff;letter-spacing:0.3px;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,0.8);}
+  .ea-callout .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(163,230,53,0.25);flex-shrink:0;}
+  .ea-callout .line{height:1px;background:rgba(255,255,255,0.55);}
+  .ea-callout.left{flex-direction:row;}
+  .ea-callout.right{flex-direction:row-reverse;}
+
+  .ea-score-card{background:var(--bg1);border:1px solid var(--border);border-radius:18px;padding:24px 20px;margin-bottom:16px;display:flex;flex-direction:column;align-items:center;}
+  .ea-gauge{position:relative;width:148px;height:148px;margin-bottom:14px;}
+  .ea-gauge svg{transform:rotate(-90deg);}
+  .ea-gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .ea-gauge-num{font-size:34px;font-weight:900;line-height:1;}
+  .ea-gauge-den{font-size:11px;color:var(--muted2);font-weight:700;margin-top:1px;}
+  .ea-gauge-rank{margin-top:10px;font-size:12px;font-weight:800;letter-spacing:1.5px;padding:5px 14px;border-radius:20px;border:1px solid;text-transform:uppercase;}
+  .ea-highlights{width:100%;margin-top:18px;border-top:1px solid var(--border);padding-top:16px;}
+  .ea-highlights-title{font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;margin-bottom:10px;}
+  .ea-highlight-item{display:flex;gap:8px;font-size:12.5px;color:var(--text);line-height:1.5;margin-bottom:8px;}
+  .ea-highlight-item:last-child{margin-bottom:0;}
+  .ea-highlight-item .chk{color:var(--accent);flex-shrink:0;font-weight:900;}
+
+  .ea-metric-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+  .ea-metric-card{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;}
+  .ea-metric-diagram{width:44px;height:28px;margin:0 auto 10px;}
+  .ea-metric-label{font-size:10.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+  .ea-metric-bar{height:5px;border-radius:3px;background:var(--bg3);overflow:hidden;margin-bottom:7px;}
+  .ea-metric-bar-fill{height:100%;border-radius:3px;background:var(--accent);}
+  .ea-metric-pct{font-size:14px;font-weight:900;color:var(--text);}
+
+  .ea-card{background:var(--bg1);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;}
+  .ea-card-title{font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase;margin-bottom:14px;}
+  .ea-spacing-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;}
+  .ea-spacing-val{font-size:26px;font-weight:900;color:var(--text);}
+  .ea-spacing-unit{font-size:12px;color:var(--muted2);margin-left:4px;font-weight:600;}
+  .ea-ratio-badge{font-size:10.5px;font-weight:800;padding:5px 11px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);background:var(--accent-dim);letter-spacing:0.5px;text-transform:uppercase;}
+  .ea-spacing-desc{font-size:12.5px;color:var(--muted2);line-height:1.55;}
+
+  .ea-sym-row{display:flex;gap:16px;margin-bottom:12px;}
+  .ea-sym-col{flex:1;text-align:center;}
+  .ea-sym-pct{font-size:24px;font-weight:900;color:var(--text);}
+  .ea-sym-label{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+  .ea-sym-overall{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px;}
+  .ea-sym-overall-label{font-size:12px;color:var(--muted2);font-weight:700;}
+  .ea-sym-overall-val{font-size:16px;font-weight:900;color:var(--accent);}
+
+  .ea-list-item{display:flex;gap:9px;font-size:12.5px;color:var(--text);line-height:1.55;margin-bottom:11px;}
+  .ea-list-item:last-child{margin-bottom:0;}
+  .ea-list-item .bullet{color:var(--accent);flex-shrink:0;font-size:14px;line-height:1.4;}
+
+  .ea-tip{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;}
+  .ea-tip:last-child{margin-bottom:0;}
+  .ea-tip-thumb{width:38px;height:38px;border-radius:10px;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+  .ea-tip-text{font-size:12.5px;color:var(--muted2);line-height:1.55;padding-top:2px;}
+  .ea-tip-text strong{color:var(--text);}
+
+  .ea-match-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .ea-match-row:last-child{margin-bottom:0;}
+  .ea-match-avatar{width:42px;height:42px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#000;}
+  .ea-match-name{font-size:13px;font-weight:700;color:var(--text);}
+  .ea-match-bar{height:4px;border-radius:2px;background:var(--bg3);overflow:hidden;margin-top:5px;}
+  .ea-match-bar-fill{height:100%;border-radius:2px;background:var(--accent);}
+  .ea-match-pct{font-size:13px;font-weight:900;color:var(--accent);flex-shrink:0;}
+
+  .ea-banner{margin-top:20px;border-radius:18px;padding:30px 22px;text-align:center;background:linear-gradient(160deg, rgba(163,230,53,0.12), rgba(163,230,53,0.02));border:1px solid var(--border2);}
+  .ea-banner-title{font-size:18px;font-weight:900;color:var(--text);margin-bottom:10px;}
+  .ea-banner-text{font-size:12.5px;color:var(--muted2);line-height:1.6;max-width:340px;margin:0 auto 16px;}
+  .ea-banner-sign{font-family:'Brush Script MT',cursive,sans-serif;font-size:26px;color:var(--accent);font-style:italic;}
+</style>
+</head>
+<body>
+
+<div class="ea-header">
+  <div class="ea-back" onclick="window.location.href='/dashboard'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </div>
+  <div class="ea-header-label">Your Face Analysis</div>
+</div>
+
+<div class="wrap">
+
+  <div class="ea-hero">
+    <div class="ea-hero-title" id="eaTitle">—</div>
+    <div class="ea-hero-tag" id="eaTagline">Analyzing…</div>
+  </div>
+
+  <div class="ea-photo-card" id="eaPhotoCard">
+    <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted);font-size:12px;">Loading photo…</div>
+  </div>
+
+  <div class="ea-score-card">
+    <div class="ea-gauge">
+      <svg width="148" height="148" viewBox="0 0 148 148">
+        <circle cx="74" cy="74" r="64" fill="none" stroke="#222" stroke-width="12"/>
+        <circle id="eaGaugeFill" cx="74" cy="74" r="64" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" stroke-dasharray="402" stroke-dashoffset="402"/>
+      </svg>
+      <div class="ea-gauge-center">
+        <div class="ea-gauge-num" id="eaScoreNum">—</div>
+        <div class="ea-gauge-den">/ 100</div>
+      </div>
+    </div>
+    <div class="ea-gauge-rank" id="eaRankBadge">—</div>
+    <div class="ea-highlights">
+      <div class="ea-highlights-title">Highlights</div>
+      <div id="eaHighlightsList"></div>
+    </div>
+  </div>
+
+  <div class="ea-metric-grid" id="eaMetricGrid"></div>
+
+  <div id="eaBigCards"></div>
+
+  <div class="ea-card">
+    <div class="ea-card-title" id="eaStandOutTitle">What Makes This Stand Out</div>
+    <div id="eaStandOutList"></div>
+  </div>
+
+  <div class="ea-card">
+    <div class="ea-card-title" id="eaEnhanceTitle">How To Improve</div>
+    <div id="eaEnhanceList"></div>
+  </div>
+
+  <div class="ea-card">
+    <div class="ea-card-title" id="eaMatchTitle">Archetype Matches</div>
+    <div id="eaMatchList"></div>
+  </div>
+
+  <div class="ea-banner">
+    <div class="ea-banner-title" id="eaBannerTitle">Your Unique Look</div>
+    <div class="ea-banner-text" id="eaBannerText">Every measurement here is just one part of what makes you distinctly you. Small, consistent habits can sharpen what's already working in your favor.</div>
+    <div class="ea-banner-sign">Keep shining ♡</div>
+  </div>
+
+</div>
+
+<script>
+// ── Condensed trait reference info (mirrors improve.html's per-area trait dictionaries) ──
+const TRAIT_INFO = {
+  // Eyes
+  canthalTilt: { name:'Outer Tilt', icon:'✨',
+    detected:{ elite:'Your outer eye corners sit significantly higher than the inner corners, creating a strong, naturally dominant gaze.', great:'Clear positive tilt that gives your eye area a structured, attractive quality.', good:'A slight positive tilt subtly enhances the intensity of your eye area.', avg:'A neutral canthal angle — even, but without the extra lift that adds intensity.', weak:'A softer canthal angle gives your eyes a more relaxed, approachable look.' },
+    potential:{ elite:'Already elite — structural and locked in.', great:'Structural. Focus your effort elsewhere.', good:'Structural trait — maintain and maximize other improvable areas.', avg:'This is anatomical; improvements elsewhere will compensate.', weak:'Structural and not changeable non-surgically — maximizing other traits matters more here.' } },
+  eyeShape: { name:'Eye Shape', icon:'👁',
+    detected:{ elite:'A near-perfect almond shape with excellent horizontal proportion.', great:'A strong almond tendency with good proportions.', good:'A shape that leans toward almond without being fully rounded.', avg:'A rounder shape that is functional but less structured than almond eyes.', weak:'A round/irregular shape that softens structural impact.' },
+    potential:{ elite:'Already elite — nothing to change.', great:'Largely structural — maintain.', good:'Structural — focus on other improvable traits.', avg:'Structural and can\'t be changed without surgery.', weak:'Structural — maximize other improvable traits to compensate.' } },
+  eyeExposure: { name:'Eye Size', icon:'💧',
+    detected:{ elite:'Minimal scleral exposure with a compact, well-protected eye appearance.', great:'Good containment with low scleral show and strong framing.', good:'Adequate exposure with reasonable containment.', avg:'Moderate exposure that is functional but not especially tight.', weak:'Higher exposure creates a more open, less intense look.' },
+    potential:{ elite:'Already optimal.', great:'Minor gains possible via sleep and reduced puffiness.', good:'Sleep, hydration, and reduced inflammation can tighten this slightly.', avg:'Puffiness reduction through sleep and lower sodium can improve containment.', weak:'Sleep, hydration, and body-fat reduction offer the most improvement here.' } },
+  upperEyelidExposure: { name:'Lid Coverage', icon:'🌙',
+    detected:{ elite:'Minimal upper eyelid visible — a heavier, more intense "hunter eyes" look.', great:'Low eyelid exposure adding structure and intensity.', good:'Moderate eyelid presence within a normal range.', avg:'A visible upper eyelid that softens the eye area somewhat.', weak:'Higher eyelid exposure opens the eye and reduces structured intensity.' },
+    potential:{ elite:'Already elite — maintain.', great:'Minor gains via puffiness reduction.', good:'Puffiness reduction and slight body-fat loss can help moderately.', avg:'Body-fat reduction and less puffiness can visibly improve this.', weak:'Body-fat reduction is the primary lever; reduced puffiness also helps.' } },
+  eyeSpacing: { name:'Eye Spacing', icon:'📐',
+    detected:{ elite:'Near-ideal spacing — about one eye-width between inner corners.', great:'Good spacing contributing positively to facial balance.', good:'Spacing within the normal, acceptable range.', avg:'Slightly wide or narrow spacing with mild effect on harmony.', weak:'Noticeably wide or narrow spacing affecting proportion.' },
+    potential:{ elite:'Already ideal — structural.', great:'Structural — can\'t be changed.', good:'Structural feature.', avg:'Structural — anatomical.', weak:'Structural — focus on other traits instead.' } },
+  eyeSymmetry: { name:'Eye Symmetry', icon:'⚖️',
+    detected:{ elite:'Near-perfect left-right symmetry across height, width, and tilt.', great:'Strong symmetry with only natural minor variation.', good:'Adequate symmetry within a normal range.', avg:'Some noticeable left-right difference.', weak:'Clear asymmetry affecting overall harmony.' },
+    potential:{ elite:'Already elite.', great:'Maintain current symmetry.', good:'Posture and consistent sleep can slightly improve natural symmetry.', avg:'Reducing fatigue and consistent sleep can minimize puffiness-driven asymmetry.', weak:'Fatigue reduction and consistent posture can meaningfully reduce asymmetry.' } },
+  // Brows
+  eyebrowFraming: { name:'Facial Framing', icon:'〜',
+    detected:{ elite:'Brows create elite eye area framing — density, position, and shape maximize the visual power of the eye area.', great:'Strong framing that significantly enhances the eye area and overall facial impact.', good:'Solid framing that enhances the eyes, with room for optimization.', avg:'Moderate framing that provides basic eye definition but doesn\'t fully capitalize on potential.', weak:'Weak framing leaves the eye area underpowered.' },
+    potential:{ elite:'Already elite — maintain.', great:'Minor improvements across two or three traits will push framing to elite.', good:'Focused work on your weakest traits will noticeably strengthen overall framing.', avg:'Addressing position, density, and shape together will transform eye area framing.', weak:'Comprehensive improvement across all weak traits is required to unlock strong framing.' } },
+  eyebrowShape: { name:'Shape', icon:'🖊️',
+    detected:{ elite:'Near-perfect masculine shape — straight with the right amount of natural arch.', great:'Strong masculine shape that works well with your facial features.', good:'Mostly appropriate shape with minor refinements possible.', avg:'Shape is functional but lacks the clean angularity that maximizes impact.', weak:'Shape has characteristics that reduce overall impact.' },
+    potential:{ elite:'Already optimal — maintain definition.', great:'Minor edge cleanup could perfect the silhouette.', good:'Careful grooming of the lower edge can sharpen the line.', avg:'Shape can be substantially improved through professional grooming.', weak:'Shape optimization is your highest-leverage improvement.' } },
+  eyebrowPosition: { name:'Position', icon:'📍',
+    detected:{ elite:'Ideal proximity to the eye, creating natural intensity.', great:'Good brow position that frames the eyes strongly.', good:'Functional positioning that works well with your eye shape.', avg:'Standard positioning — neutral.', weak:'Higher brow placement creates distance from the eye, reducing intensity.' },
+    potential:{ elite:'Anatomical and already optimal.', great:'Anatomical — maintain as is.', good:'Largely anatomical.', avg:'Anatomical — other improvements compensate.', weak:'Anatomical — focus on maximizing other traits.' } },
+  eyebrowThickness: { name:'Thickness', icon:'🪥',
+    detected:{ elite:'High volume with strong visual presence and powerful eye framing.', great:'Above-average thickness, strong presence.', good:'Healthy thickness with room for further development.', avg:'Moderate thickness, adequate framing.', weak:'Below ideal, reducing visual impact.' },
+    potential:{ elite:'Minimal improvement needed.', great:'Small gains possible with growth serum.', good:'Noticeable improvement achievable with growth serum over 3–6 months.', avg:'Significant improvement possible through daily growth serum.', weak:'High improvement potential — growth serum and microblading can dramatically increase visual weight.' } },
+  eyebrowDensity: { name:'Density', icon:'🌾',
+    detected:{ elite:'Very dense with minimal to no visible gaps.', great:'Dense coverage with few gaps.', good:'Good density overall with minor gaps.', avg:'Moderate density with visible gaps.', weak:'Noticeable gaps and sparse patches.' },
+    potential:{ elite:'Already elite — maintain.', great:'Minor filling possible for perfection.', good:'Filling products or serum can close remaining gaps.', avg:'Growth serums and brow pencil can significantly increase density.', weak:'High potential via growth serum, microblading, and filling techniques.' } },
+  eyebrowLength: { name:'Length', icon:'📏',
+    detected:{ elite:'Full coverage extending slightly beyond the outer corner.', great:'Covers the full eye width with strong framing.', good:'Good length with adequate eye coverage.', avg:'Covers roughly the eye width but lacks extension.', weak:'Noticeably shorter than eye width.' },
+    potential:{ elite:'Already elite.', great:'Minor growth at the tails could perfect this.', good:'Growing the outer tail slightly would improve framing.', avg:'Tail growth would meaningfully increase framing width.', weak:'Growing tails before shaping is the priority.' } },
+  // Skin
+  acneScore: { name:'Acne', icon:'🧴',
+    detected:{ elite:'Completely clear — no active acne, no scars, no marks.', great:'Almost completely clear; very minor marks at most.', good:'Minor acne or fading marks, not distracting.', avg:'Noticeable acne or leftover marks across one or more zones.', weak:'Heavy or severe acne damage that is the primary visual detractor.' },
+    potential:{ elite:'Already perfect — maintain current routine.', great:'Minor refinement possible with consistent cleansing and niacinamide.', good:'Salicylic acid cleanser, niacinamide, and vitamin C can clear remaining marks within weeks.', avg:'A structured routine — cleanser, niacinamide, vitamin C, SPF — can dramatically improve this in 4–8 weeks.', weak:'Proper cleansing, salicylic acid, niacinamide, retinol, and SPF can transform this in 6–12 weeks.' } },
+  textureScore: { name:'Texture', icon:'🔬',
+    detected:{ elite:'Exceptionally smooth with no bumps or irregularities.', great:'Smooth skin with only minor natural variation.', good:'Mostly smooth with some minor, non-distracting texture.', avg:'Noticeable roughness or bumpy areas affecting light reflection.', weak:'Significant texture irregularity that roughens the complexion surface.' },
+    potential:{ elite:'Already elite.', great:'Regular exfoliation and hydration maintain this level.', good:'Weekly exfoliation and consistent moisturizer improve texture over 6–8 weeks.', avg:'AHA/BHA exfoliant 2x/week plus retinol can significantly smooth texture in 2–3 months.', weak:'Chemical exfoliation and retinol are the primary tools — visible improvement within 8–12 weeks.' } },
+  toneEvenness: { name:'Tone Evenness', icon:'🎨',
+    detected:{ elite:'Perfectly uniform skin tone across all facial zones.', great:'Very even tone with only natural minor variation.', good:'Mostly even with one or two areas of minor variation.', avg:'Noticeable tone variation — patches of discoloration.', weak:'Significant unevenness with clear discoloration.' },
+    potential:{ elite:'Already elite.', great:'Vitamin C + SPF maintains this.', good:'Vitamin C, consistent SPF, and niacinamide improve further.', avg:'Vitamin C serum, niacinamide, and strict daily SPF can meaningfully even tone in 6–10 weeks.', weak:'Vitamin C, azelaic acid, niacinamide, and strict SPF use are the most effective — improvement within 8–12 weeks.' } },
+  skinGlow: { name:'Glow', icon:'✨',
+    detected:{ elite:'Exceptional radiance — natural luminosity that photographs well.', great:'A healthy, visible glow that elevates the complexion.', good:'Some natural glow present; the skin looks reasonably healthy.', avg:'Average vibrancy — fine but lacking a noticeable sheen.', weak:'Dull, flat skin that absorbs light rather than reflecting it.' },
+    potential:{ elite:'Already elite.', great:'Hydration and antioxidants maintain this.', good:'Vitamin C serum and better sleep quality can push this to great.', avg:'Vitamin C, improved sleep, water intake, and antioxidants can visibly improve glow in 3–6 weeks.', weak:'Sleep, hydration, vitamin C, and dietary changes are most impactful — visible within 2–4 weeks.' } },
+};
+const RANK_LEVEL = s => s>=9?'elite':s>=8?'great':s>=7?'good':s>=6?'avg':'weak';
+function pct10(v){ return Math.round(Math.max(0,Math.min(10,v))*10); }
+function rank100(score100){
+  if(score100>=90) return {label:'Excellent', color:'#a3e635'};
+  if(score100>=80) return {label:'Great',     color:'#22c55e'};
+  if(score100>=70) return {label:'Good',      color:'#60a5fa'};
+  if(score100>=60) return {label:'Average',   color:'#facc15'};
+  if(score100>=50) return {label:'Below Average', color:'#f97316'};
+  return {label:'Needs Work', color:'#f87171'};
+}
+function avg(arr){ const n=arr.filter(v=>typeof v==='number'&&!isNaN(v)); return n.length? n.reduce((a,b)=>a+b,0)/n.length : null; }
+
+// ── Per-area configuration ──
+const AREA_CONFIG = {
+  eyes: {
+    title:'EYES', storageKey:'protocol_eye_results', scoreField:'eyeScore',
+    traitKeys:['canthalTilt','eyeShape','eyeExposure','upperEyelidExposure','eyeSpacing','eyeSymmetry'],
+    defaultTraits:{ canthalTilt:7.6, eyeShape:8.1, eyeExposure:7.4, upperEyelidExposure:7.9, eyeSpacing:8.0, eyeSymmetry:8.3 },
+    metricKeys:['eyeShape','eyeExposure','canthalTilt'],
+    standOutTitle:'What Makes Your Eyes Stand Out', enhanceTitle:'Enhance Your Eyes', matchTitle:'Eye Archetype Matches',
+    bannerTitle:'Your Unique Eye Essence',
+    bannerText:'Every measurement here is just one part of what makes your eyes distinctly yours. Small, consistent habits can sharpen what\'s already working in your favor.',
+    archetypes:[{name:'Almond Hunter Eyes',color:'#a3e635'},{name:'Deep-Set Classic',color:'#60a5fa'},{name:'Striking Tilt Type',color:'#facc15'}],
+    geometryMode:'eyes',
+  },
+  brows: {
+    title:'BROWS', storageKey:'protocol_brow_results', scoreField:'eyebrowScore',
+    traitKeys:['eyebrowFraming','eyebrowShape','eyebrowPosition','eyebrowThickness','eyebrowDensity','eyebrowLength'],
+    defaultTraits:{ eyebrowFraming:7.5, eyebrowShape:7.8, eyebrowPosition:7.6, eyebrowThickness:7.2, eyebrowDensity:7.7, eyebrowLength:7.4 },
+    metricKeys:['eyebrowShape','eyebrowThickness','eyebrowDensity'],
+    standOutTitle:'What Makes Your Brows Stand Out', enhanceTitle:'Enhance Your Brows', matchTitle:'Brow Archetype Matches',
+    bannerTitle:'Your Unique Brow Frame',
+    bannerText:'Your brows are one of the most expressive parts of your face. A little consistent grooming and growth support goes a long way.',
+    archetypes:[{name:'Bold Straight Frame',color:'#a3e635'},{name:'Soft Arch Classic',color:'#60a5fa'},{name:'Defined Tail Type',color:'#facc15'}],
+    geometryMode:'browsCropUp',
+  },
+  skin: {
+    title:'SKIN', storageKey:'protocol_skin_results', scoreField:'skinScore',
+    traitKeys:['acneScore','textureScore','toneEvenness','skinGlow'],
+    defaultTraits:{ acneScore:7.5, textureScore:7.3, toneEvenness:7.6, skinGlow:7.2 },
+    metricKeys:['acneScore','textureScore','skinGlow'],
+    standOutTitle:'What Makes Your Skin Stand Out', enhanceTitle:'Enhance Your Skin', matchTitle:'Skin Archetype Matches',
+    bannerTitle:'Your Unique Complexion',
+    bannerText:'Skin quality responds quickly to consistency. A focused routine on your lowest-scoring traits will show results within weeks.',
+    archetypes:[{name:'Clear Even Complexion',color:'#a3e635'},{name:'Natural Glow Type',color:'#60a5fa'},{name:'Smooth Texture Profile',color:'#facc15'}],
+    geometryMode:'full',
+  },
+  hair: {
+    title:'HAIR', storageKey:'protocol_hair_results', scoreField:'hairScore',
+    traitKeys:[], defaultTraits:{}, metricKeys:[],
+    standOutTitle:'What Makes Your Hair Stand Out', enhanceTitle:'Enhance Your Hair', matchTitle:'Hair Archetype Matches',
+    bannerTitle:'Your Unique Hair Profile',
+    bannerText:'The right cut for your face shape, paired with consistent care, makes the biggest visible difference over time.',
+    archetypes:[{name:'Sharp Classic Cut',color:'#a3e635'},{name:'Textured Modern Type',color:'#60a5fa'},{name:'Clean Low-Maintenance',color:'#facc15'}],
+    geometryMode:'full',
+  },
+};
+
+const params = new URLSearchParams(window.location.search);
+const areaKey = params.get('area') || localStorage.getItem('protocol_current_area') || 'eyes';
+const cfg = AREA_CONFIG[areaKey] || AREA_CONFIG.eyes;
+
+document.getElementById('eaTitle').textContent = cfg.title;
+document.getElementById('eaStandOutTitle').textContent = cfg.standOutTitle;
+document.getElementById('eaEnhanceTitle').textContent = cfg.enhanceTitle;
+document.getElementById('eaMatchTitle').textContent = cfg.matchTitle;
+document.getElementById('eaBannerTitle').textContent = cfg.bannerTitle;
+document.getElementById('eaBannerText').textContent = cfg.bannerText;
+
+let stored = {};
+try { stored = JSON.parse(localStorage.getItem(cfg.storageKey) || '{}'); } catch(e) {}
+
+const traits = {};
+cfg.traitKeys.forEach(k => { traits[k] = stored[k] != null ? parseFloat(stored[k]) : cfg.defaultTraits[k]; });
+
+let overall10;
+if (stored[cfg.scoreField] != null) overall10 = parseFloat(stored[cfg.scoreField]);
+else if (cfg.traitKeys.length) overall10 = avg(Object.values(traits));
+else overall10 = 7.4; // hair fallback (no granular traits)
+
+const score100 = Math.max(0, Math.min(100, Math.round(overall10 * 10)));
+const rk = rank100(score100);
+
+document.getElementById('eaScoreNum').textContent = score100;
+document.getElementById('eaScoreNum').style.color = rk.color;
+const badge = document.getElementById('eaRankBadge');
+badge.textContent = rk.label;
+badge.style.color = rk.color; badge.style.borderColor = rk.color; badge.style.background = rk.color + '18';
+const CIRC = 2*Math.PI*64;
+const fillEl = document.getElementById('eaGaugeFill');
+fillEl.setAttribute('stroke-dasharray', CIRC.toFixed(1));
+fillEl.style.transition = 'stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1)';
+requestAnimationFrame(() => { setTimeout(() => { fillEl.setAttribute('stroke-dashoffset', (CIRC*(1-score100/100)).toFixed(1)); }, 120); });
+
+const TAGLINES = {
+  Excellent: 'This is one of your strongest facial features — a clear standout.',
+  Great: 'A strong asset with just a few areas left to refine.',
+  Good: 'Solid structure with clear opportunities to sharpen further.',
+  Average: 'A balanced area with real room to improve with small changes.',
+  'Below Average': 'A few key levers here could meaningfully improve this area.',
+  'Needs Work': 'Several factors are limiting this area — addressing them could help a lot.',
+};
+document.getElementById('eaTagline').textContent = TAGLINES[rk.label] || '';
+
+// ── Highlights ──
+const sortedDesc = cfg.traitKeys.length ? Object.entries(traits).sort((a,b)=>b[1]-a[1]) : [];
+const highlightsList = document.getElementById('eaHighlightsList');
+sortedDesc.slice(0,3).forEach(([key,val]) => {
+  const info = TRAIT_INFO[key]; if(!info) return;
+  const row = document.createElement('div');
+  row.className = 'ea-highlight-item';
+  row.innerHTML = `<span class="chk">✓</span><span>${info.detected[RANK_LEVEL(val)]}</span>`;
+  highlightsList.appendChild(row);
+});
+if (!highlightsList.children.length) {
+  highlightsList.innerHTML = `<div class="ea-highlight-item"><span class="chk">✓</span><span>Your ${cfg.title.toLowerCase()} score reflects a solid overall baseline with room for targeted improvement.</span></div>`;
+}
+
+// ── Metric grid ──
+const METRIC_DIAGRAM_DEFAULT = '<svg viewBox="0 0 44 28" width="44" height="28"><circle cx="22" cy="14" r="9" fill="none" stroke="#a3e635" stroke-width="1.6"/><circle cx="22" cy="14" r="3.5" fill="#a3e635" opacity="0.85"/></svg>';
+const metricGrid = document.getElementById('eaMetricGrid');
+cfg.metricKeys.forEach(key => {
+  const val = traits[key]; if (val == null) return;
+  const p = pct10(val);
+  const card = document.createElement('div');
+  card.className = 'ea-metric-card';
+  card.innerHTML = `
+    <div class="ea-metric-diagram">${METRIC_DIAGRAM_DEFAULT}</div>
+    <div class="ea-metric-label">${(TRAIT_INFO[key]||{}).name || key}</div>
+    <div class="ea-metric-bar"><div class="ea-metric-bar-fill" style="width:${p}%"></div></div>
+    <div class="ea-metric-pct">${p}%</div>`;
+  metricGrid.appendChild(card);
+});
+
+// ── Big cards: geometry-driven for eyes, trait deep-dives otherwise ──
+const bigCardsWrap = document.getElementById('eaBigCards');
+function buildGenericBigCards() {
+  const picks = sortedDesc.length ? [sortedDesc[0], sortedDesc[sortedDesc.length-1]] : [];
+  picks.forEach(([key,val]) => {
+    const info = TRAIT_INFO[key]; if (!info) return;
+    const card = document.createElement('div');
+    card.className = 'ea-card';
+    card.innerHTML = `<div class="ea-card-title">${info.name}</div>
+      <div class="ea-spacing-row"><div><span class="ea-spacing-val">${pct10(val)}%</span></div>
+      <div class="ea-ratio-badge">${rank100(pct10(val)*1).label}</div></div>
+      <div class="ea-spacing-desc">${info.detected[RANK_LEVEL(val)]}</div>`;
+    bigCardsWrap.appendChild(card);
+  });
+}
+
+// ── Stand out / Enhance lists (generic, used by all areas) ──
+function fillStandOutEnhance() {
+  const standOutList = document.getElementById('eaStandOutList');
+  const enhanceList = document.getElementById('eaEnhanceList');
+  const ascSorted = cfg.traitKeys.length ? Object.entries(traits).sort((a,b)=>a[1]-b[1]) : [];
+  sortedDesc.filter(([,v]) => v >= 7).slice(0,4).forEach(([key,val]) => {
+    const info = TRAIT_INFO[key]; if (!info) return;
+    const row = document.createElement('div');
+    row.className = 'ea-list-item';
+    row.innerHTML = `<span class="bullet">●</span><span>${info.detected[RANK_LEVEL(val)]}</span>`;
+    standOutList.appendChild(row);
+  });
+  if (!standOutList.children.length) {
+    standOutList.innerHTML = `<div class="ea-list-item"><span class="bullet">●</span><span>This area shows balanced, healthy proportions overall.</span></div>`;
+  }
+  ascSorted.slice(0,3).forEach(([key,val]) => {
+    const info = TRAIT_INFO[key]; if (!info) return;
+    const row = document.createElement('div');
+    row.className = 'ea-tip';
+    row.innerHTML = `<div class="ea-tip-thumb">${info.icon||'✨'}</div>
+      <div class="ea-tip-text"><strong>${info.name}.</strong> ${info.potential[RANK_LEVEL(val)]}</div>`;
+    enhanceList.appendChild(row);
+  });
+  if (!enhanceList.children.length) {
+    enhanceList.innerHTML = `<div class="ea-tip"><div class="ea-tip-thumb">✂️</div><div class="ea-tip-text"><strong>Routine.</strong> Consistent care tailored to your face shape is the highest-leverage next step here.</div></div>`;
+  }
+}
+fillStandOutEnhance();
+
+// ── Archetype matches (fictional archetypes, not real people) ──
+const matchList = document.getElementById('eaMatchList');
+cfg.archetypes.forEach((a,i) => {
+  const m = Math.max(62, score100 - i*7 - Math.round(Math.random()*4));
+  const row = document.createElement('div');
+  row.className = 'ea-match-row';
+  row.innerHTML = `
+    <div class="ea-match-avatar" style="background:${a.color}">${a.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+    <div style="flex:1;"><div class="ea-match-name">${a.name}</div>
+      <div class="ea-match-bar"><div class="ea-match-bar-fill" style="width:${m}%;background:${a.color}"></div></div></div>
+    <div class="ea-match-pct" style="color:${a.color}">${m}%</div>`;
+  matchList.appendChild(row);
+});
+
+// ── Photo + (for eyes/brows) geometry detection ──
+const photoCard = document.getElementById('eaPhotoCard');
+const photoDataUrl = localStorage.getItem('protocol_photo');
+
+function showPlainPhoto() {
+  if (!photoDataUrl) {
+    photoCard.classList.add('empty');
+    photoCard.innerHTML = `<div>Upload a photo on the dashboard to see your annotated ${cfg.title.toLowerCase()} analysis.</div>`;
+  } else {
+    photoCard.innerHTML = `<img src="${photoDataUrl}" alt="Your ${cfg.title.toLowerCase()}"/>`;
+  }
+}
+
+if (cfg.geometryMode === 'full' || !photoDataUrl) {
+  showPlainPhoto();
+  buildGenericBigCards();
+} else {
+  // eyes or browsCropUp — both rely on /api/detect-eyes for real coordinates
+  photoCard.innerHTML = `<img src="${photoDataUrl}" alt="Your ${cfg.title.toLowerCase()}"/>`;
+
+  if (cfg.geometryMode === 'browsCropUp') {
+    buildGenericBigCards();
+  } else {
+    // eyes: spacing + symmetry cards
+    const spacingCard = document.createElement('div');
+    spacingCard.className = 'ea-card';
+    spacingCard.innerHTML = `<div class="ea-card-title">Eye Spacing</div>
+      <div class="ea-spacing-row"><div><span class="ea-spacing-val" id="eaSpacingVal">—</span><span class="ea-spacing-unit">ratio</span></div>
+      <div class="ea-ratio-badge" id="eaSpacingBadge">—</div></div>
+      <div class="ea-spacing-desc">Measures the distance between your eyes relative to eye width. The aesthetic ideal is close to a 1:1 ratio.</div>`;
+    const symCard = document.createElement('div');
+    symCard.className = 'ea-card';
+    symCard.innerHTML = `<div class="ea-card-title">Symmetry Analysis</div>
+      <div class="ea-sym-row">
+        <div class="ea-sym-col"><div class="ea-sym-pct" id="eaSymLeft">—</div><div class="ea-sym-label">Left Eye Match</div></div>
+        <div class="ea-sym-col"><div class="ea-sym-pct" id="eaSymRight">—</div><div class="ea-sym-label">Right Eye Match</div></div>
+      </div>
+      <div class="ea-sym-overall"><div class="ea-sym-overall-label">Overall Symmetry</div><div class="ea-sym-overall-val" id="eaSymOverall">—</div></div>`;
+    bigCardsWrap.appendChild(spacingCard);
+    bigCardsWrap.appendChild(symCard);
+  }
+
+  function fallbackSpacingSymmetry() {
+    const spacingVal = document.getElementById('eaSpacingVal');
+    if (!spacingVal) return;
+    const ratio = 1.0 + ((traits.eyeSpacing||8) - 8) * 0.04;
+    renderSpacing(ratio);
+    const symL = Math.min(99, 88 + Math.round(traits.eyeSymmetry||8));
+    const symR = Math.min(99, 86 + Math.round(traits.eyeSymmetry||8));
+    renderSymmetry(symL, symR);
+  }
+  function renderSpacing(ratio) {
+    const valEl = document.getElementById('eaSpacingVal'); if (!valEl) return;
+    valEl.textContent = ratio.toFixed(2);
+    const badgeEl = document.getElementById('eaSpacingBadge');
+    if (ratio >= 0.92 && ratio <= 1.08) { badgeEl.textContent='Ideal'; badgeEl.style.color='var(--accent)'; badgeEl.style.borderColor='var(--accent)'; }
+    else { badgeEl.textContent = ratio < 0.92 ? 'Narrow' : 'Wide'; badgeEl.style.color='#facc15'; badgeEl.style.borderColor='#facc15'; }
+  }
+  function renderSymmetry(symL, symR) {
+    const l = document.getElementById('eaSymLeft'); if (!l) return;
+    l.textContent = symL + '%';
+    document.getElementById('eaSymRight').textContent = symR + '%';
+    document.getElementById('eaSymOverall').textContent = Math.round((symL+symR)/2) + '% Match';
+  }
+  if (cfg.geometryMode === 'eyes') fallbackSpacingSymmetry();
+
+  (async () => {
+    try {
+      const m = photoDataUrl.match(/^data:(.*?);base64,(.*)$/);
+      if (!m) throw new Error('bad data url');
+      const mimeType = m[1] || 'image/jpeg', base64 = m[2];
+      const resp = await fetch('/api/detect-eyes', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ imageBase64: base64, mimeType })
+      });
+      const eyes = await resp.json();
+      if (!eyes || !eyes.leftEye || !eyes.rightEye || eyes.error) throw new Error('no eyes');
+
+      const img = new Image();
+      img.onload = () => {
+        const iw = img.naturalWidth, ih = img.naturalHeight;
+        const L = eyes.leftEye, R = eyes.rightEye;
+        const minX = Math.min(L.x, R.x), minY = Math.min(L.y, R.y);
+        const maxX = Math.max(L.x+L.w, R.x+R.w), maxY = Math.max(L.y+L.h, R.y+R.h);
+        const padX = (maxX-minX) * 0.35;
+        // Brows: extend the crop upward generously to include the eyebrows; eyes: balanced padding.
+        const padYTop = cfg.geometryMode === 'browsCropUp' ? (maxY-minY) * 2.2 : (maxY-minY) * 0.7;
+        const padYBottom = (maxY-minY) * (cfg.geometryMode === 'browsCropUp' ? 0.3 : 0.7);
+        const cx0 = Math.max(0, minX-padX), cy0 = Math.max(0, minY-padYTop);
+        const cx1 = Math.min(1, maxX+padX), cy1 = Math.min(1, maxY+padYBottom);
+        const sx = cx0*iw, sy = cy0*ih, sw = (cx1-cx0)*iw, sh = (cy1-cy0)*ih;
+
+        const canvas = document.createElement('canvas');
+        const outW = 640, outH = Math.round(outW * (sh/sw));
+        canvas.width = outW; canvas.height = outH;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
+        const cropUrl = canvas.toDataURL('image/jpeg', 0.92);
+        photoCard.innerHTML = `<img src="${cropUrl}" alt="Your ${cfg.title.toLowerCase()}, annotated"/>`;
+
+        if (cfg.geometryMode === 'eyes') {
+          function relPt(absX, absY) { return { left: ((absX-cx0)/(cx1-cx0))*100, top: ((absY-cy0)/(cy1-cy0))*100 }; }
+          const callouts = [
+            { label:'Upper Lid Curve', pt: relPt((L.x+L.w/2), L.y), side:'left' },
+            { label:'Lower Lid Curve', pt: relPt((R.x+R.w/2), R.y+R.h), side:'right' },
+            { label:'Eye Length', pt: relPt(R.x+R.w, R.y+R.h/2), side:'right' },
+            { label:'Interocular Distance', pt: relPt((L.x+L.w+R.x)/2, (L.y+L.h/2+R.y+R.h/2)/2), side:'left' },
+            { label:'Outer Tilt', pt: relPt(L.x, L.y+L.h/2), side:'left' },
+          ];
+          callouts.forEach(c => {
+            const el = document.createElement('div');
+            el.className = 'ea-callout ' + c.side;
+            el.style.left = Math.max(2,Math.min(78,c.pt.left)) + '%';
+            el.style.top = Math.max(4,Math.min(92,c.pt.top)) + '%';
+            el.innerHTML = c.side==='left'
+              ? `<span class="dot"></span><span class="line" style="width:18px;"></span><span>${c.label}</span>`
+              : `<span>${c.label}</span><span class="line" style="width:18px;"></span><span class="dot"></span>`;
+            photoCard.appendChild(el);
+          });
+
+          const innerGap = R.x - (L.x+L.w);
+          const avgEyeW = (L.w+R.w)/2;
+          const ratio = avgEyeW > 0 ? Math.max(0.5, Math.min(1.6, innerGap/avgEyeW)) : 1.0;
+          renderSpacing(ratio);
+          const wDiff = Math.abs(L.w-R.w)/Math.max(L.w,R.w);
+          const hDiff = Math.abs(L.h-R.h)/Math.max(L.h,R.h);
+          const symL = Math.round(100 - wDiff*100), symR = Math.round(100 - hDiff*100);
+          renderSymmetry(Math.max(40,Math.min(100,symL)), Math.max(40,Math.min(100,symR)));
+        }
+      };
+      img.src = photoDataUrl;
+    } catch (e) {
+      // Keep the plain (uncropped) photo + any fallback values already rendered.
+    }
+  })();
+}
+</script>
+</body>
+</html>

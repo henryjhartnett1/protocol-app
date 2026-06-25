@@ -28,8 +28,6 @@ header{
 .header-logo-text{font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#fff;}
 .header-right{display:flex;align-items:center;gap:14px;}
 .streak-badge{display:flex;align-items:center;gap:6px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--gold);}
-.notif-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border2);background:var(--bg1);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;}
-.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);}
 .avatar{width:34px;height:34px;border-radius:50%;background:var(--bg2);border:2px solid var(--border2);overflow:hidden;cursor:pointer;}
 
 /* ── LAYOUT ── */
@@ -97,6 +95,7 @@ header{
 .opp-bar-fill{height:100%;background:var(--accent);border-radius:2px;}
 .opp-btn{width:100%;padding:7px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;font-size:10px;font-weight:700;color:var(--text);cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;}
 .opp-btn:hover{background:var(--accent);color:#000;border-color:var(--accent);}
+.opp-btn.visited{background:var(--accent);color:#000;border-color:var(--accent);}
 .view-all-btn{width:100%;margin-top:10px;padding:12px;background:var(--bg1);border:1px solid var(--border);border-radius:8px;font-size:11px;font-weight:700;color:var(--muted2);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all 0.15s;}
 .view-all-btn:hover{border-color:rgba(163,230,53,0.3);color:var(--text);}
 
@@ -205,6 +204,38 @@ header{
   100%{opacity:0;transform:translateY(100vh) rotate(720deg);}
 }
 
+/* ── ALL AREAS OVERLAY ── */
+#allAreasOverlay{
+  position:fixed;inset:0;z-index:850;display:none;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);
+  align-items:flex-start;justify-content:center;
+  padding:60px 20px;overflow-y:auto;
+}
+.aa-panel{width:100%;max-width:760px;background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.aa-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.aa-title{font-size:15px;font-weight:900;color:var(--text);letter-spacing:-0.3px;}
+.aa-close{width:30px;height:30px;border-radius:50%;background:var(--bg1);border:1px solid var(--border);color:var(--muted2);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;}
+.aa-close:hover{color:var(--text);border-color:var(--border2);}
+
+/* ── ARRIVAL PROMPT OVERLAY ── */
+#arrivalOverlay{
+  position:fixed;inset:0;z-index:900;display:none;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+.arrival-panel{width:100%;max-width:340px;background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:28px 24px;text-align:center;}
+.arrival-icon-wrap{width:64px;height:64px;border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:30px;background:var(--bg1);border:1px solid var(--border);overflow:hidden;}
+.arrival-icon-wrap img{width:100%;height:100%;object-fit:cover;}
+.arrival-question{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-0.2px;margin-bottom:4px;}
+.arrival-sub{font-size:12px;color:var(--muted);margin-bottom:22px;}
+.arrival-btns{display:flex;gap:10px;}
+.arrival-btn{flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;transition:all .15s;border:1px solid var(--border);}
+.arrival-btn-no{background:var(--bg1);color:var(--text);}
+.arrival-btn-no:hover{border-color:var(--border2);}
+.arrival-btn-yes{background:var(--accent);color:#000;border-color:var(--accent);}
+.arrival-btn-yes:hover{background:#b8ff00;}
+
 /* Placeholder image colors */
 .ph-skin{background:linear-gradient(135deg,#3d2b1f,#5c3a24);}
 .ph-eye{background:linear-gradient(135deg,#1a2744,#2a3f6b);}
@@ -243,11 +274,7 @@ header{
   </div>
   <div class="header-right">
     <div class="streak-badge" id="streakBadge">🔥 <span id="streakText">0 Day Streak</span></div>
-    <div class="notif-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <div class="notif-dot"></div>
-    </div>
-    <div class="avatar">
+    <div class="avatar" id="headerAvatar" onclick="window.location.href='/profile'" style="cursor:pointer;overflow:hidden;">
       <div style="width:100%;height:100%;background:linear-gradient(135deg,#374151,#4b5563);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#9ca3af;">H</div>
     </div>
   </div>
@@ -271,7 +298,7 @@ header{
               <path d="M12 90 Q15 72 25 65 Q35 58 45 58 Q55 58 65 65 Q75 72 78 90 Q60 102 30 102 Z" fill="#9ca3af"/>
             </svg>
           </div>
-          <button class="retake-btn" onclick="window.location.href='/'"
+          <button class="retake-btn" onclick="retakePhoto()"
             style="z-index:3;position:absolute;bottom:8px;left:50%;transform:translateX(-50%)">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M20.39 18.39A5 5 0 0 1 18 19H6a5 5 0 0 1-4.77-3.53L1 14H4a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3h3l-.23 1.11zM20 7h-3.09l-1.41-2H8.5L7.09 7H4a2 2 0 0 0-2 2v8"/><circle cx="12" cy="13" r="3"/></svg>
             Retake Photo
@@ -346,7 +373,7 @@ header{
       <div class="opps-grid" id="oppsGrid">
         <!-- populated by renderScanData() -->
       </div>
-      <button class="view-all-btn">View All Areas <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+      <button class="view-all-btn" onclick="openAllAreas()">View All Areas <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
     </div>
 
     <!-- FACE AREAS -->
@@ -376,9 +403,20 @@ header{
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     <span>Tasks</span>
   </div>
-  <div class="nav-item">
+  <div class="nav-item" onclick="window.location.href='/profile'">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     <span>Profile</span>
+  </div>
+</div>
+
+<!-- ALL AREAS OVERLAY -->
+<div id="allAreasOverlay">
+  <div class="aa-panel">
+    <div class="aa-header">
+      <span class="aa-title">All Face Areas</span>
+      <div class="aa-close" onclick="closeAllAreas()">✕</div>
+    </div>
+    <div class="opps-grid" id="allAreasGrid"></div>
   </div>
 </div>
 
@@ -388,12 +426,12 @@ header{
     <div class="lu-label">LEVEL UP</div>
     <div class="lu-level-row">
       <div class="lu-lvl-box">
-        <div class="lu-lvl-num old">1</div>
+        <div class="lu-lvl-num old" id="luOldLevel">1</div>
         <div class="lu-lvl-label">Previous</div>
       </div>
       <div class="lu-arrow">→</div>
       <div class="lu-lvl-box">
-        <div class="lu-lvl-num new">2</div>
+        <div class="lu-lvl-num new" id="luNewLevel">2</div>
         <div class="lu-lvl-label">New Level</div>
       </div>
     </div>
@@ -404,11 +442,47 @@ header{
   </div>
 </div>
 
+<!-- ARRIVAL PROMPT OVERLAY -->
+<div id="arrivalOverlay">
+  <div class="arrival-panel">
+    <div class="arrival-icon-wrap" id="arrivalIcon"></div>
+    <div class="arrival-question" id="arrivalQuestion">Has it arrived?</div>
+    <div class="arrival-sub">Let us know so we can add it to your routine.</div>
+    <div class="arrival-btns">
+      <button class="arrival-btn arrival-btn-no" onclick="answerArrival(false)">Not Yet</button>
+      <button class="arrival-btn arrival-btn-yes" onclick="answerArrival(true)">Yes, It's Here</button>
+    </div>
+  </div>
+</div>
+
 <script>
+// ── Stripe checkout return handling ──────────────────────────────────────
+// success_url/cancel_url from /api/create-checkout-session both land here.
+// There's no user-account backend in this app (everything lives in
+// localStorage), so a real install should verify the subscription server-side
+// via a Stripe webhook before trusting this. For now we trust the redirect:
+// a "checkout=success" query param means Stripe Checkout completed, so we
+// flag the user as subscribed and clean the URL.
+(function handleCheckoutReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const checkout = params.get('checkout');
+  if (checkout === 'success') {
+    try { localStorage.setItem('protocol_subscribed', 'true'); } catch(e) {}
+  }
+  if (checkout) {
+    params.delete('checkout');
+    const rest = params.toString();
+    window.history.replaceState({}, '', window.location.pathname + (rest ? '?' + rest : ''));
+  }
+})();
+
 // ── STATE ──
 const DEFAULT_STATE = {
-  level: 1, xp: 0, xpForLevel: 100,
-  streak: 0, completedAreas: [], onboardingDone: false,
+  level: 1, xp: 0, xpForLevel: 50,
+  streak: 0, lastActiveDate: null, lastCompleteDateKey: '',
+  completedAreas: [], onboardingDone: false,
+  improvedAreas: [], // areas whose "Improve Now" button has been clicked at least once
+  allAreasLevelUpGiven: false, // whether the one-time "clicked every section" level-up has fired
 };
 
 function loadState() {
@@ -419,6 +493,137 @@ function loadState() {
 }
 function saveState() { localStorage.setItem('protocol_state', JSON.stringify(state)); }
 let state = loadState();
+
+// ── XP / LEVEL ENGINE (shared logic — mirrored in tasks.html) ──
+// XP required to clear a level grows linearly: level N needs N*100 XP.
+// XP required to clear each level: 50, 100, 200, 400, 500, 600, 700, 800,
+// 900, 1000 — then stays at 1000 for every level after that.
+const XP_LEVEL_TABLE = [50, 100, 200, 400, 500, 600, 700, 800, 900, 1000];
+function xpNeeded(level) { return XP_LEVEL_TABLE[level - 1] || 1000; }
+
+// XP awarded the first time a user clicks "Improve Now" on one of the 5
+// face-area sections. Derived from the XP needed to clear level 1 (the
+// level-2 threshold), split evenly across the 5 sections, then split again
+// so a single section's first click is only a fifth of its own share.
+const IMPROVE_NOW_XP = Math.round(xpNeeded(1) / 5 / 5);
+
+// Adds XP to state, rolling over into as many level-ups as the XP covers.
+// Returns { leveledUp, fromLevel, toLevel } so callers can react (toast/overlay).
+function addXP(amount) {
+  const fromLevel = state.level;
+  state.xp += amount;
+  while (state.xp >= state.xpForLevel) {
+    state.xp -= state.xpForLevel;
+    state.level++;
+    state.xpForLevel = xpNeeded(state.level);
+  }
+  saveState();
+  return { leveledUp: state.level > fromLevel, fromLevel, toLevel: state.level };
+}
+
+// ── PENDING ARRIVALS ("Has it arrived?" daily prompt) ──
+// tasks.html queues an item here the moment the user checks off its "Buy X"
+// task — they've purchased it but don't have it in hand yet. Every time the
+// dashboard loads, we ask about each queued item at most once per day until
+// they confirm "Yes", at which point it's promoted to 'have' in
+// protocol_plan_state so it starts showing up as a real task.
+let arrivalQueue = [];
+
+function getPendingArrivals() {
+  try { return JSON.parse(localStorage.getItem('protocol_pending_arrivals') || '{}'); } catch(e){ return {}; }
+}
+function savePendingArrivals(obj) {
+  localStorage.setItem('protocol_pending_arrivals', JSON.stringify(obj));
+}
+function getPlanState() {
+  try { return JSON.parse(localStorage.getItem('protocol_plan_state') || '{}'); } catch(e){ return {}; }
+}
+function savePlanState(obj) {
+  localStorage.setItem('protocol_plan_state', JSON.stringify(obj));
+}
+function arrivalIconHtml(icon) {
+  if (typeof icon === 'string' && /\.(png|jpe?g|webp|svg|gif)$/i.test(icon)) return `<img src="${icon}" alt="">`;
+  return icon || '📦';
+}
+
+function checkPendingArrivals() {
+  const today = dateKeyOf(new Date());
+  const pending = getPendingArrivals();
+  arrivalQueue = Object.keys(pending).filter(realId => pending[realId].askedDateKey !== today);
+  if (arrivalQueue.length) showNextArrivalPrompt();
+}
+
+function showNextArrivalPrompt() {
+  if (!arrivalQueue.length) {
+    document.getElementById('arrivalOverlay').style.display = 'none';
+    return;
+  }
+  const realId = arrivalQueue[0];
+  const pending = getPendingArrivals();
+  const item = pending[realId];
+  if (!item) { arrivalQueue.shift(); showNextArrivalPrompt(); return; }
+  document.getElementById('arrivalIcon').innerHTML = arrivalIconHtml(item.icon);
+  document.getElementById('arrivalQuestion').textContent = `Has your ${item.name} arrived?`;
+  document.getElementById('arrivalOverlay').style.display = 'flex';
+}
+
+function answerArrival(arrived) {
+  const realId = arrivalQueue.shift();
+  if (realId) {
+    const pending = getPendingArrivals();
+    if (pending[realId]) {
+      if (arrived) {
+        // They have it now — promote to 'have' so it starts appearing as a
+        // real daily/weekly task on the Tasks page, and stop asking about it.
+        const planState = getPlanState();
+        planState[realId] = 'have';
+        savePlanState(planState);
+        delete pending[realId];
+      } else {
+        // Still waiting — ask again tomorrow, not again today.
+        pending[realId].askedDateKey = dateKeyOf(new Date());
+      }
+      savePendingArrivals(pending);
+    }
+  }
+  showNextArrivalPrompt();
+}
+
+// ── DAILY STREAK ──
+function dateKeyOf(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+// Call when the user completes every task for the day — increments the
+// streak if yesterday or today was already the last completion, resets to 1
+// otherwise. Shared by dashboard + tasks pages via the same localStorage state.
+function registerDailyCompletion() {
+  const today = dateKeyOf(new Date());
+  if (state.lastCompleteDateKey === today) return; // already counted today
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const yKey = dateKeyOf(yesterday);
+  if (state.lastCompleteDateKey === yKey || state.lastCompleteDateKey === '') {
+    state.streak++;
+  } else {
+    state.streak = 1;
+  }
+  state.lastCompleteDateKey = today;
+  saveState();
+}
+
+// Generic level-up toast for level-ups that happen AFTER onboarding is done
+// (the big confetti overlay is reserved for the one-time "roadmap unlocked"
+// moment in finishLevelUp()).
+function showLevelUpToast(toLevel) {
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:9999;background:var(--bg2);border:1px solid var(--accent);color:var(--accent);font-weight:800;font-size:13px;padding:10px 18px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,0.4);opacity:0;transition:all .35s ease;white-space:nowrap;';
+  toast.textContent = '🎉 Level Up! You\'re now Level ' + toLevel;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; });
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(-20px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 2600);
+}
 
 const ONBOARDING_TASKS = [
   { id:'hair',  icon:'💈', name:'Improve Hair',       sub:'Build your hair roadmap',       area:'hair',  xp:25 },
@@ -444,12 +649,68 @@ const REAL_TASKS = {
 };
 
 // ── NAVIGATION ──
-function goImprove(area) {
-  localStorage.setItem('protocol_current_area', area);
-  window.location.href = '/improve?area=' + area;
+function openAllAreas() {
+  const grid = document.getElementById('allAreasGrid');
+  if (grid) grid.innerHTML = (window._renderOppCards || (()=>'') )(window._oppDataFull || []);
+  document.getElementById('allAreasOverlay').style.display = 'flex';
 }
 
+function closeAllAreas() {
+  document.getElementById('allAreasOverlay').style.display = 'none';
+}
+
+// All "Improve Now" sections — once every one of these has been clicked at
+// least once, the user gets a single full level-up (not per-click).
+const ALL_IMPROVE_AREAS = ['skin', 'eyes', 'brows', 'hair', 'jaw'];
+
+function goImprove(area, showAnalysis) {
+  localStorage.setItem('protocol_current_area', area);
+  const dest = '/improve?area=' + area + (showAnalysis ? '&showAnalysis=1' : '');
+  let justCompletedAll = false;
+  if (area && !state.improvedAreas.includes(area)) {
+    state.improvedAreas.push(area);
+    const allDone = ALL_IMPROVE_AREAS.every(a => state.improvedAreas.includes(a));
+    if (allDone && !state.allAreasLevelUpGiven) {
+      state.allAreasLevelUpGiven = true;
+      state.level++;
+      state.xpForLevel = xpNeeded(state.level);
+      justCompletedAll = true;
+    }
+    saveState();
+  }
+  if (justCompletedAll) {
+    showLevelUpToast(state.level);
+    setTimeout(() => { window.location.href = dest; }, 700);
+  } else {
+    window.location.href = dest;
+  }
+}
+
+function retakePhoto() {
+  if (!confirm('Are you sure you want to retake your photo? This will restart your analysis from the very beginning.')) return;
+  try {
+    Object.keys(localStorage).forEach(k => { if (k.indexOf('protocol_') === 0) localStorage.removeItem(k); });
+  } catch(e) {}
+  window.location.href = '/';
+}
+window.retakePhoto = retakePhoto;
+
 // ── RENDER ──
+function renderHeaderAvatar() {
+  const photo = localStorage.getItem('protocol_photo');
+  const avatarEl = document.getElementById('headerAvatar');
+  if (photo && avatarEl) {
+    avatarEl.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = photo;
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    img.style.display = 'block';
+    avatarEl.appendChild(img);
+  }
+}
+
 function renderProfile() {
   document.getElementById('levelNum').textContent    = state.level;
   document.getElementById('nextLevelNum').textContent = state.level + 1;
@@ -562,10 +823,15 @@ function animateXPGain(fromEl, xpAmount, callback) {
 
   setTimeout(() => {
     floater.remove();
-    // Update XP
-    state.xp = Math.min(state.xp + xpAmount, state.xpForLevel);
-    saveState();
+    // Update XP — may roll over into one or more level-ups
+    const wasOnboardingDone = state.onboardingDone;
+    const result = addXP(xpAmount);
     renderProfile();
+    if (result.leveledUp && wasOnboardingDone) {
+      // Onboarding's own level-up is handled by the confetti overlay elsewhere;
+      // any later level-up just gets a lightweight toast.
+      showLevelUpToast(result.toLevel);
+    }
     if (callback) callback();
   }, 720);
 }
@@ -623,6 +889,8 @@ function updateObProgress() {
 
 // ── LEVEL UP ──
 function triggerLevelUp() {
+  document.getElementById('luOldLevel').textContent = state.level;
+  document.getElementById('luNewLevel').textContent = state.level + 1;
   const overlay = document.getElementById('levelUpOverlay');
   overlay.style.display = 'flex';
   spawnConfetti();
@@ -669,7 +937,55 @@ function renderScanData() {
   let browC = pv('browC'), browP = pv('browP'), browG = pv('browG');
   let skinC = pv('skinC'), skinP = pv('skinP'), skinG = pv('skinG');
   let hairC = pv('hairC'), hairP = pv('hairP'), hairG = pv('hairG');
+  let jawC  = pv('jawC'),  jawP  = pv('jawP'),  jawG  = pv('jawG');
   let overallC = pv('overallC'), overallP = pv('overallP'), overallG = pv('overallG');
+
+  // ── Jaw fallback: recompute from raw jaw results if no computed snapshot ──
+  // Jaw potential is NOT a tiered/measurement-based estimate — it's the sum of
+  // fixed contributions from every task in the user's actual jaw roadmap
+  // (mirrors the roadmap-sum logic in improve.html exactly).
+  if (jawC == null) {
+    let jd = {};
+    try { jd = JSON.parse(localStorage.getItem('protocol_jaw_results') || '{}'); } catch(e){}
+    function avgJaw(arr) {
+      const n = arr.map(parseFloat).filter(v => !isNaN(v));
+      return n.length ? Math.round(n.reduce((a,b)=>a+b,0)/n.length*10)/10 : null;
+    }
+    jawC = jd.jawScore != null ? parseFloat(jd.jawScore)
+           : avgJaw([jd.jawWidth,jd.jawDefinition,jd.chinProjection,jd.gonialAngle,jd.jawSymmetry,jd.neckJawSeparation,jd.facialLeanness]);
+    if (jawC != null) {
+      // Fixed value per jaw roadmap task — must stay in sync with TASK_VALUES
+      // in improve.html.
+      const JAW_TASK_VALUES = {
+        'jaw-d-water': 0.10, 'jaw-d-sodium': 0.10,
+        'jaw-w-cardio': 0.40, 'jaw-w-gum': 0.30,
+        'jaw-f-beard': 0.30, 'jaw-f-contour': 0.25, 'jaw-f-posture-photo': 0.10,
+        'jaw-a-filler': 0.50, 'jaw-a-submental': 0.50, 'jaw-a-skin': 0.30,
+        'jaw-d-kshami': 0.30, 'jaw-d-chintucks': 0.20, 'jaw-d-neckcurls': 0.45,
+        'jaw-d-lymphatic': 0.20, 'jaw-d-sugar': 0, 'jaw-a-igf1': 0.90,
+      };
+      // Same per-strength roadmaps as JAW_ROADMAP_DATA in improve.html.
+      const JAW_ROADMAP_IDS = {
+        jawWidth:          ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-beard','jaw-f-contour','jaw-a-skin','jaw-a-igf1'],
+        jawDefinition:     ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-contour','jaw-a-skin','jaw-a-submental','jaw-a-igf1'],
+        chinProjection:    ['jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-f-posture-photo','jaw-f-beard','jaw-a-filler','jaw-a-igf1'],
+        gonialAngle:       ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-w-gum','jaw-f-contour','jaw-f-beard','jaw-a-skin','jaw-a-igf1'],
+        jawSymmetry:       ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
+        neckJawSeparation: ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-contour','jaw-a-submental','jaw-a-igf1'],
+        facialLeanness:    ['jaw-d-sodium','jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-w-gum','jaw-a-skin','jaw-a-igf1'],
+      };
+      const _jawPriority = ['jawWidth','jawDefinition','chinProjection','gonialAngle','jawSymmetry','neckJawSeparation','facialLeanness'];
+      let _jawStrength = 'jawWidth', _jawBest = -1;
+      _jawPriority.forEach(k => {
+        const s = parseFloat(jd[k] ?? 0);
+        if (s > _jawBest) { _jawStrength = k; _jawBest = s; }
+      });
+      const _jawIds = JAW_ROADMAP_IDS[_jawStrength] || [];
+      const _jawSum = _jawIds.reduce((sum, id) => sum + (JAW_TASK_VALUES[id] || 0), 0);
+      jawG = Math.max(0, Math.round(Math.min(10 - jawC, _jawSum) * 10) / 10);
+      jawP = Math.round(Math.min(10, jawC + jawG)*10)/10;
+    }
+  }
 
   // ── Fallback: recompute from raw localStorage if no computed snapshot ────
   if (overallC == null) {
@@ -723,6 +1039,25 @@ function renderScanData() {
     skinP = (skinC!=null && skinG!=null) ? Math.round(Math.min(10,skinC+skinG)*10)/10 : null;
     hairP = (hairC!=null && hairG!=null) ? Math.round(Math.min(10,hairC+hairG)*10)/10 : null;
   }
+
+  // ── Recompute overall total potential to always include Jaw ──────────────
+  // glowai.html's cached snapshot (cs.overallC/overallG/overallP) was written
+  // before Jaw existed and never includes jaw fields, so it understates the
+  // real total once a user has gone through the Jaw Improve Now section. We
+  // always rebuild the overall figures here from the five individual area
+  // scores so Jaw is reflected everywhere the overall score is shown.
+  function weightedAvg(parts) {
+    const valid = parts.filter(([v]) => v != null);
+    if (!valid.length) return null;
+    const tw = valid.reduce((s,[,w]) => s + w, 0);
+    return Math.round(valid.reduce((s,[v,w]) => s + v * w, 0) / tw * 10) / 10;
+  }
+  // Weights mirror the original eye/skin/hair/brow split (0.35/0.30/0.20/0.15)
+  // scaled down by 20% to make room for jaw at 0.20, preserving relative weight.
+  const AREA_W = { eye: 0.28, skin: 0.24, jaw: 0.20, hair: 0.16, brow: 0.12 };
+  overallC = weightedAvg([[eyeC,AREA_W.eye],[skinC,AREA_W.skin],[jawC,AREA_W.jaw],[hairC,AREA_W.hair],[browC,AREA_W.brow]]);
+  overallG = weightedAvg([[eyeG,AREA_W.eye],[skinG,AREA_W.skin],[jawG,AREA_W.jaw],[hairG,AREA_W.hair],[browG,AREA_W.brow]]);
+  overallP = (overallC != null && overallG != null) ? Math.round(Math.min(10, overallC + overallG) * 10) / 10 : null;
 
   // Rank label (matches glowai.html RANK_TIERS)
   function rankLabel(score) {
@@ -790,43 +1125,51 @@ function renderScanData() {
     eyes:  { label:'Eyes',      area:'eyes',  icon:'👁', iconBg:'rgba(99,102,241,0.85)',   img:'/eye.png', svgHtml:`<svg width="70" height="40" viewBox="0 0 90 50" fill="none" opacity="0.35"><ellipse cx="45" cy="25" rx="35" ry="18" stroke="#60a5fa" stroke-width="2" fill="none"/><ellipse cx="45" cy="25" rx="12" ry="12" fill="#1e40af"/><circle cx="45" cy="25" r="6" fill="#1e3a8a"/></svg>` },
     brows: { label:'Eyebrows',  area:'brows', icon:'〜', iconBg:'rgba(163,230,53,0.85)',   img:'/eyebrow.png', svgHtml:`<svg width="80" height="30" viewBox="0 0 100 36" fill="none" opacity="0.4"><path d="M10 28 Q20 8 40 10 Q55 11 60 16" stroke="#8b7355" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M70 16 Q75 8 90 10 Q98 11 100 18" stroke="#8b7355" stroke-width="7" stroke-linecap="round" fill="none"/></svg>` },
     hair:  { label:'Hair',      area:'hair',  icon:'💈', iconBg:'rgba(20,184,166,0.85)',   img:'/hair.png', svgHtml:`<svg width="70" height="70" viewBox="0 0 80 80" fill="none" opacity="0.35"><path d="M10 45 Q8 20 40 15 Q72 20 70 45 Q72 25 60 20 Q50 16 40 16 Q30 16 20 20 Q8 25 10 45Z" fill="#5c4a2a"/><path d="M15 50 Q12 35 25 25 Q35 18 50 20 Q65 22 68 35 Q70 50 65 58" stroke="#4a3820" stroke-width="4" fill="none" stroke-linecap="round"/></svg>` },
+    jaw:   { label:'Jaw',       area:'jaw',   icon:'🦷', iconBg:'rgba(156,163,175,0.85)',  img:'/JAW.png', svgHtml:`<svg width="60" height="76" viewBox="0 0 70 90" fill="none" opacity="0.35"><path d="M10 10 Q10 50 18 68 Q28 82 35 84 Q42 82 52 68 Q60 50 60 10 Z" fill="#9ca3af"/><path d="M10 10 Q10 50 18 68 Q28 82 35 84 Q42 82 52 68 Q60 50 60 10" stroke="#6b7280" stroke-width="2" fill="none"/></svg>` },
   };
-  const oppData = [
+  const oppDataFull = [
     { key:'skin',  gain: skinG },
     { key:'eyes',  gain: eyeG  },
     { key:'brows', gain: browG },
     { key:'hair',  gain: hairG },
+    { key:'jaw',   gain: jawG  },
   ].filter(o => o.gain != null).sort((a,b) => b.gain - a.gain);
 
-  const oppsGrid = el('oppsGrid');
-  if (oppsGrid) {
-    if (!oppData.length) {
-      oppsGrid.innerHTML = '<div style="padding:24px;color:var(--muted);font-size:12px;text-align:center;">Run a face scan to see your opportunities.</div>';
-    } else {
-      const maxGain = Math.max(...oppData.map(o=>o.gain), 0.1);
-      oppsGrid.innerHTML = oppData.map((o,i) => {
-        const m = OPP_META[o.key];
-        const barW = Math.round((o.gain / maxGain) * 100);
-        const imgSrc = m.img || (scanPhoto || null);
-        const imgContent = imgSrc
-          ? `<img src="${imgSrc}" style="width:100%;height:120px;object-fit:cover;object-position:center;display:block;">`
-          : `<div style="height:120px;display:flex;align-items:center;justify-content:center;">${m.svgHtml}</div>`;
-        return `<div class="opp-card" onclick="goImprove('${m.area}')">
-          <div class="opp-img-wrap">
-            ${imgContent}
-            <div class="opp-rank">${i+1}</div>
-          </div>
-          <div class="opp-body">
-            <div class="opp-cat">${m.label}</div>
-            <div class="opp-gain-label">Potential Gain</div>
-            <div class="opp-gain-val">+${fmt(o.gain)}</div>
-            <div class="opp-bar-track"><div class="opp-bar-fill" style="width:${barW}%;"></div></div>
-            <button class="opp-btn">Improve Now</button>
-          </div>
-        </div>`;
-      }).join('');
+  window._oppDataFull = oppDataFull;
+  window._renderOppCards = renderOppCards;
+
+  function renderOppCards(list) {
+    if (!list.length) {
+      return '<div style="padding:24px;color:var(--muted);font-size:12px;text-align:center;">Run a face scan to see your opportunities.</div>';
     }
+    const maxGain = Math.max(...list.map(o=>o.gain), 0.1);
+    return list.map((o,i) => {
+      const m = OPP_META[o.key];
+      const barW = Math.round((o.gain / maxGain) * 100);
+      const imgSrc = m.img || (scanPhoto || null);
+      const imgContent = imgSrc
+        ? `<img src="${imgSrc}" style="width:100%;height:120px;object-fit:cover;object-position:center;display:block;">`
+        : `<div style="height:120px;display:flex;align-items:center;justify-content:center;">${m.svgHtml}</div>`;
+      const visited = state.improvedAreas.includes(m.area);
+      return `<div class="opp-card" onclick="goImprove('${m.area}')">
+        <div class="opp-img-wrap">
+          ${imgContent}
+          <div class="opp-rank">${i+1}</div>
+        </div>
+        <div class="opp-body">
+          <div class="opp-cat">${m.label}</div>
+          <div class="opp-gain-label">Potential Gain</div>
+          <div class="opp-gain-val">+${fmt(o.gain)}</div>
+          <div class="opp-bar-track"><div class="opp-bar-fill" style="width:${barW}%;"></div></div>
+          <button class="opp-btn${visited ? ' visited' : ''}">${visited ? 'View' : 'Improve Now'}</button>
+        </div>
+      </div>`;
+    }).join('');
   }
+
+  // Main "Top Opportunities" only ever shows the top 4 biggest gains.
+  const oppsGrid = el('oppsGrid');
+  if (oppsGrid) oppsGrid.innerHTML = renderOppCards(oppDataFull.slice(0, 4));
 
   // ── Face Areas ──
   const AREA_ROWS = [
@@ -834,6 +1177,7 @@ function renderScanData() {
     { key:'brows', label:'Eyebrows',     icon:'〜', area:'brows', score: browC },
     { key:'eyes',  label:'Eyes',         icon:'👁', area:'eyes',  score: eyeC  },
     { key:'hair',  label:'Hair',         icon:'💈', area:'hair',  score: hairC },
+    { key:'jaw',   label:'Jaw',          icon:'🦷', area:'jaw',   score: jawC  },
   ];
   const faceGrid = el('faceAreasGrid');
   if (faceGrid) {
@@ -842,7 +1186,7 @@ function renderScanData() {
       const scoreStr  = hasData ? fmt(r.score) + ' / 10' : '— / 10';
       const barWidth  = hasData ? Math.round(r.score/10*100) + '%' : '0%';
       const cls       = hasData ? barClass(r.score) : 'low';
-      return `<div class="face-area-row" onclick="goImprove('${r.area}')">
+      return `<div class="face-area-row" onclick="goImprove('${r.area}', true)">
         <span class="fa-icon">${r.icon}</span>
         <span class="fa-label">${r.label}</span>
         <div class="fa-score-track">
@@ -857,6 +1201,7 @@ function renderScanData() {
 // ── ON LOAD ──
 window.addEventListener('load', () => {
   renderProfile();
+  renderHeaderAvatar();
   renderSidebar();
   renderScanData();
 
@@ -866,6 +1211,9 @@ window.addEventListener('load', () => {
     localStorage.removeItem('protocol_area_just_completed');
     setTimeout(() => completeArea(justCompleted), 400);
   }
+
+  // "Has it arrived?" prompts for anything bought but not yet confirmed in hand
+  checkPendingArrivals();
 });
 
 // Dev reset — triple-click the logo to wipe state and reload

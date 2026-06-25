@@ -30,8 +30,9 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 
 /* ── WEEK SELECTOR ── */
 .week-wrap{position:fixed;top:56px;left:0;right:0;z-index:99;background:var(--bg);padding:12px 16px 10px;border-bottom:1px solid var(--border);}
-.week-row{display:flex;justify-content:space-between;gap:4px;}
-.day-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 2px;border-radius:12px;transition:background .15s;}
+.week-row{display:flex;gap:4px;overflow-x:auto;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.week-row::-webkit-scrollbar{display:none;}
+.day-btn{flex:0 0 auto;width:42px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 2px;border-radius:12px;transition:background .15s;}
 .day-btn:hover{background:var(--bg2);}
 .day-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
 .day-num{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--muted2);transition:all .2s;}
@@ -55,9 +56,13 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 
 /* ── TODAY HEADER ── */
 .today-header{margin-bottom:12px;}
+.today-header-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .today-label{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--purple-light,#a78bfa);margin-bottom:4px;}
 .today-date{font-size:26px;font-weight:900;color:#fff;letter-spacing:-0.5px;margin-bottom:2px;}
 .today-sub{font-size:12px;color:var(--muted2);font-weight:500;}
+.edit-tasks-btn{flex-shrink:0;padding:9px 18px;border-radius:20px;background:var(--bg2);border:1px solid var(--border2);color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.edit-tasks-btn:hover{border-color:var(--muted2);}
+.edit-tasks-btn.active{background:var(--red);border-color:var(--red);color:#fff;}
 
 /* ── TASK LIST ── */
 .task-list{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin-bottom:14px;}
@@ -75,14 +80,29 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
   30%{opacity:1;transform:translateX(8px);background:rgba(34,197,94,0.08);}
   100%{opacity:0;transform:translateX(20px);max-height:0;padding:0 16px;}
 }
-.task-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:var(--bg3);}
+.task-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:var(--bg3);overflow:hidden;}
+.task-icon-img{width:100%;height:100%;object-fit:cover;border-radius:inherit;}
 .task-body{flex:1;min-width:0;}
 .task-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px;}
+.task-price{font-size:12px;font-weight:700;color:#a855f7;}
 .task-desc{font-size:12px;color:var(--muted2);line-height:1.3;}
 .task-circle{width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;background:transparent;}
 .task-circle.done{background:var(--green);border-color:var(--green);}
 .task-circle svg{opacity:0;transform:scale(0.5);transition:all .2s;}
 .task-circle.done svg{opacity:1;transform:scale(1);}
+.task-circle.edit-remove{background:var(--red);border-color:var(--red);cursor:pointer;}
+.task-circle.edit-remove svg{opacity:1;transform:scale(1);}
+.task-circle.add-back{background:var(--green);border-color:var(--green);cursor:pointer;}
+.task-circle.add-back svg{opacity:1;transform:scale(1);}
+
+.purchase-cat:last-child .purchase-cat-header{border-bottom:none;}
+.purchase-arrow{font-size:22px;line-height:1;color:var(--muted);flex-shrink:0;display:inline-block;transition:transform .2s;transform:rotate(180deg);}
+.purchase-arrow.open{transform:rotate(0deg);}
+.purchase-cat-items{display:none;background:var(--bg1,#0d0d10);}
+.purchase-cat-items.open{display:block;}
+.purchase-cat-items .task-item{padding-left:40px;position:relative;}
+.purchase-cat-items .task-item::before{content:'•';position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--muted2);font-size:18px;}
+.purchase-cat-items .task-item:last-child{border-bottom:none;}
 
 /* ── MOBILE ── */
 @media (max-width: 380px) {
@@ -194,8 +214,8 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .nav-item svg{opacity:0.4;}
 .nav-item span{font-size:10px;font-weight:600;letter-spacing:0.5px;color:var(--muted);text-transform:capitalize;}
 .nav-item.active svg{opacity:1;}
-.nav-item.active span{color:var(--purple-light,#a78bfa);}
-.nav-item.active svg path,.nav-item.active svg rect,.nav-item.active svg circle,.nav-item.active svg polyline,.nav-item.active svg line{stroke:var(--purple-light,#a78bfa);}
+.nav-item.active span{color:#a3e635;}
+.nav-item.active svg path,.nav-item.active svg rect,.nav-item.active svg circle,.nav-item.active svg polyline,.nav-item.active svg line{stroke:#a3e635;}
 </style>
 </head>
 <body>
@@ -266,10 +286,10 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
     <span>Dashboard</span>
   </div>
   <div class="nav-item active">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     <span>Tasks</span>
   </div>
-  <div class="nav-item">
+  <div class="nav-item" onclick="window.location.href='/profile'">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     <span>Profile</span>
   </div>
@@ -280,30 +300,29 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 // type: 'daily'|'weekly' (day 0=Sun..6=Sat)   tod: 'morning'|'day'|'night'
 const TASK_META = {
   // SKIN — daily
-  'ess-cleanser':       {icon:'/Cleanser.png',name:'Cleanse Face',          desc:'Keep skin clean and clear',                         type:'daily', tod:'morning'},
   'ess-cleanser-pm':    {icon:'/Cleanser.png',name:'Cleanse Face',          desc:'Cleanse away the day before your night routine',    type:'daily', tod:'night'},
   'ess-moisturizer':    {icon:'/MOISTURIZER.png',name:'Morning Moisturizer',  desc:'Hydrate and protect your skin barrier',             type:'daily', tod:'morning'},
   'ess-moisturizer-pm': {icon:'/MOISTURIZER.png',name:'Night Moisturizer',    desc:'Repair and replenish skin overnight',               type:'daily', tod:'night'},
   'ess-sunscreen':      {icon:'/SS.png',name:'Apply SPF',            desc:'Protect skin from UV damage',                       type:'daily', tod:'morning'},
-  'g-retinol':       {icon:'/RETINOL.png',name:'Apply Retinol',         desc:'Apply retinol serum to clean skin at night',   type:'daily',  tod:'night'},
+  'g-retinol':       {icon:'/RETINOL.png',name:'Apply Retinol',         desc:'Apply retinol serum to clean skin at night',   type:'daily',  tod:'night', buyName:'Retinol', price:20},
   'g-benzoyl':       {icon:'🔬',name:'Benzoyl Peroxide',      desc:'Apply to active breakouts before bed',         type:'daily',  tod:'night'},
   'g-adapalene':     {icon:'⚗️',name:'Apply Adapalene',       desc:'Apply retinoid treatment at night',            type:'daily',  tod:'night'},
-  'g-vitc':          {icon:'/VCS.png',name:'Vitamin C Serum',       desc:'Apply to face each morning under SPF',         type:'daily',  tod:'morning'},
-  'g-niacinamide':   {icon:'/NI.png',name:'Niacinamide Serum',     desc:'Apply to reduce redness and improve clarity',  type:'daily',  tod:'morning'},
-  'adv-ghkcu':       {icon:'/GHKI.png',name:'GHK-Cu Peptide',        desc:'Apply copper peptide serum for skin quality',  type:'daily',  tod:'morning'},
-  'adv-ghkcu2':      {icon:'/MT2.png',name:'MT2 (Melanotan II)',     desc:'Apply/use MT2 peptide for a deeper, more even tan',  type:'daily',  tod:'morning'},
+  'g-vitc':          {icon:'/VCS.png',name:'Vitamin C Serum',       desc:'Apply to face each morning under SPF',         type:'daily',  tod:'morning', price:15},
+  'g-niacinamide':   {icon:'/NI.png',name:'Niacinamide Serum',     desc:'Apply to reduce redness and improve clarity',  type:'daily',  tod:'morning', price:10},
+  'adv-ghkcu':       {icon:'/GHKI.png',name:'GHK-Cu Peptide',        desc:'Apply copper peptide serum for skin quality',  type:'daily',  tod:'morning', price:30},
+  'adv-ghkcu2':      {icon:'/MT2.png',name:'MT2 (Melanotan II)',     desc:'Apply/use MT2 peptide for a deeper, more even tan',  type:'daily',  tod:'morning', price:40},
   'g-prescription':  {icon:'🏥',name:'Prescription Acne',    desc:'Apply prescription acne medication',           type:'daily',  tod:'night'},
   // SKIN — weekly
   'g-aha':           {icon:'✨',name:'Chemical Exfoliant',    desc:'Exfoliate for smoother and brighter skin',     type:'weekly', day:4, tod:'night'},
   'skin-microneedle':{icon:'🧬',name:'Microneedling Session', desc:'Complete your microneedling treatment',        type:'weekly', day:6, tod:'night'},
 
   // EYES — daily
-  'eye-d-whitening': {icon:'💧',name:'Use Eye Drops',         desc:'Improve eye brightness and reduce redness',   type:'daily',  tod:'morning'},
-  'eye-d-lash':      {icon:'✏️',name:'Lash Growth Serum',      desc:'Promote lash growth and thickness',           type:'daily',  tod:'night'},
-  'eye-d-ice':       {icon:'🧊',name:'Ice Roll Eyes',         desc:'Reduce puffiness around the eyes',            type:'daily',  tod:'morning'},
-  'eye-f-contacts':  {icon:'👁️',name:'Wear Contacts',         desc:'Put in your colored contacts',                type:'daily',  tod:'morning'},
-  'eye-f-concealer': {icon:'💫',name:'Under Eye Concealer',   desc:'Apply concealer under eyes',                  type:'daily',  tod:'morning'},
-  'eye-f-mascara':   {icon:'✏️',name:'Apply Mascara',         desc:'Apply mascara for lash definition',           type:'daily',  tod:'morning'},
+  'eye-d-whitening': {icon:'/EYEWHITENINGDROPS.png',name:'Use Eye Drops',         desc:'Improve eye brightness and reduce redness',   type:'daily',  tod:'morning', buyName:'Eye Drops', price:12},
+  'eye-d-lash':      {icon:'/LASHSERUM.png',name:'Lash Growth Serum',      desc:'Promote lash growth and thickness',           type:'daily',  tod:'night', price:10},
+  'eye-d-ice':       {icon:'/ICFWD.png',name:'Ice Roll Eyes',         desc:'Reduce puffiness around the eyes',            type:'daily',  tod:'morning'},
+  'eye-f-contacts':  {icon:'/CC.png',name:'Wear Contacts',         desc:'Put in your colored contacts',                type:'daily',  tod:'morning', buyName:'Colored Contacts', price:20},
+  'eye-f-concealer': {icon:'/UEC.png',name:'Under Eye Concealer',   desc:'Apply concealer under eyes',                  type:'daily',  tod:'morning', price:5},
+  'eye-f-mascara':   {icon:'/MASCARA.png',name:'Apply Mascara',         desc:'Apply mascara for lash definition',           type:'daily',  tod:'morning', buyName:'Mascara'},
   'eye-f-waterline': {icon:'✏️',name:'Line Waterline',        desc:'Apply eyeliner to waterline',                 type:'daily',  tod:'morning'},
   'eye-a-contrast':  {icon:'🎨',name:'Eye Contrast',          desc:'Apply eye contrast technique daily',          type:'daily',  tod:'morning'},
   'eye-a-undereye':  {icon:'💫',name:'Under Eye Treatment',   desc:'Apply under-eye treatment product',           type:'daily',  tod:'day'},
@@ -314,10 +333,10 @@ const TASK_META = {
   'eye-w-puffiness': {icon:'🧊',name:'Puffiness Treatment',   desc:'Extended under-eye puffiness session',        type:'weekly', day:6, tod:'night'},
 
   // BROWS — daily
-  'brow-d-serum':    {icon:'✏️',name:'Brow Growth Serum',     desc:'Promote eyebrow density and growth',          type:'daily',  tod:'night'},
+  'brow-d-serum':    {icon:'/MINOXIDIL.png',name:'Brow Growth Serum',     desc:'Promote eyebrow density and growth',          type:'daily',  tod:'night', buyName:'Minoxodil', price:15},
   'brow-d-condition':{icon:'🌿',name:'Condition Brows',       desc:'Keep brows healthy and well-groomed',         type:'daily',  tod:'morning'},
-  'brow-f-pencil':   {icon:'✏️',name:'Fill Brows',            desc:'Fill in brows with pencil for definition',    type:'daily',  tod:'morning'},
-  'brow-f-gel':      {icon:'🪮',name:'Apply Brow Gel',        desc:'Set brows in place with gel',                 type:'daily',  tod:'morning'},
+  'brow-f-pencil':   {icon:'/BROWPENCIL.png',name:'Fill Brows',            desc:'Fill in brows with pencil for definition',    type:'daily',  tod:'morning', buyName:'Men Pen', price:5},
+  'brow-f-gel':      {icon:'/BROWGEL.png',name:'Apply Brow Gel',        desc:'Set brows in place with gel',                 type:'daily',  tod:'morning', buyName:'Brow Gel', price:5},
   'brow-f-fiber':    {icon:'✨',name:'Brow Fiber',            desc:'Apply fiber for fuller-looking brows',        type:'daily',  tod:'morning'},
   'brow-a-design':   {icon:'📐',name:'Brow Design',           desc:'Follow your brow design routine',             type:'daily',  tod:'day'},
   'brow-a-styling':  {icon:'🪮',name:'Style Brows',           desc:'Style and shape brows daily',                 type:'daily',  tod:'morning'},
@@ -336,15 +355,93 @@ const TASK_META = {
 
   // HAIR — weekly
   'hair-w-cut':      {icon:'/FRINGEICON.png',name:'Haircut / Style',       desc:'Maintain your haircut and style',             type:'weekly', day:6, tod:'day'},
+  'hair-book-cut':   {icon:'📅',name:'Book Haircut Appointment', desc:'Schedule your next haircut so your style stays sharp', type:'special', tod:'day'},
+
+  // JAW
+  'jaw-d-water':       {icon:'💧',name:'Hydration (3L Water)',     desc:'Drink 3L of water throughout the day',          type:'daily',  tod:'morning'},
+  'jaw-d-sodium':       {icon:'🧂',name:'Low Sodium Diet',          desc:'Keep sodium intake low to reduce facial bloat', type:'daily',  tod:'day'},
+  'jaw-d-kshami':       {icon:'/KSHAMI.png',name:'K-Shami D-BLOAT', desc:'Take your D-Bloat supplement',                  type:'daily',  tod:'day', price:30},
+  'jaw-d-chintucks':    {icon:'/CT.png',name:'Chin Tucks',          desc:'Complete your chin tuck exercises',             type:'daily',  tod:'day'},
+  'jaw-d-neckcurls':    {icon:'/NC.png',name:'Neck Curls',          desc:'Complete your neck curl exercises',             type:'daily',  tod:'day'},
+  'jaw-d-lymphatic':    {icon:'/LD.png',name:'Lymphatic Drainage',  desc:'Perform your lymphatic drainage routine',       type:'daily',  tod:'morning'},
+  'jaw-d-sugar':        {icon:'/sugar.png',name:'500-1000g of Sugar', desc:'Hit your daily sugar target',                 type:'daily',  tod:'day'},
+  'jaw-a-igf1':         {icon:'/igf.png',name:'IGF-1',              desc:'Take your IGF-1 dose',                          type:'daily',  tod:'morning', price:80},
+  'jaw-w-cardio':       {icon:'🏃',name:'Cardio / Fat Loss Training', desc:'Complete your cardio session',                type:'weekly', day:2, tod:'day'},
+  'jaw-w-gum':          {icon:'🦷',name:'Mastic Gum Chewing',       desc:'Chew mastic gum for jaw definition',            type:'weekly', day:4, tod:'day'},
+  'jaw-f-beard':        {icon:'🧔',name:'Beard Shaping for Jaw Framing', desc:'Shape your beard to frame the jawline',     type:'weekly', day:5, tod:'morning'},
+  'jaw-f-contour':      {icon:'✂️',name:'Sideburn Taper / Contour Grooming', desc:'Touch up sideburn taper and contour',  type:'weekly', day:5, tod:'morning'},
+  'jaw-f-posture-photo':{icon:'📸',name:'Chin-Forward Posture in Photos', desc:'Practice chin-forward posture for photos', type:'daily', tod:'day'},
+  'jaw-a-filler':       {icon:'💉',name:'Jawline / Chin Filler',    desc:'Maintain your filler appointment schedule',     type:'weekly', day:6, tod:'day'},
+  'jaw-a-submental':    {icon:'🏥',name:'Submental Fat Reduction',  desc:'Maintain your submental treatment schedule',    type:'weekly', day:6, tod:'day'},
+  'jaw-a-skin':         {icon:'🧬',name:'Retinoid Skin Tightening', desc:'Apply retinoid for skin tightening',            type:'daily',  tod:'night'},
 };
 
 // ── STATE ──────────────────────────────────────────────────────────────────
 let planState = {};
 try { planState = JSON.parse(localStorage.getItem('protocol_plan_state') || '{}'); } catch(e){}
 
-let xp      = parseInt(localStorage.getItem('protocol_xp')     || '0');
-let streak  = parseInt(localStorage.getItem('protocol_streak') || '0');
-let lastCompleteDateKey = localStorage.getItem('protocol_last_complete') || '';
+// Shared app state (level/xp/streak) — same localStorage key + schema as
+// dashboard.html, so XP and streak stay in sync across pages.
+const DEFAULT_STATE = {
+  level: 1, xp: 0, xpForLevel: 50,
+  streak: 0, lastActiveDate: null, lastCompleteDateKey: '',
+  completedAreas: [], onboardingDone: false,
+};
+function loadState() {
+  try {
+    const s = localStorage.getItem('protocol_state');
+    return s ? { ...DEFAULT_STATE, ...JSON.parse(s) } : { ...DEFAULT_STATE };
+  } catch(e) { return { ...DEFAULT_STATE }; }
+}
+function saveState() { localStorage.setItem('protocol_state', JSON.stringify(state)); }
+let state = loadState();
+
+// XP required to clear each level: 50, 100, 200, 400, 500, 600, 700, 800,
+// 900, 1000 — then stays at 1000 for every level after that. Mirrored in
+// dashboard.html and improve.html so leveling stays in sync everywhere.
+const XP_LEVEL_TABLE = [50, 100, 200, 400, 500, 600, 700, 800, 900, 1000];
+function xpNeeded(level) { return XP_LEVEL_TABLE[level - 1] || 1000; }
+
+function addXP(amount) {
+  const fromLevel = state.level;
+  state.xp += amount;
+  while (state.xp >= state.xpForLevel) {
+    state.xp -= state.xpForLevel;
+    state.level++;
+    state.xpForLevel = xpNeeded(state.level);
+  }
+  saveState();
+  return { leveledUp: state.level > fromLevel, fromLevel, toLevel: state.level };
+}
+
+function dateKeyOf(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+function registerDailyCompletion() {
+  const today = dateKeyOf(new Date());
+  if (state.lastCompleteDateKey === today) return;
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const yKey = dateKeyOf(yesterday);
+  if (state.lastCompleteDateKey === yKey || state.lastCompleteDateKey === '') {
+    state.streak++;
+  } else {
+    state.streak = 1;
+  }
+  state.lastCompleteDateKey = today;
+  saveState();
+}
+
+function showLevelUpToast(toLevel) {
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:9999;background:#161616;border:1px solid #a3e635;color:#a3e635;font-weight:800;font-size:13px;padding:10px 18px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,0.4);opacity:0;transition:all .35s ease;white-space:nowrap;';
+  toast.textContent = '🎉 Level Up! You\'re now Level ' + toLevel;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; });
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(-20px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 2600);
+}
 
 function todayKey() {
   const d = new Date();
@@ -363,10 +460,56 @@ function saveCompletions(dateKey, arr) {
   localStorage.setItem(completionsKey(dateKey), JSON.stringify(arr));
 }
 
+// ── PENDING ARRIVALS ─────────────────────────────────────────────────────────
+// Once a user checks off a "Buy X" task, the item isn't in their hands yet —
+// it's queued here, and dashboard.html asks "Has X arrived?" once per day
+// until confirmed. Same localStorage key/shape is read by dashboard.html.
+// Shape: { [realId]: { name, icon, askedDateKey } }
+function getPendingArrivals() {
+  try { return JSON.parse(localStorage.getItem('protocol_pending_arrivals') || '{}'); } catch(e){ return {}; }
+}
+function savePendingArrivals(obj) {
+  localStorage.setItem('protocol_pending_arrivals', JSON.stringify(obj));
+}
+
+// ── HIDDEN TASKS (per-day "Edit" mode) ───────────────────────────────────────
+// Tasks the user has manually removed from a given day's schedule via the
+// red minus button in edit mode. They move into the "Hidden Tasks" section
+// and can be brought back with the green plus button.
+function hiddenKey(dateKey) { return 'protocol_hidden_' + dateKey; }
+function getHiddenTasks(dateKey) {
+  try { return JSON.parse(localStorage.getItem(hiddenKey(dateKey)) || '[]'); } catch(e){ return []; }
+}
+function saveHiddenTasks(dateKey, arr) {
+  localStorage.setItem(hiddenKey(dateKey), JSON.stringify(arr));
+}
+let editMode = false;
+function toggleEditMode() {
+  editMode = !editMode;
+  renderTasks();
+}
+function hideTask(id, dateKey, ev) {
+  if (ev) ev.stopPropagation();
+  const hidden = getHiddenTasks(dateKey);
+  if (!hidden.includes(id)) hidden.push(id);
+  saveHiddenTasks(dateKey, hidden);
+  renderTasks();
+}
+function unhideTask(id, dateKey, ev) {
+  if (ev) ev.stopPropagation();
+  const hidden = getHiddenTasks(dateKey).filter(h => h !== id);
+  saveHiddenTasks(dateKey, hidden);
+  renderTasks();
+}
+
 // ── SELECTED DATE ──────────────────────────────────────────────────────────
 let selectedDate = new Date();
 
 // ── BUILD WEEK ─────────────────────────────────────────────────────────────
+// Scrollable date strip: starts today and runs 3 months out. Since it's
+// always built from `new Date()`, the window rolls forward automatically
+// each day (today is always day 0, "3 months ahead" is always 3 months
+// ahead of whenever this is opened).
 function buildWeek() {
   const today = new Date();
   today.setHours(0,0,0,0);
@@ -374,14 +517,16 @@ function buildWeek() {
   const row = document.getElementById('weekRow');
   row.innerHTML = '';
 
-  // Start from Monday of current week
-  const start = new Date(today);
-  const dow = today.getDay();
-  start.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  const end = new Date(today);
+  end.setMonth(end.getMonth() + 3);
+  const totalDays = Math.round((end - today) / 86400000);
 
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
+  let selectedBtn = null;
+  let todayBtn = null;
+
+  for (let i = 0; i <= totalDays; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
     const isToday = d.toDateString() === today.toDateString();
     const isSelected = d.toDateString() === selectedDate.toDateString();
 
@@ -395,8 +540,13 @@ function buildWeek() {
       buildWeek();
       renderTasks();
     });
+    if (isToday) todayBtn = btn;
+    if (isSelected) selectedBtn = btn;
     row.appendChild(btn);
   }
+
+  const target = selectedBtn || todayBtn;
+  if (target) target.scrollIntoView({ block: 'nearest', inline: 'center' });
 }
 
 // ── DYNAMIC WEEKLY TASK DAY ASSIGNMENT ─────────────────────────────────────
@@ -435,10 +585,28 @@ function getWeeklyAssignments() {
   return stored;
 }
 
+// ── HAIRCUT BOOKING REMINDER ───────────────────────────────────────────────
+// Adding "Get Haircut" to the weekly plan anchors a separate recurring
+// reminder: "Book Haircut Appointment" appears the very next day, then
+// again every 3 weeks (21 days) on that same day-of-week, indefinitely.
+function isHaircutBookingDay(date) {
+  let anchorStr = null;
+  try { anchorStr = localStorage.getItem('protocol_haircut_anchor'); } catch(e){}
+  if (!anchorStr) return false;
+  const anchor = new Date(anchorStr);
+  if (isNaN(anchor.getTime())) return false;
+  anchor.setHours(0,0,0,0);
+  const firstBooking = new Date(anchor);
+  firstBooking.setDate(firstBooking.getDate() + 1);
+  const d = new Date(date); d.setHours(0,0,0,0);
+  const diffDays = Math.round((d - firstBooking) / 86400000);
+  return diffDays >= 0 && diffDays % 21 === 0;
+}
+
 // ── GET TODAY'S TASKS GROUPED BY TIME-OF-DAY ──────────────────────────────
 function getTasksForDate(date) {
   const dow = date.getDay(); // 0=Sun..6=Sat
-  const groups = { morning: [], day: [], night: [] };
+  const groups = { morning: [], day: [], night: [], purchase: [] };
   const weeklyAssignments = getWeeklyAssignments();
 
   for (const [id, state] of Object.entries(planState)) {
@@ -446,8 +614,11 @@ function getTasksForDate(date) {
     if (!meta) continue;
 
     if (state === 'buying') {
-      // Show "Buy X" task during the day until purchased
-      groups.day.push('buy__' + id);
+      // Show "Buy X" task in its own Purchase section until bought — but once
+      // it's been checked off, it moves into the pending-arrivals queue
+      // (asked about on the dashboard) instead of reappearing here every day.
+      const pending = getPendingArrivals();
+      if (!pending[id]) groups.purchase.push('buy__' + id);
     } else if (state === 'have') {
       const eligible =
         meta.type === 'daily' ||
@@ -455,11 +626,12 @@ function getTasksForDate(date) {
       if (eligible) {
         const bucket = meta.tod || 'morning';
         groups[bucket].push(id);
-        // Cleanser appears in both morning and night skincare
-        if (id === 'ess-cleanser') groups.night.push(id);
       }
     }
   }
+
+  if (isHaircutBookingDay(date)) groups.day.push('hair-book-cut');
+
   return groups;
 }
 
@@ -469,15 +641,19 @@ function resolveMeta(taskId) {
     const realId = taskId.slice(5);
     const real = TASK_META[realId];
     if (!real) return null;
-    return { icon:'🛒', name:'Buy ' + real.name, desc:'Pick up ' + real.name + ' so you can start using it', tod:'morning', _buyFor: realId };
+    // buyName lets the purchase-task label drop action verbs like "Apply"/
+    // "Use"/"Wear" that only make sense for the routine task, not the product
+    // itself (e.g. real.name "Apply Retinol" -> buy label "Retinol").
+    const buyLabel = real.buyName || real.name;
+    return { icon: real.icon || '🛒', name:'Buy ' + buyLabel, desc:'Pick up ' + buyLabel + ' so you can start using it', tod:'morning', _buyFor: realId, price: real.price };
   }
   return TASK_META[taskId] || null;
 }
 
 // ── GROUP DEFINITIONS ──────────────────────────────────────────────────────
 const SKINCARE_IDS = {
-  morning: new Set(['ess-cleanser','ess-moisturizer','ess-sunscreen','g-vitc','g-niacinamide','adv-ghkcu','adv-ghkcu2','g-prescription']),
-  night:   new Set(['ess-cleanser','ess-cleanser-pm','ess-moisturizer-pm','g-retinol','g-benzoyl','g-adapalene','g-prescription','g-aha','skin-microneedle']),
+  morning: new Set(['ess-moisturizer','ess-sunscreen','g-vitc','g-niacinamide','adv-ghkcu','adv-ghkcu2','g-prescription']),
+  night:   new Set(['ess-cleanser-pm','ess-moisturizer-pm','g-retinol','g-benzoyl','g-adapalene','g-prescription','g-aha','skin-microneedle']),
 };
 const EYE_IDS = new Set([
   'eye-d-whitening','eye-d-ice',
@@ -514,16 +690,86 @@ function toggleGroup(key) {
 
 // ── RENDER TASKS ───────────────────────────────────────────────────────────
 const TOD_CONFIG = [
-  { key:'morning', icon:'☀️', label:'Morning', groupLabel:'Morning Skincare', groupIcon:'🧴' },
-  { key:'day',     icon:'🌤', label:'Day',     groupLabel:null },
-  { key:'night',   icon:'🌙', label:'Night',   groupLabel:'Night Skincare',   groupIcon:'🌙' },
+  { key:'morning',  icon:'☀️', label:'Morning',  groupLabel:'Morning Skincare', groupIcon:'🧴' },
+  { key:'day',      icon:'🌤', label:'Day',      groupLabel:null },
+  { key:'night',    icon:'🌙', label:'Night',    groupLabel:'Night Skincare',   groupIcon:'🌙' },
+  { key:'purchase', icon:'🛒', label:'Purchase', groupLabel:null },
 ];
+
+// ── AREA SUB-CATEGORIES (Skin / Hair / Jaw / Eyes / Eyebrows) ──────────────
+// Icons match the icon used for each area's "Improve Now" card elsewhere in
+// the app. Used to break Morning/Day/Night/Purchase sections into per-area
+// collapsible groups.
+const DAILY_CATEGORIES = [
+  { key:'skin',     label:'Skin',      icon:'/skin.png' },
+  { key:'hair',     label:'Hair',      icon:'/hair.png' },
+  { key:'jaw',      label:'Jaw',       icon:'/JAW.png' },
+  { key:'eyes',     label:'Eyes',      icon:'/eye.png' },
+  { key:'eyebrows', label:'Eyebrows',  icon:'/eyebrow.png' },
+];
+
+const PURCHASE_CATEGORIES = [
+  { key:'skin',     label:'Skin',      icon:'/skin.png' },
+  { key:'hair',     label:'Hair',      icon:'/hair.png' },
+  { key:'jaw',      label:'Jaw',       icon:'/JAW.png' },
+  { key:'eyebrows', label:'Eyebrows',  icon:'/eyebrow.png' },
+  { key:'eyes',     label:'Eyes',      icon:'/eye.png' },
+  { key:'peptides', label:'Peptides',  icon:'/peptide.png' },
+];
+
+function getAreaCategory(realId) {
+  if (realId.startsWith('brow-')) return 'eyebrows';
+  if (realId.startsWith('eye-'))  return 'eyes';
+  if (realId.startsWith('hair-')) return 'hair';
+  if (realId.startsWith('jaw-'))  return 'jaw';
+  return 'skin';
+}
+
+function getPurchaseCategory(realId) {
+  if (realId === 'adv-ghkcu' || realId === 'adv-ghkcu2' || realId === 'jaw-a-igf1') return 'peptides';
+  return getAreaCategory(realId);
+}
+
+// Tracks which category groups are expanded. Session-local (resets on page
+// load) — every category starts collapsed with its arrow pointing up.
+// Purchase categories are keyed by category key alone; Morning/Day/Night
+// categories are keyed by "<section>_<category>" since the same category
+// (e.g. "skin") can independently open/close in each section.
+const purchaseCatOpen = {};
+function togglePurchaseCat(key) {
+  purchaseCatOpen[key] = !purchaseCatOpen[key];
+  const items = document.getElementById('purchase-items-' + key);
+  const arrow = document.getElementById('purchase-arrow-' + key);
+  if (items) items.classList.toggle('open', purchaseCatOpen[key]);
+  if (arrow) arrow.classList.toggle('open', purchaseCatOpen[key]);
+}
+
+const areaCatOpen = {};
+function toggleAreaCat(compKey) {
+  areaCatOpen[compKey] = !areaCatOpen[compKey];
+  const items = document.getElementById('area-items-' + compKey);
+  const arrow = document.getElementById('area-arrow-' + compKey);
+  if (items) items.classList.toggle('open', areaCatOpen[compKey]);
+  if (arrow) arrow.classList.toggle('open', areaCatOpen[compKey]);
+}
 
 function renderTasks() {
   const dateKey = getDateKey(selectedDate);
   const completions = getCompletions(dateKey);
-  const groups = getTasksForDate(selectedDate);
-  const allTasks = [...groups.morning, ...groups.day, ...groups.night];
+  const rawGroups = getTasksForDate(selectedDate);
+  const hiddenAll = getHiddenTasks(dateKey);
+
+  // Hidden tasks (removed via the red minus in edit mode) are pulled out of
+  // their normal time-of-day section and surfaced in "Hidden Tasks" instead.
+  const groups = {
+    morning:  rawGroups.morning.filter(id => !hiddenAll.includes(id)),
+    day:      rawGroups.day.filter(id => !hiddenAll.includes(id)),
+    night:    rawGroups.night.filter(id => !hiddenAll.includes(id)),
+    purchase: rawGroups.purchase.filter(id => !hiddenAll.includes(id)),
+  };
+  const scheduledToday = [...rawGroups.morning, ...rawGroups.day, ...rawGroups.night, ...rawGroups.purchase];
+  const hiddenIds = hiddenAll.filter(id => scheduledToday.includes(id));
+  const allTasks = [...groups.morning, ...groups.day, ...groups.night, ...groups.purchase];
 
   // Today header
   const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -532,9 +778,14 @@ function renderTasks() {
   const remaining = allTasks.filter(id => !completions.includes(id)).length;
 
   document.getElementById('todayHeader').innerHTML = `
-    <div class="today-label">${isToday ? 'TODAY' : dayNames[selectedDate.getDay()].toUpperCase()}</div>
-    <div class="today-date">${dayNames[selectedDate.getDay()]}, ${monthNames[selectedDate.getMonth()]} ${selectedDate.getDate()}</div>
-    <div class="today-sub">${allTasks.length === 0 ? 'No tasks for this day' : remaining === 0 ? 'All tasks complete 🎯' : `${remaining} Task${remaining !== 1 ? 's' : ''} To Complete`}</div>
+    <div class="today-header-row">
+      <div class="today-header-text">
+        <div class="today-label">${isToday ? 'TODAY' : dayNames[selectedDate.getDay()].toUpperCase()}</div>
+        <div class="today-date">${dayNames[selectedDate.getDay()]}, ${monthNames[selectedDate.getMonth()]} ${selectedDate.getDate()}</div>
+        <div class="today-sub">${allTasks.length === 0 ? 'No tasks for this day' : remaining === 0 ? 'All tasks complete 🎯' : `${remaining} Task${remaining !== 1 ? 's' : ''} To Complete`}</div>
+      </div>
+      <button class="edit-tasks-btn${editMode ? ' active' : ''}" onclick="toggleEditMode()">${editMode ? 'Done' : 'Edit'}</button>
+    </div>
   `;
 
   // Progress bar
@@ -547,72 +798,119 @@ function renderTasks() {
 
   const list = document.getElementById('taskList');
 
-  if (allTasks.length === 0) {
-    list.innerHTML = `<div class="empty-day">No tasks for this day.<br><span style="font-size:11px;">Add tasks from the Roadmap to see them here.</span></div>`;
-    checkAllDone(allTasks, completions, dateKey);
-    document.getElementById('xpDisplay').textContent = xp;
-    return;
-  }
-
   function taskCard(id) {
     const meta = resolveMeta(id);
     if (!meta) return '';
     if (completions.includes(id)) return '';
     const isBuy = id.startsWith('buy__');
+    const circleHtml = editMode
+      ? `<div class="task-circle edit-remove" onclick="hideTask('${id}','${dateKey}', event)">
+           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="2" y1="6" x2="10" y2="6"/></svg>
+         </div>`
+      : `<div class="task-circle">
+           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5"><polyline points="2 6 5 9 10 3"/></svg>
+         </div>`;
     return `
-      <div class="task-item" id="task-${CSS.escape(id)}" onclick="completeTask('${id}','${dateKey}')">
-        <div class="task-icon" style="${isBuy ? 'background:rgba(245,158,11,0.12);' : ''}">${meta.icon}</div>
+      <div class="task-item" id="task-${CSS.escape(id)}" onclick="${editMode ? '' : `completeTask('${id}','${dateKey}')`}">
+        <div class="task-icon" style="${isBuy ? 'background:rgba(245,158,11,0.12);' : ''}">${renderIcon(meta.icon)}</div>
         <div class="task-body">
-          <div class="task-name">${meta.name}</div>
+          <div class="task-name">${meta.name}${isBuy && meta.price != null ? ` <span class="task-price">$${meta.price}</span>` : ''}</div>
           <div class="task-desc">${meta.desc}</div>
         </div>
-        <div class="task-circle">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5"><polyline points="2 6 5 9 10 3"/></svg>
-        </div>
+        ${circleHtml}
       </div>`;
   }
 
-  function makeGroup(groupKey, groupLabel, groupIcon, taskIds) {
-    const remaining = taskIds.filter(id => !completions.includes(id)).length;
-    if (taskIds.length === 0 || remaining === 0) return '';
-    const isOpen = groupOpen[groupKey] === true;
+  function hiddenCard(id) {
+    const meta = resolveMeta(id);
+    if (!meta) return '';
+    const isBuy = id.startsWith('buy__');
     return `
-      <div class="skincare-group">
-        <div class="skincare-group-header" onclick="toggleGroup('${groupKey}')">
-          <div class="group-icon">${groupIcon}</div>
-          <span class="group-title">${groupLabel}</span>
-          <span class="group-badge" id="group-count-${groupKey}">${remaining} left</span>
-          <svg class="group-arrow ${isOpen ? 'open' : ''}" id="group-arrow-${groupKey}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="task-item" id="hidden-task-${CSS.escape(id)}">
+        <div class="task-icon" style="${isBuy ? 'background:rgba(245,158,11,0.12);' : ''}">${renderIcon(meta.icon)}</div>
+        <div class="task-body">
+          <div class="task-name">${meta.name}${isBuy && meta.price != null ? ` <span class="task-price">$${meta.price}</span>` : ''}</div>
+          <div class="task-desc">${meta.desc}</div>
         </div>
-        <div class="group-tasks-wrap ${isOpen ? 'open' : ''}" id="group-tasks-${groupKey}">
-          ${taskIds.map(taskCard).join('')}
+        <div class="task-circle add-back" onclick="unhideTask('${id}','${dateKey}', event)">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="2" x2="6" y2="10"/><line x1="2" y1="6" x2="10" y2="6"/></svg>
         </div>
       </div>`;
   }
 
-  list.innerHTML = TOD_CONFIG.map(({ key, icon, label, groupLabel, groupIcon }) => {
+  function renderPurchaseCategories(ids) {
+    const byCat = {};
+    ids.forEach(id => {
+      const realId = id.startsWith('buy__') ? id.slice(5) : id;
+      const catKey = getPurchaseCategory(realId);
+      if (!byCat[catKey]) byCat[catKey] = [];
+      byCat[catKey].push(id);
+    });
+
+    return PURCHASE_CATEGORIES.map(({ key, label, icon }) => {
+      const catIds = byCat[key] || [];
+      if (catIds.length === 0) return '';
+      const total = catIds.reduce((sum, id) => {
+        const meta = resolveMeta(id);
+        return sum + (meta && meta.price != null ? meta.price : 0);
+      }, 0);
+      const isOpen = !!purchaseCatOpen[key];
+      return `
+        <div class="purchase-cat">
+          <div class="task-item purchase-cat-header" onclick="togglePurchaseCat('${key}')">
+            <div class="task-icon">${renderIcon(icon)}</div>
+            <div class="task-body">
+              <div class="task-name">${label} <span class="task-price">$${total}</span></div>
+              <div class="task-desc">${catIds.length} item${catIds.length !== 1 ? 's' : ''} to purchase</div>
+            </div>
+            <div class="purchase-arrow${isOpen ? ' open' : ''}" id="purchase-arrow-${key}">▾</div>
+          </div>
+          <div class="purchase-cat-items${isOpen ? ' open' : ''}" id="purchase-items-${key}">
+            ${catIds.map(taskCard).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderAreaCategories(sectionKey, ids) {
+    const byCat = {};
+    ids.forEach(id => {
+      const catKey = getAreaCategory(id);
+      if (!byCat[catKey]) byCat[catKey] = [];
+      byCat[catKey].push(id);
+    });
+
+    return DAILY_CATEGORIES.map(({ key, label, icon }) => {
+      const catIds = byCat[key] || [];
+      if (catIds.length === 0) return '';
+      const compKey = sectionKey + '_' + key;
+      const isOpen = !!areaCatOpen[compKey];
+      return `
+        <div class="purchase-cat">
+          <div class="task-item purchase-cat-header" onclick="toggleAreaCat('${compKey}')">
+            <div class="task-icon">${renderIcon(icon)}</div>
+            <div class="task-body">
+              <div class="task-name">${label}</div>
+              <div class="task-desc">${catIds.length} task${catIds.length !== 1 ? 's' : ''}</div>
+            </div>
+            <div class="purchase-arrow${isOpen ? ' open' : ''}" id="area-arrow-${compKey}">▾</div>
+          </div>
+          <div class="purchase-cat-items${isOpen ? ' open' : ''}" id="area-items-${compKey}">
+            ${catIds.map(taskCard).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  const sectionsHtml = TOD_CONFIG.map(({ key, icon, label }) => {
     const ids = groups[key] || [];
     const sectionRemaining = ids.filter(id => !completions.includes(id)).length;
     if (ids.length === 0 || sectionRemaining === 0) return '';
 
-    const rid = id => id.startsWith('buy__') ? id.slice(5) : id;
-    const skincareSet = SKINCARE_IDS[key];
-    const buyIds      = ids.filter(id => id.startsWith('buy__'));
-    const nonBuy      = ids.filter(id => !id.startsWith('buy__'));
-    const skinIds     = nonBuy.filter(id => skincareSet && skincareSet.has(rid(id)));
-    const longtermIds = nonBuy.filter(id => !(skincareSet && skincareSet.has(rid(id))) && LONGTERM_IDS.has(rid(id)));
-    const groomingIds = nonBuy.filter(id => !(skincareSet && skincareSet.has(rid(id))) && !LONGTERM_IDS.has(rid(id)) && GROOMING_IDS.has(rid(id)));
-    const eyeIds      = nonBuy.filter(id => !(skincareSet && skincareSet.has(rid(id))) && !LONGTERM_IDS.has(rid(id)) && !GROOMING_IDS.has(rid(id)) && EYE_IDS.has(rid(id)));
-    const browIds     = nonBuy.filter(id => !(skincareSet && skincareSet.has(rid(id))) && !LONGTERM_IDS.has(rid(id)) && !GROOMING_IDS.has(rid(id)) && BROW_IDS.has(rid(id)));
-    const otherIds    = nonBuy.filter(id => !(skincareSet && skincareSet.has(rid(id))) && !LONGTERM_IDS.has(rid(id)) && !GROOMING_IDS.has(rid(id)) && !EYE_IDS.has(rid(id)) && !BROW_IDS.has(rid(id)));
-
-    const buyHtml      = makeGroup('buy-' + key, 'Buy Products', '🛒', buyIds);
-    const skinHtml     = groupLabel ? makeGroup(key, groupLabel, groupIcon, skinIds) : '';
-    const longtermHtml = makeGroup('longterm-' + key, 'Longterm Impact', '🌱', longtermIds);
-    const groomingHtml = makeGroup('grooming-' + key, 'Grooming', '✂️', groomingIds);
-    const eyeHtml      = makeGroup('eye-' + key, 'Eye Frauds', '👁️', eyeIds);
-    const browHtml     = makeGroup('brow-' + key, 'Eyebrow Frauds', '✏️', browIds);
-    const otherHtml = otherIds.filter(id => !completions.includes(id)).map(taskCard).join('');
+    const remainingIds = ids.filter(id => !completions.includes(id));
+    const tasksHtml = key === 'purchase'
+      ? renderPurchaseCategories(remainingIds)
+      : renderAreaCategories(key, remainingIds);
 
     return `
       <div class="tod-section" id="tod-${key}">
@@ -621,18 +919,42 @@ function renderTasks() {
           <span class="tod-label">${label}</span>
           <span class="tod-count" id="tod-count-${key}">${sectionRemaining}</span>
         </div>
-        ${buyHtml}
-        ${skinHtml}
-        ${longtermHtml}
-        ${groomingHtml}
-        ${eyeHtml}
-        ${browHtml}
-        ${otherHtml ? `<div class="tod-tasks">${otherHtml}</div>` : ''}
+        <div class="tod-tasks">${tasksHtml}</div>
       </div>`;
   }).join('');
 
+  const hiddenHtml = hiddenIds.length ? `
+    <div class="tod-section" id="tod-hidden">
+      <div class="tod-header">
+        <span class="tod-icon">🙈</span>
+        <span class="tod-label">Hidden Tasks</span>
+        <span class="tod-count">${hiddenIds.length}</span>
+      </div>
+      <div class="tod-tasks">${hiddenIds.map(hiddenCard).join('')}</div>
+    </div>` : '';
+
+  if (allTasks.length === 0 && !hiddenIds.length) {
+    list.innerHTML = `<div class="empty-day">No tasks for this day.<br><span style="font-size:11px;">Add tasks from the Roadmap to see them here.</span></div>`;
+    checkAllDone(allTasks, completions, dateKey);
+    document.getElementById('xpDisplay').textContent = state.xp;
+    return;
+  }
+
+  list.innerHTML = (allTasks.length === 0
+    ? `<div class="empty-day">No tasks for this day.<br><span style="font-size:11px;">Add tasks from the Roadmap to see them here.</span></div>`
+    : sectionsHtml) + hiddenHtml;
+
   checkAllDone(allTasks, completions, dateKey);
   document.getElementById('xpDisplay').textContent = xp;
+}
+
+// Renders a task icon exactly like improve.html: file-path icons (e.g.
+// '/LD.png') become an <img>, everything else (emoji) passes through as-is.
+function renderIcon(icon) {
+  if (typeof icon === 'string' && /\.(png|jpe?g|webp|svg|gif)$/i.test(icon)) {
+    return `<img src="${icon}" class="task-icon-img" alt=""/>`;
+  }
+  return icon;
 }
 
 function getDateKey(date) {
@@ -644,21 +966,30 @@ function completeTask(id, dateKey) {
   const completions = getCompletions(dateKey);
   if (completions.includes(id)) return; // already done
 
-  // If this is a "Buy X" task, promote the item to 'have' in planState
+  // If this is a "Buy X" task, the user has purchased it but doesn't have it
+  // in hand yet — queue it for the daily "Has it arrived?" prompt on the
+  // dashboard instead of marking it "have" immediately. It only gets promoted
+  // to 'have' (and starts showing up as a real daily/weekly task) once the
+  // user confirms there that it's actually arrived.
   if (id.startsWith('buy__')) {
     const realId = id.slice(5);
-    planState[realId] = 'have';
-    localStorage.setItem('protocol_plan_state', JSON.stringify(planState));
+    const real = TASK_META[realId];
+    const pending = getPendingArrivals();
+    if (!pending[realId]) {
+      pending[realId] = { name: real ? real.name : realId, icon: real ? real.icon : '📦', askedDateKey: '' };
+      savePendingArrivals(pending);
+    }
   }
 
   completions.push(id);
   saveCompletions(dateKey, completions);
 
-  // XP
+  // XP — routed through the shared engine so leveling stays in sync with
+  // the dashboard, and a real level-up can actually trigger here too.
   const xpGain = 10;
-  xp += xpGain;
-  localStorage.setItem('protocol_xp', xp);
-  document.getElementById('xpDisplay').textContent = xp;
+  const xpResult = addXP(xpGain);
+  document.getElementById('xpDisplay').textContent = state.xp;
+  if (xpResult.leveledUp) showLevelUpToast(xpResult.toLevel);
 
   // Float XP
   const el = document.getElementById('task-' + CSS.escape(id)) || document.querySelector(`[id="task-${id}"]`);
@@ -690,21 +1021,11 @@ function checkAllDone(allTasks, completions, dateKey) {
   const progressCard = document.getElementById('progressCard');
 
   if (allComplete && isToday) {
-    // Update streak
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yKey = getDateKey(yesterday);
-    if (lastCompleteDateKey === yKey || lastCompleteDateKey === '') {
-      streak++;
-    } else if (lastCompleteDateKey !== todayKey()) {
-      streak = 1;
-    }
-    lastCompleteDateKey = todayKey();
-    localStorage.setItem('protocol_streak', streak);
-    localStorage.setItem('protocol_last_complete', lastCompleteDateKey);
+    // Update streak via the shared engine (same key/logic dashboard reads).
+    registerDailyCompletion();
 
     document.getElementById('doneXP').textContent = '+' + (allTasks.length * 10);
-    document.getElementById('doneStreak').textContent = streak;
+    document.getElementById('doneStreak').textContent = state.streak;
 
     taskListEl.style.display = 'none';
     allDoneEl.classList.add('show');
