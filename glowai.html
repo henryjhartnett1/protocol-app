@@ -2156,6 +2156,12 @@ function rerunSim() {
         <div class="rp-cat-arrow">→</div>
         <div class="rp-cat-col"><span class="rp-cat-score potential" id="rpSkinPotential">—</span><div class="rp-mini-bar"><div class="rp-mini-bar-fill potential" id="rpSkinPotentialBar"></div></div></div>
       </div>
+      <div class="rp-cat-row">
+        <span class="rp-cat-label">Jaw</span>
+        <div class="rp-cat-col"><span class="rp-cat-score" id="rpJawCurrent">—</span><div class="rp-mini-bar"><div class="rp-mini-bar-fill current" id="rpJawCurrentBar"></div></div></div>
+        <div class="rp-cat-arrow">→</div>
+        <div class="rp-cat-col"><span class="rp-cat-score potential" id="rpJawPotential">—</span><div class="rp-mini-bar"><div class="rp-mini-bar-fill potential" id="rpJawPotentialBar"></div></div></div>
+      </div>
     </div>
 
     <button class="rp-cta-btn" onclick="goToBestRoadmap()">
@@ -2997,6 +3003,53 @@ function rerunSim() {
       }
     }
 
+    // Jaw: jaw isn't scanned on this page (it has its own dedicated scan in
+    // the Jaw improve flow), so just read whatever's already been saved —
+    // mirrors the fallback computation in dashboard.html exactly, including
+    // the roadmap-sum-based potential (not a tiered estimate).
+    let jawCurrent = _prevNum('jawC');
+    let jawPotential = _prevNum('jawP');
+    let jawGain = _prevNum('jawG');
+    if (jawCurrent == null) {
+      let jd = {};
+      try { jd = JSON.parse(localStorage.getItem('protocol_jaw_results') || '{}'); } catch(e){}
+      const avgJaw = arr => {
+        const n = arr.map(parseFloat).filter(v => !isNaN(v));
+        return n.length ? Math.round(n.reduce((a,b)=>a+b,0)/n.length*10)/10 : null;
+      };
+      jawCurrent = jd.jawScore != null ? parseFloat(jd.jawScore)
+        : avgJaw([jd.jawWidth,jd.jawDefinition,jd.chinProjection,jd.gonialAngle,jd.jawSymmetry,jd.neckJawSeparation,jd.facialLeanness]);
+      if (jawCurrent != null) {
+        const JAW_TASK_VALUES = {
+          'jaw-d-water': 0.10, 'jaw-d-sodium': 0.10,
+          'jaw-w-cardio': 0.40, 'jaw-w-gum': 0.30,
+          'jaw-f-beard': 0.30, 'jaw-f-contour': 0.25, 'jaw-f-posture-photo': 0.10,
+          'jaw-a-filler': 0.50, 'jaw-a-submental': 0.50, 'jaw-a-skin': 0.30,
+          'jaw-d-kshami': 0.30, 'jaw-d-chintucks': 0.20, 'jaw-d-neckcurls': 0.45,
+          'jaw-d-lymphatic': 0.20, 'jaw-d-sugar': 0, 'jaw-a-igf1': 0.90,
+        };
+        const JAW_ROADMAP_IDS = {
+          jawWidth:          ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-beard','jaw-f-contour','jaw-a-skin','jaw-a-igf1'],
+          jawDefinition:     ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-contour','jaw-a-skin','jaw-a-submental','jaw-a-igf1'],
+          chinProjection:    ['jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-f-posture-photo','jaw-f-beard','jaw-a-filler','jaw-a-igf1'],
+          gonialAngle:       ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-w-gum','jaw-f-contour','jaw-f-beard','jaw-a-skin','jaw-a-igf1'],
+          jawSymmetry:       ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
+          neckJawSeparation: ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-contour','jaw-a-submental','jaw-a-igf1'],
+          facialLeanness:    ['jaw-d-sodium','jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-w-gum','jaw-a-skin','jaw-a-igf1'],
+        };
+        const _jawPriority = ['jawWidth','jawDefinition','chinProjection','gonialAngle','jawSymmetry','neckJawSeparation','facialLeanness'];
+        let _jawStrength = 'jawWidth', _jawBest = -1;
+        _jawPriority.forEach(k => {
+          const s = parseFloat(jd[k] ?? 0);
+          if (s > _jawBest) { _jawStrength = k; _jawBest = s; }
+        });
+        const _jawIds = JAW_ROADMAP_IDS[_jawStrength] || [];
+        const _jawSum = _jawIds.reduce((sum, id) => sum + (JAW_TASK_VALUES[id] || 0), 0);
+        jawGain = Math.max(0, Math.round(Math.min(10 - jawCurrent, _jawSum) * 10) / 10);
+        jawPotential = Math.round(Math.min(10, jawCurrent + jawGain) * 10) / 10;
+      }
+    }
+
     // ── Overall current ───────────────────────────────────────────────────
     const overallCurrent = calcOverallScore(eyeCurrent, browCurrent, skinCurrent, hairCurrent);
 
@@ -3040,6 +3093,8 @@ function rerunSim() {
     document.getElementById('rpBrowPotential').textContent    = fmt(browCalc.potential);
     document.getElementById('rpSkinCurrent').textContent      = fmt(skinCurrent);
     document.getElementById('rpSkinPotential').textContent    = fmt(skinCalc.potential);
+    document.getElementById('rpJawCurrent').textContent       = fmt(jawCurrent);
+    document.getElementById('rpJawPotential').textContent     = fmt(jawPotential);
 
     setRank('rpCurrentOverallRank',  overallCurrent);
     setRank('rpPotentialOverallRank', overallPotential);
@@ -3066,6 +3121,8 @@ function rerunSim() {
     setBar('rpBrowPotentialBar',  browCalc.potential);
     setBar('rpSkinCurrentBar',    skinCurrent);
     setBar('rpSkinPotentialBar',  skinCalc.potential);
+    setBar('rpJawCurrentBar',     jawCurrent);
+    setBar('rpJawPotentialBar',   jawPotential);
 
     // ── Persist computed scores so dashboard shows identical values ──────
     // Merge with existing snapshot: only overwrite a field if the new value is non-null.
@@ -3082,6 +3139,7 @@ function rerunSim() {
       browC: _merge('browC', browCurrent),  browP: _merge('browP', browCalc.potential),  browG: _merge('browG', browCalc.gain),
       skinC: _merge('skinC', skinCurrent),  skinP: _merge('skinP', skinCalc.potential),  skinG: _merge('skinG', skinCalc.gain),
       hairC: _merge('hairC', hairCurrent),  hairP: _merge('hairP', hairPotential),        hairG: _merge('hairG', hairGain),
+      jawC:  _merge('jawC',  jawCurrent),   jawP:  _merge('jawP',  jawPotential),  jawG:  _merge('jawG', jawGain),
     };
     localStorage.setItem('protocol_computed_scores', JSON.stringify(_newScores));
 
@@ -4642,9 +4700,9 @@ function _legacyGoToBestRoadmap() {
       <img id="toAfterImg" src="" draggable="false" ondragstart="return false;" style="width:100%;display:block;-webkit-user-drag:none;user-select:none;pointer-events:none;"/>
       <img id="toBeforeImg" src="" draggable="false" ondragstart="return false;" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;clip-path:inset(0 50% 0 0);-webkit-user-drag:none;user-select:none;pointer-events:none;"/>
       <div id="toSliderHandle" style="position:absolute;top:0;left:50%;height:100%;width:2px;background:#fff;box-shadow:0 0 8px rgba(0,0,0,0.6);transform:translateX(-1px);pointer-events:none;">
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;gap:1px;box-shadow:0 2px 10px rgba(0,0,0,0.4);">
-          <svg width="9" height="14" viewBox="0 0 9 14" fill="none" stroke="#000" stroke-width="2"><polyline points="8 1 1 7 8 13"/></svg>
-          <svg width="9" height="14" viewBox="0 0 9 14" fill="none" stroke="#000" stroke-width="2"><polyline points="1 1 8 7 1 13"/></svg>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;gap:1px;box-shadow:0 2px 10px rgba(0,0,0,0.4);">
+          <svg width="6" height="9" viewBox="0 0 9 14" fill="none" stroke="#000" stroke-width="2"><polyline points="8 1 1 7 8 13"/></svg>
+          <svg width="6" height="9" viewBox="0 0 9 14" fill="none" stroke="#000" stroke-width="2"><polyline points="1 1 8 7 1 13"/></svg>
         </div>
       </div>
       <div style="position:absolute;bottom:0;left:0;background:rgba(0,0,0,0.75);font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;padding:8px 14px;color:#fff;pointer-events:none;">NOW</div>
