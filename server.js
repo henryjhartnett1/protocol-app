@@ -172,12 +172,12 @@ function detectHairColor(imageBase64, mimeType) {
       const payload = JSON.stringify({
         model: 'claude-haiku-4-5',
         max_tokens: 10,
-        system: 'You classify a person\'s natural hair color from a photo. Respond with exactly one of these labels, exactly as written: "Black", "Dark Brown", "Light Brown", "Dark Blonde", "Light Blonde". If unsure, respond "Dark Brown".',
+        system: 'You classify a person\'s natural hair color from a photo. Respond with exactly one of these labels, exactly as written: "Black", "Dark Brown", "Light Brown", "Dark Blonde", "Light Blonde", "Ginger". If unsure, respond "Dark Brown".',
         messages: [{
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: mimeType || 'image/jpeg', data: imageBase64 } },
-            { type: 'text', text: 'What is this person\'s natural hair color — Black, Dark Brown, Light Brown, Dark Blonde, or Light Blonde? Respond with just the label.' }
+            { type: 'text', text: 'What is this person\'s natural hair color — Black, Dark Brown, Light Brown, Dark Blonde, Light Blonde, or Ginger/Red? Respond with just the label.' }
           ]
         }]
       });
@@ -204,6 +204,7 @@ function detectHairColor(imageBase64, mimeType) {
             else if (text.startsWith('light brown')) resolve('Light Brown');
             else if (text.startsWith('dark blonde')) resolve('Dark Blonde');
             else if (text.startsWith('light blonde')) resolve('Light Blonde');
+            else if (text.startsWith('ginger') || text.startsWith('red')) resolve('Ginger');
             else resolve('Dark Brown');
           } catch(e) { resolve('Dark Brown'); }
         });
@@ -295,9 +296,11 @@ function buildMakeupVtoTaskBody(fileId) {
     src_file_id: fileId,
     effects: [
       {
-        // Confirmed from the user's real Playground request (concealer look).
-        // Listed BEFORE eyebrows so the heavy 100% coverage/glow foundation layer
-        // doesn't get applied on top of (and wash out) the eyebrows effect.
+        category: 'eyebrows',
+        pattern: { type: 'shape', name: 'Straight21', curvature: -50, thickness: 15, definition: 10 },
+        palettes: [ { color: '#301708', colorIntensity: 80, texture: 'matte' } ]
+      },
+      {
         category: 'foundation',
         palettes: [
           {
@@ -306,19 +309,6 @@ function buildMakeupVtoTaskBody(fileId) {
             color: '#C17E4C',
             colorIntensity: 100
           }
-        ]
-      },
-      {
-        category: 'eyebrows',
-        pattern: {
-          type: 'shape',
-          name: 'Straight21',
-          curvature: -50,
-          thickness: 15,
-          definition: 10
-        },
-        palettes: [
-          { color: '#301708', colorIntensity: 20, texture: 'matte' }
         ]
       }
     ],
@@ -1607,6 +1597,14 @@ print(json.dumps({'eyes': result[:2], 'imgW': w, 'imgH': h}))
     return;
   }
 
+  // ── Serve testing.html (eyebrow overlay test page) ──
+  if (req.method === 'GET' && req.url === '/testing') {
+    const html = fs.readFileSync(path.join(__dirname, 'testing.html'), 'utf8');
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(html);
+    return;
+  }
+
   // ── Generate 3-Month Plan via Claude ──
   if (req.method === 'POST' && req.url === '/api/generate-plan') {
     let body = '';
@@ -2332,7 +2330,7 @@ End with a "Daily Non-Negotiables" section (5 habits to do every single day).`;
   // the result into simulateJobs. Never called inline from the request handler.
   async function runSimulateJob(jobId, parsed) {
     try {
-      const { imageBase64, mimeType } = parsed;
+      const { imageBase64, mimeType, ethnicity, gender } = parsed;
 
       // ── 3-Month Potential image chains three confirmed Perfect Corp pipelines:
       // 1) hair-transfer on the original photo, then 2) makeup-vto (eyebrows/
@@ -2360,9 +2358,38 @@ End with a "Daily Non-Negotiables" section (5 habits to do every single day).`;
         // person's detected natural hair color (Black / Dark Brown / Light Brown /
         // Dark Blonde / Light Blonde).
         const detectedHairColor = await detectHairColor(imageBase64, mimeType);
-        const hairRefFileId = HAIR_COLOR_REF_FILE_ID[detectedHairColor];
-        console.log('[simulate:pc] detected hair color:', detectedHairColor, '-> ref_file_id:', hairRefFileId);
-        const hairTaskBody = { src_file_id: hairFileId, ref_file_id: hairRefFileId };
+        console.log('[simulate:pc] detected hair color:', detectedHairColor, '| gender:', gender, '| ethnicity:', ethnicity);
+
+        let hairTaskBody;
+        if (gender === 'Female') {
+          // Female: ref_file_id-based, keyed by detected hair color
+          const FEMALE_HAIR_REF = {
+            'Black':        'hH+l/Xhb1WWpgSgA4kTmAB5L7Xmvb0Y7FGLVDnhDoR0LbKfeLEmuXUa9yH4wuc2K', // black → bouncy curls template used below
+            'Dark Blonde':  'hH+l/Xhb1WWpgSgA4kTmAB5L7Xmvb0Y7FGLVDnhDoR0LbKfeLEmuXUa9yH4wuc2K', // blonde
+            'Light Blonde': 'hH+l/Xhb1WWpgSgA4kTmAB5L7Xmvb0Y7FGLVDnhDoR0LbKfeLEmuXUa9yH4wuc2K', // blonde
+          };
+          if (detectedHairColor === 'Black') {
+            hairTaskBody = { src_file_id: hairFileId, template_id: 'female_bouncy_curls', hair_color: 'ref' };
+          } else if (detectedHairColor === 'Dark Blonde' || detectedHairColor === 'Light Blonde' || detectedHairColor === 'Ginger') {
+            hairTaskBody = { src_file_id: hairFileId, ref_file_id: 'hH+l/Xhb1WWpgSgA4kTmAB5L7Xmvb0Y7FGLVDnhDoR0LbKfeLEmuXUa9yH4wuc2K' };
+          } else if (detectedHairColor === 'Dark Brown' || detectedHairColor === 'Light Brown') {
+            hairTaskBody = { src_file_id: hairFileId, ref_file_id: 'Lf6Kjk2EK+TGTkFhYNup2ounGHMZjJWeTs7Prx83ZG8LbKfeLEmuXUa9yH4wuc2K' };
+          } else {
+            hairTaskBody = { src_file_id: hairFileId, ref_file_id: 'Lf6Kjk2EK+TGTkFhYNup2ounGHMZjJWeTs7Prx83ZG8LbKfeLEmuXUa9yH4wuc2K' };
+          }
+          console.log('[simulate:pc] female hair body:', JSON.stringify(hairTaskBody));
+        } else {
+          // Male: ref_file_id-based hair transfer
+          let hairRefFileId = detectedHairColor === 'Ginger'
+            ? HAIR_COLOR_REF_FILE_ID['Dark Blonde']  // ginger → blonde ref for males
+            : HAIR_COLOR_REF_FILE_ID[detectedHairColor];
+          if (ethnicity === 'Black or African American') {
+            hairRefFileId = 'v/4lA29EXKhQ0NzfjANs8TsI2tBiPS5qbxv+5wMaeRMLbKfeLEmuXUa9yH4wuc2K';
+            console.log('[simulate:pc] ethnicity override -> using Black/AA ref_file_id');
+          }
+          console.log('[simulate:pc] male ref_file_id:', hairRefFileId);
+          hairTaskBody = { src_file_id: hairFileId, ref_file_id: hairRefFileId };
+        }
         console.log('[simulate:pc] running hair-transfer task...');
         const hairResultData = await pcRunTask('hair-transfer', hairTaskBody, 'hair-transfer', 'v2.1');
         const hairResultUrl = hairResultData?.results?.url || hairResultData?.results?.output?.[0]?.url || hairResultData?.output?.[0] || hairResultData?.url;
@@ -2521,6 +2548,8 @@ End with a "Daily Non-Negotiables" section (5 habits to do every single day).`;
 
         const session = await stripePost('checkout/sessions', {
           mode: 'subscription',
+          ui_mode: 'embedded_page',
+          payment_method_types: ['card', 'us_bank_account', 'cashapp'],
           line_items: [
             {
               quantity: 1,
@@ -2528,17 +2557,16 @@ End with a "Daily Non-Negotiables" section (5 habits to do every single day).`;
                 currency: 'usd',
                 unit_amount: 1500, // $15.00/mo
                 recurring: { interval: 'month' },
-                product_data: { name: 'Protocol Membership' }
+                product_data: { name: 'Potential Premium' }
               }
             }
           ],
           subscription_data: { trial_period_days: 7 },
-          success_url: `${origin}/dashboard?checkout=success`,
-          cancel_url: `${origin}${body.cancelPath || '/'}?checkout=cancelled`
+          return_url: `${origin}/dashboard?checkout=success`,
         });
 
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-        res.end(JSON.stringify({ url: session.url }));
+        res.end(JSON.stringify({ clientSecret: session.client_secret }));
       } catch(e) {
         console.error('[stripe] checkout session error:', e.message);
         res.writeHead(500, { 'Content-Type': 'application/json' });

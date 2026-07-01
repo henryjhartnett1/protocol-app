@@ -957,22 +957,18 @@ function renderScanData() {
       // Fixed value per jaw roadmap task — must stay in sync with TASK_VALUES
       // in improve.html.
       const JAW_TASK_VALUES = {
-        'jaw-d-water': 0.10, 'jaw-d-sodium': 0.10,
-        'jaw-w-cardio': 0.40, 'jaw-w-gum': 0.30,
-        'jaw-f-beard': 0.30, 'jaw-f-contour': 0.25, 'jaw-f-posture-photo': 0.10,
-        'jaw-a-filler': 0.50, 'jaw-a-submental': 0.50, 'jaw-a-skin': 0.30,
         'jaw-d-kshami': 0.30, 'jaw-d-chintucks': 0.20, 'jaw-d-neckcurls': 0.45,
         'jaw-d-lymphatic': 0.20, 'jaw-d-sugar': 0, 'jaw-a-igf1': 0.90,
       };
       // Same per-strength roadmaps as JAW_ROADMAP_DATA in improve.html.
       const JAW_ROADMAP_IDS = {
-        jawWidth:          ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-beard','jaw-f-contour','jaw-a-skin','jaw-a-igf1'],
-        jawDefinition:     ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-contour','jaw-a-skin','jaw-a-submental','jaw-a-igf1'],
-        chinProjection:    ['jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-f-posture-photo','jaw-f-beard','jaw-a-filler','jaw-a-igf1'],
-        gonialAngle:       ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-w-gum','jaw-f-contour','jaw-f-beard','jaw-a-skin','jaw-a-igf1'],
+        jawWidth:          ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
+        jawDefinition:     ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
+        chinProjection:    ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
+        gonialAngle:       ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
         jawSymmetry:       ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
-        neckJawSeparation: ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-contour','jaw-a-submental','jaw-a-igf1'],
-        facialLeanness:    ['jaw-d-sodium','jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-w-gum','jaw-a-skin','jaw-a-igf1'],
+        neckJawSeparation: ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
+        facialLeanness:    ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
       };
       const _jawPriority = ['jawWidth','jawDefinition','chinProjection','gonialAngle','jawSymmetry','neckJawSeparation','facialLeanness'];
       let _jawStrength = 'jawWidth', _jawBest = -1;

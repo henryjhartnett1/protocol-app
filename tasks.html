@@ -305,16 +305,10 @@ const TASK_META = {
   'ess-moisturizer-pm': {icon:'/MOISTURIZER.png',name:'Night Moisturizer',    desc:'Repair and replenish skin overnight',               type:'daily', tod:'night'},
   'ess-sunscreen':      {icon:'/SS.png',name:'Apply SPF',            desc:'Protect skin from UV damage',                       type:'daily', tod:'morning'},
   'g-retinol':       {icon:'/RETINOL.png',name:'Apply Retinol',         desc:'Apply retinol serum to clean skin at night',   type:'daily',  tod:'night', buyName:'Retinol', price:20},
-  'g-benzoyl':       {icon:'🔬',name:'Benzoyl Peroxide',      desc:'Apply to active breakouts before bed',         type:'daily',  tod:'night'},
-  'g-adapalene':     {icon:'⚗️',name:'Apply Adapalene',       desc:'Apply retinoid treatment at night',            type:'daily',  tod:'night'},
   'g-vitc':          {icon:'/VCS.png',name:'Vitamin C Serum',       desc:'Apply to face each morning under SPF',         type:'daily',  tod:'morning', price:15},
   'g-niacinamide':   {icon:'/NI.png',name:'Niacinamide Serum',     desc:'Apply to reduce redness and improve clarity',  type:'daily',  tod:'morning', price:10},
   'adv-ghkcu':       {icon:'/GHKI.png',name:'GHK-Cu Peptide',        desc:'Apply copper peptide serum for skin quality',  type:'daily',  tod:'morning', price:30},
   'adv-ghkcu2':      {icon:'/MT2.png',name:'MT2 (Melanotan II)',     desc:'Apply/use MT2 peptide for a deeper, more even tan',  type:'daily',  tod:'morning', price:40},
-  'g-prescription':  {icon:'🏥',name:'Prescription Acne',    desc:'Apply prescription acne medication',           type:'daily',  tod:'night'},
-  // SKIN — weekly
-  'g-aha':           {icon:'✨',name:'Chemical Exfoliant',    desc:'Exfoliate for smoother and brighter skin',     type:'weekly', day:4, tod:'night'},
-  'skin-microneedle':{icon:'🧬',name:'Microneedling Session', desc:'Complete your microneedling treatment',        type:'weekly', day:6, tod:'night'},
 
   // EYES — daily
   'eye-d-whitening': {icon:'/EYEWHITENINGDROPS.png',name:'Use Eye Drops',         desc:'Improve eye brightness and reduce redness',   type:'daily',  tod:'morning', buyName:'Eye Drops', price:12},
@@ -323,60 +317,32 @@ const TASK_META = {
   'eye-f-contacts':  {icon:'/CC.png',name:'Wear Contacts',         desc:'Put in your colored contacts',                type:'daily',  tod:'morning', buyName:'Colored Contacts', price:20},
   'eye-f-concealer': {icon:'/UEC.png',name:'Under Eye Concealer',   desc:'Apply concealer under eyes',                  type:'daily',  tod:'morning', price:5},
   'eye-f-mascara':   {icon:'/MASCARA.png',name:'Apply Mascara',         desc:'Apply mascara for lash definition',           type:'daily',  tod:'morning', buyName:'Mascara'},
-  'eye-f-waterline': {icon:'✏️',name:'Line Waterline',        desc:'Apply eyeliner to waterline',                 type:'daily',  tod:'morning'},
-  'eye-a-contrast':  {icon:'🎨',name:'Eye Contrast',          desc:'Apply eye contrast technique daily',          type:'daily',  tod:'morning'},
-  'eye-a-undereye':  {icon:'💫',name:'Under Eye Treatment',   desc:'Apply under-eye treatment product',           type:'daily',  tod:'day'},
-  'eye-a-framing':   {icon:'🪮',name:'Frame Eyes',            desc:'Groom and frame the eye area',                type:'daily',  tod:'morning'},
-  'eye-a-brightness':{icon:'💡',name:'Eye Brightness',        desc:'Apply brightness-enhancing routine',          type:'daily',  tod:'morning'},
-  // EYES — weekly
-  'eye-w-brow':      {icon:'✂️',name:'Brow Check',            desc:'Assess and clean up your brow shape',         type:'weekly', day:3, tod:'morning'},
-  'eye-w-puffiness': {icon:'🧊',name:'Puffiness Treatment',   desc:'Extended under-eye puffiness session',        type:'weekly', day:6, tod:'night'},
+  'eye-f-waterline': {icon:'/waterline.png',name:'Line Waterline',     desc:'Apply eyeliner to waterline',                 type:'daily',  tod:'morning'},
 
   // BROWS — daily
   'brow-d-serum':    {icon:'/MINOXIDIL.png',name:'Brow Growth Serum',     desc:'Promote eyebrow density and growth',          type:'daily',  tod:'night', buyName:'Minoxodil', price:15},
-  'brow-d-condition':{icon:'🌿',name:'Condition Brows',       desc:'Keep brows healthy and well-groomed',         type:'daily',  tod:'morning'},
   'brow-f-pencil':   {icon:'/BROWPENCIL.png',name:'Fill Brows',            desc:'Fill in brows with pencil for definition',    type:'daily',  tod:'morning', buyName:'Men Pen', price:5},
   'brow-f-gel':      {icon:'/BROWGEL.png',name:'Apply Brow Gel',        desc:'Set brows in place with gel',                 type:'daily',  tod:'morning', buyName:'Brow Gel', price:5},
-  'brow-f-fiber':    {icon:'✨',name:'Brow Fiber',            desc:'Apply fiber for fuller-looking brows',        type:'daily',  tod:'morning'},
-  'brow-a-design':   {icon:'📐',name:'Brow Design',           desc:'Follow your brow design routine',             type:'daily',  tod:'day'},
-  'brow-a-styling':  {icon:'🪮',name:'Style Brows',           desc:'Style and shape brows daily',                 type:'daily',  tod:'morning'},
-  'brow-a-tail':     {icon:'✏️',name:'Define Brow Tail',      desc:'Define and shape the brow tail',              type:'daily',  tod:'night'},
-  // BROWS — weekly
-  'brow-w-shape':    {icon:'✂️',name:'Shape Eyebrows',        desc:'Maintain your eyebrow shape',                 type:'weekly', day:2, tod:'night'},
-  'brow-w-strays':   {icon:'✂️',name:'Remove Stray Hairs',    desc:'Pluck stray hairs for clean definition',      type:'weekly', day:4, tod:'night'},
-  'brow-w-tail':     {icon:'✏️',name:'Define Brow Tail',      desc:'Shape and define the outer brow tail',        type:'weekly', day:5, tod:'morning'},
-  'brow-w-edge':     {icon:'✂️',name:'Edge Brows',            desc:'Clean up brow edges for sharp definition',    type:'weekly', day:1, tod:'morning'},
-  'brow-w-maintain': {icon:'🪮',name:'Brow Maintenance',      desc:'Regular brow grooming and upkeep',            type:'weekly', day:3, tod:'night'},
-  'brow-w-cleanup':  {icon:'✂️',name:'Brow Cleanup',          desc:'Full brow shape and cleanup session',         type:'weekly', day:1, tod:'night'},
-  'brow-w-thickness':{icon:'🌿',name:'Thickness Routine',     desc:'Apply treatment for fuller brows',            type:'weekly', day:6, tod:'night'},
-  'brow-f-tint':     {icon:'🎨',name:'Brow Tint',             desc:'Apply brow tint for color and definition',    type:'weekly', day:1, tod:'morning'},
-  'brow-a-lamination':{icon:'✨',name:'Brow Lamination',      desc:'Complete your brow lamination session',       type:'weekly', day:6, tod:'day'},
-  'brow-a-mapping':  {icon:'📐',name:'Brow Mapping',          desc:'Follow your brow mapping routine',            type:'weekly', day:0, tod:'day'},
 
   // HAIR — weekly
   'hair-w-cut':      {icon:'/FRINGEICON.png',name:'Haircut / Style',       desc:'Maintain your haircut and style',             type:'weekly', day:6, tod:'day'},
-  'hair-book-cut':   {icon:'📅',name:'Book Haircut Appointment', desc:'Schedule your next haircut so your style stays sharp', type:'special', tod:'day'},
 
   // JAW
-  'jaw-d-water':       {icon:'💧',name:'Hydration (3L Water)',     desc:'Drink 3L of water throughout the day',          type:'daily',  tod:'morning'},
-  'jaw-d-sodium':       {icon:'🧂',name:'Low Sodium Diet',          desc:'Keep sodium intake low to reduce facial bloat', type:'daily',  tod:'day'},
   'jaw-d-kshami':       {icon:'/KSHAMI.png',name:'K-Shami D-BLOAT', desc:'Take your D-Bloat supplement',                  type:'daily',  tod:'day', price:30},
   'jaw-d-chintucks':    {icon:'/CT.png',name:'Chin Tucks',          desc:'Complete your chin tuck exercises',             type:'daily',  tod:'day'},
   'jaw-d-neckcurls':    {icon:'/NC.png',name:'Neck Curls',          desc:'Complete your neck curl exercises',             type:'daily',  tod:'day'},
   'jaw-d-lymphatic':    {icon:'/LD.png',name:'Lymphatic Drainage',  desc:'Perform your lymphatic drainage routine',       type:'daily',  tod:'morning'},
   'jaw-d-sugar':        {icon:'/sugar.png',name:'500-1000g of Sugar', desc:'Hit your daily sugar target',                 type:'daily',  tod:'day'},
   'jaw-a-igf1':         {icon:'/igf.png',name:'IGF-1',              desc:'Take your IGF-1 dose',                          type:'daily',  tod:'morning', price:80},
-  'jaw-w-cardio':       {icon:'🏃',name:'Cardio / Fat Loss Training', desc:'Complete your cardio session',                type:'weekly', day:2, tod:'day'},
-  'jaw-w-gum':          {icon:'🦷',name:'Mastic Gum Chewing',       desc:'Chew mastic gum for jaw definition',            type:'weekly', day:4, tod:'day'},
-  'jaw-f-beard':        {icon:'🧔',name:'Beard Shaping for Jaw Framing', desc:'Shape your beard to frame the jawline',     type:'weekly', day:5, tod:'morning'},
-  'jaw-f-contour':      {icon:'✂️',name:'Sideburn Taper / Contour Grooming', desc:'Touch up sideburn taper and contour',  type:'weekly', day:5, tod:'morning'},
-  'jaw-f-posture-photo':{icon:'📸',name:'Chin-Forward Posture in Photos', desc:'Practice chin-forward posture for photos', type:'daily', tod:'day'},
-  'jaw-a-filler':       {icon:'💉',name:'Jawline / Chin Filler',    desc:'Maintain your filler appointment schedule',     type:'weekly', day:6, tod:'day'},
-  'jaw-a-submental':    {icon:'🏥',name:'Submental Fat Reduction',  desc:'Maintain your submental treatment schedule',    type:'weekly', day:6, tod:'day'},
-  'jaw-a-skin':         {icon:'🧬',name:'Retinoid Skin Tightening', desc:'Apply retinoid for skin tightening',            type:'daily',  tod:'night'},
 };
 
 // ── STATE ──────────────────────────────────────────────────────────────────
+// Visit /tasks?resetTasks=1 in any mobile browser (no devtools needed) to
+// clear every "added to daily" task — everything goes back to "+ Add to Daily".
+if (new URLSearchParams(location.search).get('resetTasks') === '1') {
+  localStorage.removeItem('protocol_plan_state');
+}
+
 let planState = {};
 try { planState = JSON.parse(localStorage.getItem('protocol_plan_state') || '{}'); } catch(e){}
 
@@ -585,24 +551,6 @@ function getWeeklyAssignments() {
   return stored;
 }
 
-// ── HAIRCUT BOOKING REMINDER ───────────────────────────────────────────────
-// Adding "Get Haircut" to the weekly plan anchors a separate recurring
-// reminder: "Book Haircut Appointment" appears the very next day, then
-// again every 3 weeks (21 days) on that same day-of-week, indefinitely.
-function isHaircutBookingDay(date) {
-  let anchorStr = null;
-  try { anchorStr = localStorage.getItem('protocol_haircut_anchor'); } catch(e){}
-  if (!anchorStr) return false;
-  const anchor = new Date(anchorStr);
-  if (isNaN(anchor.getTime())) return false;
-  anchor.setHours(0,0,0,0);
-  const firstBooking = new Date(anchor);
-  firstBooking.setDate(firstBooking.getDate() + 1);
-  const d = new Date(date); d.setHours(0,0,0,0);
-  const diffDays = Math.round((d - firstBooking) / 86400000);
-  return diffDays >= 0 && diffDays % 21 === 0;
-}
-
 // ── GET TODAY'S TASKS GROUPED BY TIME-OF-DAY ──────────────────────────────
 function getTasksForDate(date) {
   const dow = date.getDay(); // 0=Sun..6=Sat
@@ -630,8 +578,6 @@ function getTasksForDate(date) {
     }
   }
 
-  if (isHaircutBookingDay(date)) groups.day.push('hair-book-cut');
-
   return groups;
 }
 
@@ -652,22 +598,17 @@ function resolveMeta(taskId) {
 
 // ── GROUP DEFINITIONS ──────────────────────────────────────────────────────
 const SKINCARE_IDS = {
-  morning: new Set(['ess-moisturizer','ess-sunscreen','g-vitc','g-niacinamide','adv-ghkcu','adv-ghkcu2','g-prescription']),
-  night:   new Set(['ess-cleanser-pm','ess-moisturizer-pm','g-retinol','g-benzoyl','g-adapalene','g-prescription','g-aha','skin-microneedle']),
+  morning: new Set(['ess-moisturizer','ess-sunscreen','g-vitc','g-niacinamide','adv-ghkcu','adv-ghkcu2']),
+  night:   new Set(['ess-cleanser-pm','ess-moisturizer-pm','g-retinol']),
 };
 const EYE_IDS = new Set([
   'eye-d-whitening','eye-d-ice',
   'eye-f-contacts','eye-f-concealer','eye-f-mascara','eye-f-waterline',
-  'eye-a-contrast','eye-a-undereye','eye-a-framing','eye-a-brightness',
-  'eye-w-brow','eye-w-puffiness',
 ]);
 const LONGTERM_IDS = new Set(['brow-d-serum','eye-d-lash']);
-const GROOMING_IDS = new Set(['brow-d-condition']);
 
 const BROW_IDS = new Set([
-  'brow-f-pencil','brow-f-gel','brow-f-fiber','brow-f-tint',
-  'brow-a-design','brow-a-styling','brow-a-tail','brow-a-lamination','brow-a-mapping',
-  'brow-w-shape','brow-w-strays','brow-w-tail','brow-w-edge','brow-w-maintain','brow-w-cleanup','brow-w-thickness',
+  'brow-f-pencil','brow-f-gel',
 ]);
 
 // Track which groups are open (false = collapsed)
@@ -677,7 +618,6 @@ const groupOpen = {
   'brow-morning': false, 'brow-day': false, 'brow-night': false,
   'buy-morning': false, 'buy-day': false, 'buy-night': false,
   'longterm-morning': false, 'longterm-day': false, 'longterm-night': false,
-  'grooming-morning': false, 'grooming-day': false, 'grooming-night': false,
 };
 
 function toggleGroup(key) {

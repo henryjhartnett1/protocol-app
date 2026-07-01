@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PROTOCOL — Hair</title>
+  <script src="https://js.stripe.com/v3/"></script>
   <style>
     :root {
       --bg: #000;
@@ -1948,6 +1949,134 @@ function renderTransformationPlan(plan) {
   el.style.display = 'block';
 }
 
+// ── EYEBROW TEMPLATE OVERLAY ────────────────────────────────────────────────
+// After the AI transformation pipeline runs (with the eyebrows effect disabled
+// server-side — see server.js buildMakeupVtoTaskBody), we detect the user's
+// real eyebrow position/length/angle with MediaPipe Face Mesh and stamp our
+// own /left_brow.png + /right_brow.png hair templates on top, scaled and
+// rotated to match. This replaces the old Perfect Corp eyebrows makeup-vto
+// effect with a template-based overlay we fully control.
+
+// Standard MediaPipe Face Mesh eyebrow landmark indices (468-point model).
+// clusterA / clusterB are just "whichever side of the image" — we figure out
+// left vs. right at runtime from each cluster's actual x position, since that
+// is robust to any axis convention MediaPipe uses internally.
+const BROW_LANDMARK_IDX = {
+  clusterA: [46, 53, 52, 65, 55, 70, 63, 105, 66, 107],
+  clusterB: [276, 283, 282, 295, 285, 300, 293, 334, 296, 336],
+};
+
+// Measured (offline, via PIL alpha-channel analysis) hair-span geometry inside
+// each 1536x1024 template PNG — lets us scale/position the template so the
+// drawn hair (not the full transparent canvas) lines up with the detected brow.
+const BROW_TEMPLATES = {
+  left:  { src: '/left_brow.png',  hairWidthPx: 1213, centerXFrac: 0.464, centerYFrac: 0.473 },
+  right: { src: '/right_brow.png', hairWidthPx: 1291, centerXFrac: 0.537, centerYFrac: 0.477 },
+};
+
+const EYEBROW_OVERLAY_SCALE   = 1.18; // slight overscan so hair fully covers the real brow
+const EYEBROW_OVERLAY_OPACITY = 1.0;
+
+let _faceMeshScriptPromise = null;
+function loadFaceMeshScript() {
+  if (_faceMeshScriptPromise) return _faceMeshScriptPromise;
+  _faceMeshScriptPromise = new Promise((resolve, reject) => {
+    if (window.FaceMesh) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js';
+    s.crossOrigin = 'anonymous';
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Failed to load MediaPipe Face Mesh'));
+    document.head.appendChild(s);
+  });
+  return _faceMeshScriptPromise;
+}
+
+function loadImageEl(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Failed to load image: ' + src));
+    img.src = src;
+  });
+}
+
+// Runs Face Mesh on a single static image and resolves with the 468 landmarks
+// of the first detected face (each {x,y,z} normalized 0-1).
+async function detectFaceLandmarks(imgEl) {
+  await loadFaceMeshScript();
+  return new Promise((resolve, reject) => {
+    const fm = new FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+    });
+    fm.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+    fm.onResults((results) => {
+      if (!results.multiFaceLandmarks || !results.multiFaceLandmarks.length) {
+        reject(new Error('No face detected for eyebrow overlay'));
+        return;
+      }
+      resolve(results.multiFaceLandmarks[0]);
+    });
+    fm.send({ image: imgEl }).catch(reject);
+  });
+}
+
+// From a cluster of brow landmark indices, derive the length/angle/center we
+// need to place a template: the line between the cluster's leftmost and
+// rightmost point stands in for the brow's natural length and tilt.
+function computeBrowGeometry(landmarks, indices, imgW, imgH) {
+  const pts = indices.map(i => ({ x: landmarks[i].x * imgW, y: landmarks[i].y * imgH }));
+  let minPt = pts[0], maxPt = pts[0];
+  pts.forEach(p => { if (p.x < minPt.x) minPt = p; if (p.x > maxPt.x) maxPt = p; });
+  const dx = maxPt.x - minPt.x, dy = maxPt.y - minPt.y;
+  return {
+    length: Math.sqrt(dx * dx + dy * dy),
+    angle: Math.atan2(dy, dx),
+    cx: (minPt.x + maxPt.x) / 2,
+    cy: (minPt.y + maxPt.y) / 2,
+  };
+}
+
+function drawBrowTemplate(ctx, templateImg, tmpl, geo) {
+  const scale = (geo.length * EYEBROW_OVERLAY_SCALE) / tmpl.hairWidthPx;
+  const drawW = templateImg.naturalWidth * scale;
+  const drawH = templateImg.naturalHeight * scale;
+  ctx.save();
+  ctx.globalAlpha = EYEBROW_OVERLAY_OPACITY;
+  ctx.translate(geo.cx, geo.cy);
+  ctx.rotate(geo.angle);
+  ctx.drawImage(templateImg, -tmpl.centerXFrac * drawW, -tmpl.centerYFrac * drawH, drawW, drawH);
+  ctx.restore();
+}
+
+// Main entry point: takes the transformed-photo data URL, detects the brows,
+// stamps the templates on top, and returns a new data URL. Throws if face
+// detection fails — callers should catch and fall back to the raw image.
+async function applyEyebrowOverlay(imageUrl) {
+  const srcImg = await loadImageEl(imageUrl);
+  const W = srcImg.naturalWidth, H = srcImg.naturalHeight;
+
+  const landmarks = await detectFaceLandmarks(srcImg);
+  const gA = computeBrowGeometry(landmarks, BROW_LANDMARK_IDX.clusterA, W, H);
+  const gB = computeBrowGeometry(landmarks, BROW_LANDMARK_IDX.clusterB, W, H);
+  const [leftGeo, rightGeo] = gA.cx <= gB.cx ? [gA, gB] : [gB, gA];
+
+  const [leftImg, rightImg] = await Promise.all([
+    loadImageEl(BROW_TEMPLATES.left.src),
+    loadImageEl(BROW_TEMPLATES.right.src),
+  ]);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(srcImg, 0, 0, W, H);
+  drawBrowTemplate(ctx, leftImg,  BROW_TEMPLATES.left,  leftGeo);
+  drawBrowTemplate(ctx, rightImg, BROW_TEMPLATES.right, rightGeo);
+
+  return canvas.toDataURL('image/jpeg', 0.92);
+}
+
 async function simulatePotential() {
   const imageBase64 = window._imageBase64 || localStorage.getItem('protocol_image_base64');
   const mimeType    = window._mimeType || 'image/jpeg';
@@ -2029,7 +2158,7 @@ async function simulatePotential() {
     const startResp = await fetch('/api/simulate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageBase64, mimeType, hairData, browData, eyeData, skinData, roadmapText })
+      body: JSON.stringify({ imageBase64, mimeType, hairData, browData, eyeData, skinData, roadmapText, ethnicity: window._intakeEthnicity || localStorage.getItem('protocol_intake_ethnicity') || '', gender: window._intakeGender || localStorage.getItem('protocol_intake_gender') || 'Male' })
     });
     const startData = await startResp.json();
     if (!startResp.ok || startData.error) throw new Error(startData.error || 'Generation failed to start');
@@ -2403,6 +2532,9 @@ function rerunSim() {
         removeBtn.style.display = 'flex';
         analyzeBtn.disabled = false;
         analyzeBtn.style.display = 'block';
+
+        // Show intake popup if not already answered
+        if (!localStorage.getItem('protocol_intake_done')) showIntakePopup();
 
         // Auto-detect the head and re-center it inside the circle
         detectFaceAndCenter(canvas, w, h, origW, origH);
@@ -3021,21 +3153,17 @@ function rerunSim() {
         : avgJaw([jd.jawWidth,jd.jawDefinition,jd.chinProjection,jd.gonialAngle,jd.jawSymmetry,jd.neckJawSeparation,jd.facialLeanness]);
       if (jawCurrent != null) {
         const JAW_TASK_VALUES = {
-          'jaw-d-water': 0.10, 'jaw-d-sodium': 0.10,
-          'jaw-w-cardio': 0.40, 'jaw-w-gum': 0.30,
-          'jaw-f-beard': 0.30, 'jaw-f-contour': 0.25, 'jaw-f-posture-photo': 0.10,
-          'jaw-a-filler': 0.50, 'jaw-a-submental': 0.50, 'jaw-a-skin': 0.30,
           'jaw-d-kshami': 0.30, 'jaw-d-chintucks': 0.20, 'jaw-d-neckcurls': 0.45,
           'jaw-d-lymphatic': 0.20, 'jaw-d-sugar': 0, 'jaw-a-igf1': 0.90,
         };
         const JAW_ROADMAP_IDS = {
-          jawWidth:          ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-beard','jaw-f-contour','jaw-a-skin','jaw-a-igf1'],
-          jawDefinition:     ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-contour','jaw-a-skin','jaw-a-submental','jaw-a-igf1'],
-          chinProjection:    ['jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-f-posture-photo','jaw-f-beard','jaw-a-filler','jaw-a-igf1'],
-          gonialAngle:       ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-w-gum','jaw-f-contour','jaw-f-beard','jaw-a-skin','jaw-a-igf1'],
+          jawWidth:          ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
+          jawDefinition:     ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
+          chinProjection:    ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
+          gonialAngle:       ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
           jawSymmetry:       ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
-          neckJawSeparation: ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-f-contour','jaw-a-submental','jaw-a-igf1'],
-          facialLeanness:    ['jaw-d-sodium','jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-w-cardio','jaw-w-gum','jaw-a-skin','jaw-a-igf1'],
+          neckJawSeparation: ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
+          facialLeanness:    ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
         };
         const _jawPriority = ['jawWidth','jawDefinition','chinProjection','gonialAngle','jawSymmetry','neckJawSeparation','facialLeanness'];
         let _jawStrength = 'jawWidth', _jawBest = -1;
@@ -4523,7 +4651,7 @@ function kickOffSimulate(imageBase64, mimeType) {
   _simulatePromise = fetch('/api/simulate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ imageBase64, mimeType: mimeType || 'image/jpeg' })
+    body: JSON.stringify({ imageBase64, mimeType: mimeType || 'image/jpeg', ethnicity: window._intakeEthnicity || localStorage.getItem('protocol_intake_ethnicity') || '', gender: window._intakeGender || localStorage.getItem('protocol_intake_gender') || 'Male' })
   }).then(async startResp => {
     const startRawText = await startResp.text();
     let startData;
@@ -4611,11 +4739,10 @@ async function goToBestRoadmap() {
     if (toStatus) toStatus.textContent = 'DONE';
     steps.forEach(s => { if (s) { s.classList.remove('active'); s.classList.add('done'); } });
 
-    const resultSrc = data.imageUrl;
-    localStorage.setItem('transformedPhoto', resultSrc);
+    localStorage.setItem('transformedPhoto', data.imageUrl);
 
     document.getElementById('toBeforeImg').src = photoDataUrl;
-    document.getElementById('toAfterImg').src  = resultSrc;
+    document.getElementById('toAfterImg').src  = data.imageUrl;
 
     // Brief pause so the 100%/DONE state is visible before switching sections.
     await new Promise(r => setTimeout(r, 300));
@@ -4712,15 +4839,66 @@ function _legacyGoToBestRoadmap() {
   </div>
 </div>
 
+<!-- ── Photo Intake Popup ── -->
+<div id="intakeOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:10001;align-items:center;justify-content:center;padding:24px;">
+  <div style="width:100%;max-width:400px;background:#0c0c0c;border:1px solid #1e1e1e;padding:36px 28px;">
+
+    <!-- Q1: Gender -->
+    <div id="intakeQ1">
+      <div style="font-size:9px;font-weight:800;letter-spacing:4px;color:#3aa0ff;text-transform:uppercase;margin-bottom:14px;">Question 1 of 2</div>
+      <div style="font-size:20px;font-weight:900;letter-spacing:-0.3px;margin-bottom:28px;">What is your gender?</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="intake-opt" onclick="selectIntake('gender','Male')">Male</button>
+        <button class="intake-opt" onclick="selectIntake('gender','Female')">Female</button>
+      </div>
+    </div>
+
+    <!-- Q2: Ethnicity -->
+    <div id="intakeQ2" style="display:none;">
+      <div style="font-size:9px;font-weight:800;letter-spacing:4px;color:#3aa0ff;text-transform:uppercase;margin-bottom:14px;">Question 2 of 2</div>
+      <div style="font-size:20px;font-weight:900;letter-spacing:-0.3px;margin-bottom:28px;">Which race or ethnicity are you?</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="intake-opt" onclick="selectIntake('ethnicity','White')">White</button>
+        <button class="intake-opt" onclick="selectIntake('ethnicity','Asian')">Asian</button>
+        <button class="intake-opt" onclick="selectIntake('ethnicity','Black or African American')">Black or African American</button>
+        <button class="intake-opt" onclick="selectIntake('ethnicity','Hispanic or Latino')">Hispanic or Latino</button>
+        <button class="intake-opt" onclick="selectIntake('ethnicity','Other')">Other</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.intake-opt {
+  width: 100%; padding: 14px 18px; background: #111; border: 1px solid #2a2a2a;
+  color: #f0f0f0; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer;
+  transition: border-color .15s, background .15s; letter-spacing: 0.3px;
+}
+.intake-opt:hover { border-color: #3aa0ff; background: #0d1a2a; color: #fff; }
+</style>
+
 <!-- ── Paywall ── -->
-<div id="paywallOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;align-items:center;justify-content:center;padding:24px;">
-  <div style="width:100%;max-width:380px;background:#0c0c0c;border:1px solid rgba(58,160,255,0.3);padding:32px 28px;text-align:center;">
-    <div style="font-size:9px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:#3aa0ff;margin-bottom:10px;">Unlock Your Roadmap</div>
-    <div style="font-size:22px;font-weight:900;letter-spacing:-0.3px;margin-bottom:6px;">7 Days Free</div>
-    <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:24px;">Then $15/month. Cancel anytime during your trial and you won't be charged.</div>
-    <button id="paywallSubmitBtn" onclick="startCheckout()" style="width:100%;padding:18px;background:#3aa0ff;color:#000;border:none;font-size:11px;font-weight:900;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-bottom:12px;">Start Free Trial →</button>
-    <div id="paywallError" style="display:none;color:#ff5a5a;font-size:12px;margin-bottom:10px;"></div>
-    <div onclick="closePaywall()" style="font-size:11px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;">Not now</div>
+<div id="paywallOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:10000;align-items:center;justify-content:center;padding:24px;overflow-y:auto;">
+  <div id="paywallBox" style="width:100%;max-width:420px;background:#0c0c0c;border:1px solid rgba(58,160,255,0.3);padding:32px 28px;text-align:center;transition:max-width 0.3s;">
+
+    <!-- Initial offer screen -->
+    <div id="paywallInitial">
+      <div style="font-size:9px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:#3aa0ff;margin-bottom:10px;">Unlock Your Roadmap</div>
+      <div style="font-size:22px;font-weight:900;letter-spacing:-0.3px;margin-bottom:6px;">7 Days Free</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:24px;">Then $15/month. Cancel anytime during your trial and you won't be charged.</div>
+      <button id="paywallSubmitBtn" onclick="startCheckout()" style="width:100%;padding:18px;background:#3aa0ff;color:#000;border:none;font-size:11px;font-weight:900;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-bottom:12px;">Start Free Trial →</button>
+      <div id="paywallError" style="display:none;color:#ff5a5a;font-size:12px;margin-bottom:10px;"></div>
+      <div onclick="closePaywall()" style="font-size:11px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;">Not now</div>
+    </div>
+
+    <!-- Embedded Stripe checkout (shown after clicking Start Free Trial) -->
+    <div id="paywallCheckout" style="display:none;">
+      <div style="font-size:9px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:#3aa0ff;margin-bottom:20px;">Complete Your Subscription</div>
+      <div id="stripeCheckoutContainer"></div>
+      <div onclick="closePaywall()" style="margin-top:16px;font-size:11px;color:rgba(255,255,255,0.4);cursor:pointer;letter-spacing:0.5px;">Cancel</div>
+    </div>
+
   </div>
 </div>
 
@@ -4770,11 +4948,8 @@ function _legacyGoToBestRoadmap() {
   window.addEventListener('touchend', onUp);
 })();
 
-// ── Paywall temporarily disabled for testing ──────────────────────────────
-// Flip back to true to re-enable the Stripe paywall popup on "Build My
-// Roadmap →". Nothing else needs to change — openPaywall() just bypasses
-// straight to the dashboard while this is false.
-const PAYWALL_ENABLED = false;
+const PAYWALL_ENABLED = true;
+const STRIPE_PK = 'pk_live_51TlJYVLsiJNOo68KmWSpWmPyjx0LXaS9kVhgdRNyKEWdoaqJ4PnkkddAFkd5cjeRAnbVEa1C78narI5jvrvGROP300Zrtv0hVW';
 
 function openPaywall() {
   if (!PAYWALL_ENABLED) { window.location.href = '/dashboard'; return; }
@@ -4782,9 +4957,47 @@ function openPaywall() {
   if (el) el.style.display = 'flex';
 }
 function closePaywall() {
-  const el = document.getElementById('paywallOverlay');
-  if (el) el.style.display = 'none';
+  if (_stripeCheckoutInstance) { _stripeCheckoutInstance.destroy(); _stripeCheckoutInstance = null; }
+  document.getElementById('paywallOverlay').style.display = 'none';
+  // Reset to initial screen for next open
+  document.getElementById('paywallInitial').style.display = 'block';
+  document.getElementById('paywallCheckout').style.display = 'none';
+  document.getElementById('paywallBox').style.maxWidth = '420px';
+  const btn = document.getElementById('paywallSubmitBtn');
+  btn.disabled = false; btn.textContent = 'Start Free Trial →';
+  document.getElementById('paywallError').style.display = 'none';
 }
+
+// ── Intake popup ─────────────────────────────────────────────────────────────
+function showIntakePopup() {
+  document.getElementById('intakeQ1').style.display = 'block';
+  document.getElementById('intakeQ2').style.display = 'none';
+  document.getElementById('intakeOverlay').style.display = 'flex';
+}
+
+function selectIntake(field, value) {
+  if (field === 'gender') {
+    window._intakeGender = value;
+    localStorage.setItem('protocol_intake_gender', value);
+    document.getElementById('intakeQ1').style.display = 'none';
+    document.getElementById('intakeQ2').style.display = 'block';
+  } else {
+    window._intakeEthnicity = value;
+    localStorage.setItem('protocol_intake_ethnicity', value);
+    localStorage.setItem('protocol_intake_done', '1');
+    document.getElementById('intakeOverlay').style.display = 'none';
+  }
+}
+
+// Restore from localStorage on page load
+(function() {
+  const g = localStorage.getItem('protocol_intake_gender');
+  const e = localStorage.getItem('protocol_intake_ethnicity');
+  if (g) window._intakeGender = g;
+  if (e) window._intakeEthnicity = e;
+})();
+
+let _stripeCheckoutInstance = null;
 
 async function startCheckout() {
   const btn = document.getElementById('paywallSubmitBtn');
@@ -4800,7 +5013,16 @@ async function startCheckout() {
     });
     const data = await resp.json();
     if (!resp.ok || data.error) throw new Error(data.error || 'Could not start checkout');
-    window.location.href = data.url;
+
+    const stripe = Stripe(STRIPE_PK);
+    _stripeCheckoutInstance = await stripe.initEmbeddedCheckout({ clientSecret: data.clientSecret });
+
+    // Swap to embedded checkout view
+    document.getElementById('paywallInitial').style.display = 'none';
+    document.getElementById('paywallCheckout').style.display = 'block';
+    document.getElementById('paywallBox').style.maxWidth = '520px';
+    _stripeCheckoutInstance.mount('#stripeCheckoutContainer');
+
   } catch(e) {
     errEl.textContent = e.message;
     errEl.style.display = 'block';

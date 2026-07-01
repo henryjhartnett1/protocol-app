@@ -535,10 +535,8 @@ const TASK_VALUES = {
   // ── SKIN ──
   // Foundation (always recommended)
   'ess-cleanser-pm': 0.25, 'ess-moisturizer': 0.25, 'ess-moisturizer-pm': 0.25, 'ess-sunscreen': 0.25,
-  // Acne (conditional on acneScore)
-  'g-benzoyl':       0.75, 'g-adapalene':    1.00,  'g-prescription': 2.00,
   // Texture (conditional on textureScore)
-  'g-aha':           0.50, 'g-retinol':      0.75,  'skin-microneedle': 1.50,
+  'g-retinol':       0.75,
   // Tone (conditional on toneEvenness)
   'g-vitc':          0.50, 'g-niacinamide':  0.50,
   // Advanced (conditional)
@@ -550,24 +548,13 @@ const TASK_VALUES = {
   'skin-w1': 0, 'skin-w2': 0, 'skin-w3': 0, 'skin-m1': 0, 'skin-m2': 0,
   // ── EYES ──
   'eye-d-whitening': 0.10, 'eye-d-lash':      0.25, 'eye-d-ice':       0.10,
-  'eye-w-puffiness': 0,
-  'eye-f-contacts':  1.00, 'eye-f-concealer': 0.50, 'eye-f-mascara':   0.25, 'eye-f-waterline': 0.25,
-  'eye-a-contrast':  0.75, 'eye-a-undereye':  0.75, 'eye-a-framing':   0,    'eye-a-brightness': 0,
+  'eye-f-contacts':  1.00, 'eye-f-concealer': 0.50, 'eye-f-mascara':   0.25, 'eye-f-waterline': 0.40,
   // ── BROWS ──
   'brow-d-serum':    0.50,
-  'brow-w-shape':    0.50, 'brow-w-strays':    0.25,
-  'brow-w-edge':     0,    'brow-w-maintain':  0,    'brow-w-tail':    0.25,
-  'brow-w-cleanup':  0,    'brow-w-thickness': 0,
-  'brow-f-pencil':   1.00, 'brow-f-gel':       0.25, 'brow-f-fiber':   0.75,
-  'brow-a-design':   0,    'brow-a-lamination':0.75, 'brow-a-mapping': 1.50,
-  'brow-a-styling':   0,    'brow-a-tail':    0,
+  'brow-f-pencil':   1.00, 'brow-f-gel':       0.25,
   // ── HAIR ──
   'hair-w-cut': 1.00,
   // ── JAW ──
-  'jaw-d-water': 0.10, 'jaw-d-sodium': 0.10,
-  'jaw-w-cardio': 0.40, 'jaw-w-gum': 0.30,
-  'jaw-f-beard': 0.30, 'jaw-f-contour': 0.25, 'jaw-f-posture-photo': 0.10,
-  'jaw-a-filler': 0.50, 'jaw-a-submental': 0.50, 'jaw-a-skin': 0.30,
   'jaw-d-kshami': 0.30, 'jaw-d-chintucks': 0.20, 'jaw-d-neckcurls': 0.45,
   'jaw-d-lymphatic': 0.20, 'jaw-d-sugar': 0, 'jaw-a-igf1': 0.90,
 };
@@ -578,20 +565,11 @@ const SECTION_TASK_IDS = {
   // skin is populated dynamically by buildSkinRoadmap() based on user scores
   skin:  ['ess-cleanser-pm','ess-moisturizer','ess-moisturizer-pm','ess-sunscreen'],
   eyes:  ['eye-d-whitening','eye-d-lash','eye-d-ice',
-          'eye-w-puffiness',
-          'eye-f-contacts','eye-f-concealer','eye-f-mascara','eye-f-waterline',
-          'eye-a-contrast','eye-a-undereye','eye-a-framing','eye-a-brightness'],
+          'eye-f-contacts','eye-f-concealer','eye-f-mascara','eye-f-waterline'],
   brows: ['brow-d-serum',
-          'brow-w-shape','brow-w-strays','brow-w-edge',
-          'brow-w-maintain','brow-w-tail','brow-w-cleanup','brow-w-thickness',
-          'brow-f-pencil','brow-f-gel','brow-f-fiber',
-          'brow-a-design','brow-a-lamination','brow-a-mapping',
-          'brow-a-styling','brow-a-tail'],
+          'brow-f-pencil','brow-f-gel'],
   hair:  ['hair-w-cut'],
-  jaw:   ['jaw-d-water','jaw-d-sodium',
-          'jaw-w-cardio','jaw-w-gum',
-          'jaw-f-beard','jaw-f-contour','jaw-f-posture-photo',
-          'jaw-a-filler','jaw-a-submental','jaw-a-skin'],
+  jaw:   ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar','jaw-a-igf1'],
 };
 
 // Total potential for a section = sum of all its task values.
@@ -610,6 +588,12 @@ function calcEarnedGain(sectionKey) {
 }
 
 // ── STATE ──
+// Visit /improve?resetTasks=1 in any mobile browser (no devtools needed) to
+// clear every "added to daily" task — everything goes back to "+ Add to Daily".
+if (new URLSearchParams(location.search).get('resetTasks') === '1') {
+  localStorage.removeItem('protocol_plan_state');
+}
+
 const productState = (() => {
   try { return JSON.parse(localStorage.getItem('protocol_plan_state') || '{}'); } catch(e) { return {}; }
 })();
@@ -624,7 +608,7 @@ const SKIN_ESSENTIALS = [
 const GOAL_PRODUCTS = {
   'Clear Acne':           { id:'g-salicylic',  icon:'🔬', name:'Salicylic Acid Serum (2%)', reason:'Helps reduce acne and unclog pores.' },
   'Reduce Redness':       { id:'g-niacinamide', icon:'/NI.png', name:'Niacinamide Serum',          reason:'Helps calm redness and improve skin barrier health.' },
-  'Improve Skin Texture': { id:'g-aha',         icon:'✨', name:'AHA/BHA Exfoliant',          reason:'Improves skin smoothness and texture.' },
+  'Improve Skin Texture': { id:'g-retinol',     icon:'/RETINOL.png', name:'Retinol Serum',      reason:'Improves skin smoothness and texture.' },
   'Remove Dark Spots':    { id:'g-vitc',        icon:'/VCS.png', name:'Vitamin C Serum',            reason:'Helps fade pigmentation and brighten skin.' },
   'Anti-Aging':           { id:'g-retinol',     icon:'/RETINOL.png', name:'Retinol Serum',              reason:'Most recognized anti-aging skincare ingredient.'},
   'Brighter Skin':        { id:'g-vitc',        icon:'/VCS.png', name:'Vitamin C Serum',            reason:'Associated with brighter and more radiant skin.' },
@@ -646,12 +630,7 @@ const SKIN_TASK_DATA = {
   'ess-moisturizer':    { icon:'/MOISTURIZER.png', name:'Morning Moisturizer',        desc:'Hydrates and supports barrier repair. Apply after cleanser every morning.', category:'foundation' },
   'ess-moisturizer-pm': { icon:'/MOISTURIZER.png', name:'Night Moisturizer',          desc:'Repair and replenish skin overnight. Heavier formula for nighttime recovery.', category:'foundation' },
   'ess-sunscreen':      { icon:'/SS.png', name:'Sunscreen SPF 50+',         desc:'Prevents UV damage and preserves skin quality long-term.', category:'foundation' },
-  'g-benzoyl':       { icon:'🔬', name:'Benzoyl Peroxide',              desc:'Kills acne-causing bacteria and reduces active breakouts.', category:'acne', condition:'Recommended: acneScore ≤ 7' },
-  'g-adapalene':     { icon:'⚗️', name:'Adapalene (Differin)',          desc:'Prescription-strength retinoid that clears acne and prevents future breakouts.', category:'acne', condition:'Recommended: acneScore ≤ 6' },
-  'g-prescription':  { icon:'🏥', name:'Prescription Acne Treatment',  desc:'Medical-grade treatment for moderate to severe acne. Highest-impact acne intervention.', category:'acne', condition:'Recommended: acneScore ≤ 4' },
-  'g-aha':           { icon:'✨', name:'Chemical Exfoliant (AHA/BHA)', desc:'Removes dead skin cells and smooths the skin surface.', category:'texture', condition:'Recommended: textureScore ≤ 7' },
   'g-retinol':       { icon:'/RETINOL.png', name:'Retinol',                      desc:'Increases cell turnover and improves long-term skin texture and quality.', category:'texture' },
-  'skin-microneedle':{ icon:'🧬', name:'Microneedling',                 desc:'Professional treatment that dramatically improves skin texture and reduces scarring.', category:'texture', condition:'Recommended: textureScore ≤ 5' },
   'g-vitc':          { icon:'/VCS.png', name:'Vitamin C Serum',               desc:'Fades dark spots and evens skin tone. Apply every morning under SPF.', category:'tone', condition:'Recommended: toneEvenness ≤ 8' },
   'g-niacinamide':   { icon:'/NI.png', name:'Niacinamide',                   desc:'Reduces redness, evens tone, and improves overall skin clarity.', category:'tone', condition:'Recommended: toneEvenness ≤ 7' },
   'adv-ghkcu':       { icon:'/GHKI.png', name:'GHK-Cu (Copper Peptide)',       desc:'Advanced peptide that improves skin quality, texture, and overall appearance.', category:'advanced' },
@@ -671,15 +650,10 @@ const EYE_ALL_ITEMS = {
   'eye-d-whitening':  { id:'eye-d-whitening',  icon:'/EYEWHITENINGDROPS.png', name:'Eye Whitening Drops',     type:'daily', buyOption:true },
   'eye-d-lash':       { id:'eye-d-lash',        icon:'/LASHSERUM.png', name:'Eyelash Growth Serum',     type:'daily', buyOption:true },
   'eye-d-ice':        { id:'eye-d-ice',         icon:'/ICFWD.png', name:'Ice Water Face Dunk',      type:'daily'   },
-  'eye-w-puffiness':  { id:'eye-w-puffiness',   icon:'🔍', name:'Puffiness Check',          type:'weekly'  },
   'eye-f-contacts':   { id:'eye-f-contacts',    icon:'/CC.png', name:'Colored Contacts',         type:'instant', difficulty:'Easy', time:'10 sec'  },
   'eye-f-concealer':  { id:'eye-f-concealer',   icon:'/UEC.png', name:'Under-Eye Concealer',      type:'instant', difficulty:'Easy', time:'30 sec'  },
   'eye-f-mascara':    { id:'eye-f-mascara',     icon:'/MASCARA.png', name:'Mascara',                  type:'instant', difficulty:'Easy', time:'30 sec'  },
-  'eye-f-waterline':  { id:'eye-f-waterline',   icon:'🖊️', name:'White Waterline Pencil',   type:'instant', difficulty:'Easy', time:'15 sec'  },
-  'eye-a-contrast':   { id:'eye-a-contrast',    icon:'⚡', name:'Eye Contrast Optimization',type:'advanced'},
-  'eye-a-undereye':   { id:'eye-a-undereye',    icon:'✦',  name:'Under-Eye Brightness Opt.',type:'advanced'},
-  'eye-a-framing':    { id:'eye-a-framing',     icon:'◻️', name:'Eye Framing Optimization', type:'advanced'},
-  'eye-a-brightness': { id:'eye-a-brightness',  icon:'☀️', name:'Eye Brightness Optimization',type:'advanced'},
+  'eye-f-waterline':  { id:'eye-f-waterline',   icon:'/waterline.png', name:'Waterline Liner',          type:'instant', difficulty:'Easy', time:'30 sec', buyOption:true  },
 };
 
 // Kept for legacy productState compatibility
@@ -693,49 +667,49 @@ const EYE_ROADMAP_DATA = {
     daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
     weekly:   [],
     instant:  ['eye-f-contacts','eye-f-concealer','eye-f-mascara','eye-f-waterline'],
-    advanced: ['eye-a-contrast','eye-a-undereye'],
+    advanced: [],
   },
   eyeShape: {
     goal: 'Draw more attention toward your natural eye shape.',
     daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
     weekly:   [],
     instant:  ['eye-f-contacts','eye-f-mascara','eye-f-waterline'],
-    advanced: ['eye-a-framing','eye-a-contrast'],
+    advanced: [],
   },
   eyeExposure: {
     goal: 'Make your naturally visible eyes even more attention-grabbing.',
     daily:    ['eye-d-whitening','eye-d-ice','eye-d-lash'],
-    weekly:   ['eye-w-puffiness'],
-    instant:  ['eye-f-concealer','eye-f-contacts','eye-f-waterline','eye-f-mascara'],
-    advanced: ['eye-a-undereye','eye-a-brightness'],
+    weekly:   [],
+    instant:  ['eye-f-concealer','eye-f-contacts','eye-f-mascara','eye-f-waterline'],
+    advanced: [],
   },
   upperEyelidExposure: {
     goal: 'Increase the intensity and structure of the eye area.',
     daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
     weekly:   [],
-    instant:  ['eye-f-contacts','eye-f-mascara','eye-f-concealer'],
-    advanced: ['eye-a-framing','eye-a-contrast'],
+    instant:  ['eye-f-contacts','eye-f-mascara','eye-f-concealer','eye-f-waterline'],
+    advanced: [],
   },
   eyeDepth: {
     goal: 'Make your deep-set eyes appear even more striking.',
     daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
     weekly:   [],
-    instant:  ['eye-f-contacts','eye-f-concealer','eye-f-mascara'],
-    advanced: ['eye-a-contrast','eye-a-undereye'],
+    instant:  ['eye-f-contacts','eye-f-concealer','eye-f-mascara','eye-f-waterline'],
+    advanced: [],
   },
   eyeSpacing: {
     goal: 'Preserve harmony while increasing eye impact.',
     daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
     weekly:   [],
-    instant:  ['eye-f-contacts','eye-f-mascara','eye-f-concealer'],
-    advanced: ['eye-a-contrast'],
+    instant:  ['eye-f-contacts','eye-f-mascara','eye-f-concealer','eye-f-waterline'],
+    advanced: [],
   },
   eyeSymmetry: {
     goal: 'Make your balanced eye area even more noticeable.',
     daily:    ['eye-d-whitening','eye-d-lash','eye-d-ice'],
     weekly:   [],
     instant:  ['eye-f-contacts','eye-f-mascara','eye-f-concealer','eye-f-waterline'],
-    advanced: ['eye-a-framing','eye-a-contrast'],
+    advanced: [],
   },
 };
 
@@ -761,16 +735,6 @@ function getEyeRoadmapAllIds() {
 // ── JAW DATA ──
 // All possible jaw items (for productState ID stability)
 const JAW_ALL_ITEMS = {
-  'jaw-d-water':         { id:'jaw-d-water',         icon:'💧', name:'Hydration (3L Water)',              type:'daily'   },
-  'jaw-d-sodium':        { id:'jaw-d-sodium',         icon:'🧂', name:'Low Sodium Diet',                  type:'daily'   },
-  'jaw-w-cardio':        { id:'jaw-w-cardio',         icon:'🏃', name:'Cardio / Fat Loss Training',       type:'weekly'  },
-  'jaw-w-gum':           { id:'jaw-w-gum',            icon:'🦷', name:'Mastic Gum Chewing',                type:'weekly'  },
-  'jaw-f-beard':         { id:'jaw-f-beard',          icon:'🧔', name:'Beard Shaping for Jaw Framing',     type:'instant', difficulty:'Easy', time:'10 min' },
-  'jaw-f-contour':       { id:'jaw-f-contour',        icon:'✂️', name:'Sideburn Taper / Contour Grooming', type:'instant', difficulty:'Easy', time:'10 min' },
-  'jaw-f-posture-photo': { id:'jaw-f-posture-photo',  icon:'📸', name:'Chin-Forward Posture in Photos',    type:'instant', difficulty:'Easy', time:'5 sec'  },
-  'jaw-a-filler':        { id:'jaw-a-filler',         icon:'💉', name:'Jawline / Chin Filler',             type:'advanced'},
-  'jaw-a-submental':     { id:'jaw-a-submental',      icon:'🏥', name:'Submental Fat Reduction',           type:'advanced'},
-  'jaw-a-skin':          { id:'jaw-a-skin',           icon:'🧬', name:'Retinoid Skin Tightening',         type:'advanced'},
   'jaw-d-kshami':        { id:'jaw-d-kshami',         icon:'/KSHAMI.png', name:'K-Shami D-BLOAT',         type:'daily', buyOption:true },
   'jaw-d-chintucks':     { id:'jaw-d-chintucks',      icon:'/CT.png', name:'Chin Tucks',                  type:'daily' },
   'jaw-d-neckcurls':     { id:'jaw-d-neckcurls',      icon:'/NC.png', name:'Neck Curls',                  type:'daily' },
@@ -783,31 +747,31 @@ const JAW_ALL_ITEMS = {
 const JAW_ROADMAP_DATA = {
   jawWidth: {
     goal: 'Make your naturally wide jaw structure stand out even more.',
-    daily:    ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
-    weekly:   ['jaw-w-cardio'],
-    instant:  ['jaw-f-beard','jaw-f-contour'],
-    advanced: ['jaw-a-skin','jaw-a-igf1'],
+    daily:    ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   [],
+    instant:  [],
+    advanced: ['jaw-a-igf1'],
   },
   jawDefinition: {
     goal: 'Sharpen the natural separation between your jaw and the rest of your face.',
-    daily:    ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
-    weekly:   ['jaw-w-cardio'],
-    instant:  ['jaw-f-contour'],
-    advanced: ['jaw-a-skin','jaw-a-submental','jaw-a-igf1'],
+    daily:    ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   [],
+    instant:  [],
+    advanced: ['jaw-a-igf1'],
   },
   chinProjection: {
     goal: 'Maintain and highlight your strong chin projection.',
-    daily:    ['jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    daily:    ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
     weekly:   [],
-    instant:  ['jaw-f-posture-photo','jaw-f-beard'],
-    advanced: ['jaw-a-filler','jaw-a-igf1'],
+    instant:  [],
+    advanced: ['jaw-a-igf1'],
   },
   gonialAngle: {
     goal: 'Make your masculine jaw angle even more noticeable.',
-    daily:    ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
-    weekly:   ['jaw-w-cardio','jaw-w-gum'],
-    instant:  ['jaw-f-contour','jaw-f-beard'],
-    advanced: ['jaw-a-skin','jaw-a-igf1'],
+    daily:    ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   [],
+    instant:  [],
+    advanced: ['jaw-a-igf1'],
   },
   jawSymmetry: {
     goal: 'Preserve your balanced jawline while increasing overall definition.',
@@ -818,17 +782,17 @@ const JAW_ROADMAP_DATA = {
   },
   neckJawSeparation: {
     goal: 'Maximize the clean separation between your jaw and neck.',
-    daily:    ['jaw-d-water','jaw-d-sodium','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
-    weekly:   ['jaw-w-cardio'],
-    instant:  ['jaw-f-contour'],
-    advanced: ['jaw-a-submental','jaw-a-igf1'],
+    daily:    ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   [],
+    instant:  [],
+    advanced: ['jaw-a-igf1'],
   },
   facialLeanness: {
     goal: 'Maintain your lean lower face so your natural bone structure keeps showing through.',
-    daily:    ['jaw-d-sodium','jaw-d-water','jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
-    weekly:   ['jaw-w-cardio','jaw-w-gum'],
+    daily:    ['jaw-d-kshami','jaw-d-chintucks','jaw-d-neckcurls','jaw-d-lymphatic','jaw-d-sugar'],
+    weekly:   [],
     instant:  [],
-    advanced: ['jaw-a-skin','jaw-a-igf1'],
+    advanced: ['jaw-a-igf1'],
   },
 };
 
@@ -901,26 +865,12 @@ const JAW_STRENGTH_TEMPLATES = {
 // All possible brow items (for productState ID stability)
 const BROW_ALL_ITEMS = {
   'brow-d-serum':     { id:'brow-d-serum',     icon:'/MINOXIDIL.png', name:'Apply Minixodil',     type:'daily', buyOption:true },
-  'brow-w-shape':     { id:'brow-w-shape',      icon:'/SHAPECLEANUP.png', name:'Shape Cleanup',             type:'weekly'  },
-  'brow-w-strays':    { id:'brow-w-strays',     icon:'🪮', name:'Stray Hair Removal',         type:'weekly'  },
-  'brow-w-edge':      { id:'brow-w-edge',       icon:'✂️', name:'Edge Cleanup',               type:'weekly'  },
-  'brow-w-maintain':  { id:'brow-w-maintain',   icon:'🪮', name:'Shape Maintenance',          type:'weekly'  },
-  'brow-w-tail':      { id:'brow-w-tail',       icon:'✂️', name:'Tail Maintenance',           type:'weekly'  },
-  'brow-w-thickness': { id:'brow-w-thickness',  icon:'✂️', name:'Thickness Preservation Cleanup', type:'weekly' },
-  'brow-w-cleanup':   { id:'brow-w-cleanup',    icon:'✂️', name:'Cleanup',                    type:'weekly'  },
   'brow-f-gel':       { id:'brow-f-gel',        icon:'/BROWGEL.png', name:'Brow Gel',                   type:'instant', difficulty:'Easy', time:'10 sec' },
   'brow-f-pencil':    { id:'brow-f-pencil',     icon:'/BROWPENCIL.png', name:'Brow Pencil',                type:'instant', difficulty:'Easy', time:'1 min'  },
-  'brow-f-fiber':     { id:'brow-f-fiber',      icon:'🖊️', name:'Brow Fiber Filler',          type:'instant', difficulty:'Easy', time:'1 min'  },
-  'brow-a-lamination':{ id:'brow-a-lamination', icon:'⚡', name:'Brow Lamination',            type:'advanced' },
-  'brow-a-mapping':   { id:'brow-a-mapping',    icon:'✦',  name:'Professional Brow Mapping',  type:'advanced' },
-  'brow-a-design':    { id:'brow-a-design',     icon:'◻️', name:'Professional Brow Design',   type:'advanced' },
-  'brow-a-styling':   { id:'brow-a-styling',    icon:'✦',  name:'Professional Brow Styling',  type:'advanced' },
-  'brow-a-tail':      { id:'brow-a-tail',       icon:'⚡', name:'Tail Optimization',          type:'advanced' },
 };
 
 // Legacy references for productState compatibility
 const BROWS_HABITS = [BROW_ALL_ITEMS['brow-d-serum']];
-const BROWS_WEEKLY = [BROW_ALL_ITEMS['brow-w-shape'],  BROW_ALL_ITEMS['brow-w-strays']];
 const BROWS_FRAUDS = [BROW_ALL_ITEMS['brow-f-pencil'], BROW_ALL_ITEMS['brow-f-gel']];
 
 // ── BROW ROADMAP TEMPLATES ──
@@ -928,44 +878,44 @@ const BROW_ROADMAP_DATA = {
   eyebrowFraming: {
     goal: 'Create even stronger eye framing.',
     daily:    ['brow-d-serum'],
-    weekly:   ['brow-w-shape','brow-w-strays'],
-    instant:  ['brow-f-gel','brow-f-pencil','brow-f-fiber'],
-    advanced: ['brow-a-lamination','brow-a-design'],
+    weekly:   [],
+    instant:  ['brow-f-gel','brow-f-pencil'],
+    advanced: [],
   },
   eyebrowShape: {
     goal: 'Make your natural eyebrow structure more noticeable.',
     daily:    ['brow-d-serum'],
-    weekly:   ['brow-w-edge','brow-w-maintain'],
+    weekly:   [],
     instant:  ['brow-f-gel','brow-f-pencil'],
-    advanced: ['brow-a-mapping','brow-a-lamination'],
+    advanced: [],
   },
   eyebrowPosition: {
     goal: 'Maximize the structure your brows create around the eyes.',
     daily:    ['brow-d-serum'],
-    weekly:   ['brow-w-shape'],
+    weekly:   [],
     instant:  ['brow-f-gel','brow-f-pencil'],
-    advanced: ['brow-a-styling','brow-a-lamination'],
+    advanced: [],
   },
   eyebrowThickness: {
     goal: 'Turn your natural thickness into a defining facial feature.',
     daily:    ['brow-d-serum'],
-    weekly:   ['brow-w-thickness'],
+    weekly:   [],
     instant:  ['brow-f-gel','brow-f-pencil'],
-    advanced: ['brow-a-styling','brow-a-lamination'],
+    advanced: [],
   },
   eyebrowDensity: {
     goal: 'Make your dense brows appear even more powerful and structured.',
     daily:    ['brow-d-serum'],
-    weekly:   ['brow-w-cleanup'],
+    weekly:   [],
     instant:  ['brow-f-gel','brow-f-pencil'],
-    advanced: ['brow-a-lamination','brow-a-design'],
+    advanced: [],
   },
   eyebrowLength: {
     goal: 'Maximize the eye framing created by your brow length.',
     daily:    ['brow-d-serum'],
-    weekly:   ['brow-w-tail'],
+    weekly:   [],
     instant:  ['brow-f-pencil','brow-f-gel'],
-    advanced: ['brow-a-mapping','brow-a-tail'],
+    advanced: [],
   },
 };
 
@@ -1265,12 +1215,7 @@ function buildSkinRoadmap() {
   const glow    = parseFloat(sd.skinGlow     ?? 10);
 
   const tasks = ['ess-cleanser-pm','ess-moisturizer','ess-moisturizer-pm','ess-sunscreen'];
-  if (acne    <= 7) tasks.push('g-benzoyl');
-  if (acne    <= 6) tasks.push('g-adapalene');
-  if (acne    <= 4) tasks.push('g-prescription');
   tasks.push('g-retinol'); // always recommended
-  if (texture <= 7) tasks.push('g-aha');
-  if (texture <= 5) tasks.push('skin-microneedle');
   if (tone    <= 8) tasks.push('g-vitc');
   if (tone    <= 7) tasks.push('g-niacinamide');
   tasks.push('adv-ghkcu'); // always recommended
@@ -2390,25 +2335,6 @@ const TASK_DETAILS = {
     resultsImage: '/EBR.webp',
     resultsImagePos: { x: 50, y: 50, scale: 1.9 },
   },
-  'brow-w-shape': {
-    impactStars: 3, impactLabel: 'Moderate Impact',
-    time: '~5 min / week', difficulty: '?',
-    why: 'Regular eyebrow shaping removes stray hairs and creates cleaner, more defined brows. A well-maintained shape improves symmetry, enhances your eye area, and makes your eyebrows appear sharper without looking unnatural.',
-    benefits: [
-      'Cleaner eyebrow shape', 'Better brow symmetry', 'Improves definition',
-      'Enhances eye framing', 'More polished appearance', 'Highlights natural brow shape',
-      'Fast weekly maintenance', 'Immediate visual improvement',
-    ],
-    science: 'Removing hairs outside your natural brow shape creates a cleaner outline that your brain perceives as more symmetrical. Even small adjustments can noticeably improve facial structure and eye framing.',
-    usage: [
-      'Shape brows once each week', 'Remove only obvious stray hairs',
-      'Follow your natural brow shape', 'Avoid over-plucking the top edge',
-      'Step back often to check symmetry', 'Finish by brushing brows into place',
-    ],
-    resultsTiming: 'Results: Immediately', resultsDuration: 'Duration: About 1 week',
-    resultsNote: 'Regular weekly maintenance keeps your eyebrows looking consistently clean and well-defined.',
-    hideResultsSection: true,
-  },
   'brow-f-gel': {
     impactStars: 4, impactLabel: 'High Impact',
     time: '10 sec / day', difficulty: 'Easy',
@@ -2749,20 +2675,6 @@ function setProductStatus(id, status) {
     const xpResult = addXP(10);
     if (xpResult.leveledUp) showLevelUpToast(xpResult.toLevel);
   }
-  // Adding "Get Haircut" to the weekly plan kicks off a separate recurring
-  // reminder: "Book Haircut Appointment" shows up on tasks.html the very
-  // next day, then again every 3 weeks on that same day-of-week. We anchor
-  // that recurrence off the date the task was added.
-  if (id === 'hair-w-cut') {
-    if (status === 'have' && !wasHave) {
-      try {
-        const anchor = new Date(); anchor.setHours(0,0,0,0);
-        localStorage.setItem('protocol_haircut_anchor', anchor.toISOString());
-      } catch(e){}
-    } else if (status !== 'have') {
-      try { localStorage.removeItem('protocol_haircut_anchor'); } catch(e){}
-    }
-  }
   const card = document.querySelector(`[data-task-id="${id}"]`);
   if (card) {
     card.querySelector('.prod-action').innerHTML = getActionHtml(id, card.dataset.cardType);
@@ -2778,9 +2690,6 @@ function dismissTask(id) {
   }
   productState[id] = null;
   savePlanState();
-  if (id === 'hair-w-cut') {
-    try { localStorage.removeItem('protocol_haircut_anchor'); } catch(e){}
-  }
   const card = document.querySelector(`[data-task-id="${id}"]`);
   if (card) card.remove();
   refreshCounters();
@@ -2808,14 +2717,7 @@ function addAll() {
   } else if (areaKey === 'brows') {
     getBrowRoadmapAllIds().forEach(id => productState[id] = 'have');
   } else if (areaKey === 'hair') {
-    const _hadCut = productState['hair-w-cut'] === 'have';
     getHairWeekly().forEach(h => productState[h.id] = 'have');
-    if (!_hadCut) {
-      try {
-        const anchor = new Date(); anchor.setHours(0,0,0,0);
-        localStorage.setItem('protocol_haircut_anchor', anchor.toISOString());
-      } catch(e){}
-    }
   } else if (areaKey === 'jaw') {
     getJawRoadmapAllIds().forEach(id => productState[id] = 'have');
   } else {
@@ -3071,6 +2973,12 @@ function updateSidebar() {
 
 // ── WIZARD ──
 const WIZARD_KEY = 'protocol_skin_setup_done';
+
+// Visit /improve?resetWizard=1 in any mobile browser (no devtools needed) to
+// clear the "wizard already completed" flag and have it show again.
+if (new URLSearchParams(location.search).get('resetWizard') === '1') {
+  localStorage.removeItem(WIZARD_KEY);
+}
 
 const wizardAnswers = { goals: [], sleepTime: '', tenMinutes: '', peptides: '', frauds: '' };
 

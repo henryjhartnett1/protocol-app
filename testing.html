@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROTOCOL · Eyebrow Overlay Test</title>
+<style>
+  :root { --bg:#000; --bg1:#0a0a0a; --accent:#c8ff00; --white:#f0f0f0; --muted:#777; --border:#1e1e1e; --brd2:#2a2a2a; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--white); font-family: 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  .hdr { height: 52px; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .hdr-logo { font-size: 11px; font-weight: 900; letter-spacing: 5px; color: var(--accent); }
+  .hdr-tag  { font-size: 9px; font-weight: 700; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+
+  .wrap { max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .eyebrow { font-size: 9px; font-weight: 800; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; }
+  .heading { font-size: 24px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; text-align: center; }
+  .sub     { font-size: 11px; color: var(--muted); text-align: center; max-width: 420px; line-height: 1.65; }
+
+  .upload-zone { border: 1px dashed var(--brd2); padding: 48px 60px; display: flex; flex-direction: column; align-items: center; gap: 14px; cursor: pointer; transition: border-color .15s; width: 100%; max-width: 440px; }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); }
+  .uz-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+  .uz-sub   { font-size: 9px; color: var(--muted); }
+  #fileInput { display: none; }
+
+  .status { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-align: center; }
+  .status.ok  { color: var(--accent); }
+  .status.err { color: #ff6b6b; }
+  .status.busy { color: #3aa0ff; }
+
+  .photo-row { width: 100%; display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .photo-col { flex: 1; min-width: 220px; max-width: 280px; display: flex; flex-direction: column; gap: 8px; }
+  .photo-label { font-size: 8px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); text-align: center; }
+  .photo-col.after .photo-label { color: var(--accent); }
+  .photo-col img { width: 100%; border: 1px solid var(--border); display: block; background: #050505; }
+
+  .btn { padding: 12px 22px; border: none; font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
+  .btn-a { background: var(--accent); color: #000; }
+  .btn-a:hover { background: #d4ff20; }
+  .btn-a:disabled { background: #2a2a2a; color: #666; cursor: not-allowed; }
+  .btn-b { background: transparent; color: var(--muted); border: 1px solid var(--brd2); }
+  .btn-b:hover { color: var(--white); border-color: var(--white); }
+
+  .btn-row { display: flex; gap: 10px; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">PROTOCOL</div>
+  <div class="hdr-tag">Eyebrow Overlay Test</div>
+</div>
+
+<div class="wrap">
+  <div class="eyebrow">Internal Test Page</div>
+  <div class="heading">Eyebrow Overlay</div>
+  <div class="sub">Upload a front-facing photo. We detect your eyebrows with MediaPipe Face Mesh and stamp the left_brow.png / right_brow.png templates on top, scaled and rotated to match — no transformation pipeline, just the overlay step on its own.</div>
+
+  <div class="upload-zone" id="zone">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".3"><rect x="3" y="3" width="18" height="18"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <div class="uz-title">Drop Face Photo</div>
+    <div class="uz-sub">JPG or PNG · front-facing</div>
+  </div>
+  <input type="file" id="fileInput" accept="image/*">
+
+  <div class="status" id="statusEl">Waiting for a photo…</div>
+
+  <div class="btn-row" id="btnRow" style="display:none;">
+    <button class="btn btn-a" id="btnRun">Apply Eyebrow Overlay</button>
+    <button class="btn btn-b" id="btnReset">New Photo</button>
+  </div>
+
+  <div class="photo-row" id="photoRow" style="display:none;">
+    <div class="photo-col">
+      <div class="photo-label">Original</div>
+      <img id="imgBefore" src="" alt="Original"/>
+    </div>
+    <div class="photo-col after">
+      <div class="photo-label">With Overlay</div>
+      <img id="imgAfter" src="" alt="With overlay"/>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── EYEBROW TEMPLATE OVERLAY ────────────────────────────────────────────────
+// Same logic as glowai.html's applyEyebrowOverlay — kept self-contained here
+// so this page can test the overlay step in isolation, without running the
+// full /api/simulate transformation pipeline first.
+
+const BROW_LANDMARK_IDX = {
+  clusterA: [46, 53, 52, 65, 55, 70, 63, 105, 66, 107],
+  clusterB: [276, 283, 282, 295, 285, 300, 293, 334, 296, 336],
+};
+
+const BROW_TEMPLATES = {
+  left:  { src: '/left_brow.png',  hairWidthPx: 1213, centerXFrac: 0.464, centerYFrac: 0.473 },
+  right: { src: '/right_brow.png', hairWidthPx: 1291, centerXFrac: 0.537, centerYFrac: 0.477 },
+};
+
+const EYEBROW_OVERLAY_SCALE   = 1.18;
+const EYEBROW_OVERLAY_OPACITY = 1.0;
+
+let _faceMeshScriptPromise = null;
+function loadFaceMeshScript() {
+  if (_faceMeshScriptPromise) return _faceMeshScriptPromise;
+  _faceMeshScriptPromise = new Promise((resolve, reject) => {
+    if (window.FaceMesh) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js';
+    s.crossOrigin = 'anonymous';
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Failed to load MediaPipe Face Mesh'));
+    document.head.appendChild(s);
+  });
+  return _faceMeshScriptPromise;
+}
+
+function loadImageEl(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Failed to load image: ' + src));
+    img.src = src;
+  });
+}
+
+async function detectFaceLandmarks(imgEl) {
+  await loadFaceMeshScript();
+  return new Promise((resolve, reject) => {
+    const fm = new FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+    });
+    fm.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+    fm.onResults((results) => {
+      if (!results.multiFaceLandmarks || !results.multiFaceLandmarks.length) {
+        reject(new Error('No face detected'));
+        return;
+      }
+      resolve(results.multiFaceLandmarks[0]);
+    });
+    fm.send({ image: imgEl }).catch(reject);
+  });
+}
+
+function computeBrowGeometry(landmarks, indices, imgW, imgH) {
+  const pts = indices.map(i => ({ x: landmarks[i].x * imgW, y: landmarks[i].y * imgH }));
+  let minPt = pts[0], maxPt = pts[0];
+  pts.forEach(p => { if (p.x < minPt.x) minPt = p; if (p.x > maxPt.x) maxPt = p; });
+  const dx = maxPt.x - minPt.x, dy = maxPt.y - minPt.y;
+  return {
+    length: Math.sqrt(dx * dx + dy * dy),
+    angle: Math.atan2(dy, dx),
+    cx: (minPt.x + maxPt.x) / 2,
+    cy: (minPt.y + maxPt.y) / 2,
+  };
+}
+
+function drawBrowTemplate(ctx, templateImg, tmpl, geo) {
+  const scale = (geo.length * EYEBROW_OVERLAY_SCALE) / tmpl.hairWidthPx;
+  const drawW = templateImg.naturalWidth * scale;
+  const drawH = templateImg.naturalHeight * scale;
+  ctx.save();
+  ctx.globalAlpha = EYEBROW_OVERLAY_OPACITY;
+  ctx.translate(geo.cx, geo.cy);
+  ctx.rotate(geo.angle);
+  ctx.drawImage(templateImg, -tmpl.centerXFrac * drawW, -tmpl.centerYFrac * drawH, drawW, drawH);
+  ctx.restore();
+}
+
+async function applyEyebrowOverlay(imageUrl) {
+  const srcImg = await loadImageEl(imageUrl);
+  const W = srcImg.naturalWidth, H = srcImg.naturalHeight;
+
+  const landmarks = await detectFaceLandmarks(srcImg);
+  const gA = computeBrowGeometry(landmarks, BROW_LANDMARK_IDX.clusterA, W, H);
+  const gB = computeBrowGeometry(landmarks, BROW_LANDMARK_IDX.clusterB, W, H);
+  const [leftGeo, rightGeo] = gA.cx <= gB.cx ? [gA, gB] : [gB, gA];
+
+  const [leftImg, rightImg] = await Promise.all([
+    loadImageEl(BROW_TEMPLATES.left.src),
+    loadImageEl(BROW_TEMPLATES.right.src),
+  ]);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(srcImg, 0, 0, W, H);
+  drawBrowTemplate(ctx, leftImg,  BROW_TEMPLATES.left,  leftGeo);
+  drawBrowTemplate(ctx, rightImg, BROW_TEMPLATES.right, rightGeo);
+
+  return canvas.toDataURL('image/jpeg', 0.92);
+}
+
+// ── PAGE WIRING ──────────────────────────────────────────────────────────────
+const zone       = document.getElementById('zone');
+const fileInput   = document.getElementById('fileInput');
+const statusEl    = document.getElementById('statusEl');
+const btnRow      = document.getElementById('btnRow');
+const btnRun      = document.getElementById('btnRun');
+const btnReset    = document.getElementById('btnReset');
+const photoRow    = document.getElementById('photoRow');
+const imgBefore   = document.getElementById('imgBefore');
+const imgAfter    = document.getElementById('imgAfter');
+
+let _uploadedDataUrl = null;
+
+zone.addEventListener('click', () => fileInput.click());
+zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) loadPhoto(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) loadPhoto(e.target.files[0]); });
+
+function loadPhoto(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    _uploadedDataUrl = e.target.result;
+    imgBefore.src = _uploadedDataUrl;
+    imgAfter.src = '';
+    photoRow.style.display = 'flex';
+    btnRow.style.display = 'flex';
+    statusEl.textContent = 'Photo loaded — click "Apply Eyebrow Overlay" to run it.';
+    statusEl.className = 'status';
+  };
+  reader.readAsDataURL(file);
+}
+
+btnRun.addEventListener('click', async () => {
+  if (!_uploadedDataUrl) return;
+  btnRun.disabled = true;
+  statusEl.textContent = 'Detecting eyebrows + overlaying templates…';
+  statusEl.className = 'status busy';
+  try {
+    const resultUrl = await applyEyebrowOverlay(_uploadedDataUrl);
+    imgAfter.src = resultUrl;
+    statusEl.textContent = 'Done.';
+    statusEl.className = 'status ok';
+  } catch (e) {
+    statusEl.textContent = 'Error: ' + e.message;
+    statusEl.className = 'status err';
+  } finally {
+    btnRun.disabled = false;
+  }
+});
+
+btnReset.addEventListener('click', () => {
+  _uploadedDataUrl = null;
+  fileInput.value = '';
+  imgBefore.src = '';
+  imgAfter.src = '';
+  photoRow.style.display = 'none';
+  btnRow.style.display = 'none';
+  statusEl.textContent = 'Waiting for a photo…';
+  statusEl.className = 'status';
+});
+</script>
+</body>
+</html>
